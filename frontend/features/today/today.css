@@ -1,0 +1,48 @@
+.notification-list,
+.today-list,
+.today-summary {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.today-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.mini-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+}
+
+.mini-calendar span {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.mini-calendar .done {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.first-login-modal {
+  display: none;
+}
+
+.first-login-modal.show {
+  display: block;
+}

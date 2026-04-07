@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 온보딩 2단계</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/onboarding/onboarding.css">
+</head>
+<body data-section="onboarding">
+  <main>
+    <div class="container auth-shell">
+      <section class="card auth-card">
+        <div class="page-header">
+          <div class="section-eyebrow">Onboarding 2</div>
+          <h1 class="section-title">관심 있는 건강 주제를 골라요</h1>
+          <p class="section-copy">혈압·혈당, 관절·근력, 스트레스 관리 같은 항목을 선택할 수 있어요.</p>
+        </div>
+        <div class="selection-grid">
+          <button class="chip" data-chip-select="interest">혈압·혈당</button>
+          <button class="chip" data-chip-select="interest">관절·근력</button>
+          <button class="chip" data-chip-select="interest">복약 관리</button>
+          <button class="chip" data-chip-select="interest">수면</button>
+          <button class="chip" data-chip-select="interest">스트레스 관리</button>
+        </div>
+        <div class="page-actions">
+          <a href="/pages/onboarding/step3-ai.html" class="btn btn-ai btn-full">AI 습관 추천받기</a>
+          <a href="/pages/today/index.html" class="btn btn-outline btn-full">건너뛰고 직접 등록하기</a>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/onboarding/onboarding.js"></script>
+</body>
+</html>

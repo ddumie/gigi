@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 모임 구해요</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/neighbor/neighbor.css">
+</head>
+<body data-section="neighbor">
+  <header class="gnb">
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      <a href="/pages/today/index.html" data-nav="today">오늘</a>
+      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
+      <a href="/pages/support/index.html" data-nav="support">지지</a>
+      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
+      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
+    </nav>
+    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
+  </header>
+  <main>
+    <div class="container page-shell">
+      <header class="page-header">
+        <div class="section-eyebrow">Group Search</div>
+        <h1 class="page-title">모임 구해요</h1>
+        <p class="page-subtitle">함께할 습관 1개와 빈도를 기준으로 새로운 모임을 찾을 수 있어요.</p>
+      </header>
+      <div class="page-actions">
+        <a href="/pages/neighbor/group-search-write.html" class="btn btn-primary">글쓰기</a>
+      </div>
+      <section class="group-search-list">
+        <article class="group-search-card">
+          <strong>함께 걷기 이웃 모임</strong>
+          <p class="meta-text" style="margin-top:0.5rem;">동네 이웃 · 함께할 습관: 20분 걷기 · 주 3회</p>
+          <div class="page-actions" style="margin-top:1rem;">
+            <a href="/pages/neighbor/group-search-join.html" class="btn btn-outline btn-sm">함께하기</a>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/neighbor/neighbor.js"></script>
+</body>
+</html>

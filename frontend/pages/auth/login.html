@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 로그인</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/auth/auth.css">
+</head>
+<body data-section="auth">
+  <main>
+    <div class="container auth-shell">
+      <section class="card auth-card">
+        <div class="page-header">
+          <div class="section-eyebrow">Login</div>
+          <h1 class="section-title">다시 만나서 반가워요</h1>
+          <p class="section-copy">이메일과 비밀번호로 로그인해 오늘의 습관을 이어가세요.</p>
+        </div>
+        <label class="input-label" for="login-email">이메일</label>
+        <input id="login-email" class="input-field" type="email" placeholder="gigi@example.com">
+        <label class="input-label" for="login-password">비밀번호</label>
+        <input id="login-password" class="input-field" type="password" placeholder="비밀번호를 입력하세요">
+        <div class="page-actions">
+          <a href="/pages/today/index.html" class="btn btn-primary btn-full">로그인</a>
+        </div>
+        <div class="auth-links">
+          <a href="/pages/auth/signup-step1.html">회원가입</a>
+          <a href="/">랜딩으로 돌아가기</a>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/auth/auth.js"></script>
+</body>
+</html>

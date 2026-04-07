@@ -1,0 +1,25 @@
+.habit-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.habit-item {
+  padding: 1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-card);
+}
+
+.habit-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.habit-item-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

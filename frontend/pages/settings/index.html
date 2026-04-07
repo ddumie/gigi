@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 설정</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/settings/settings.css">
+</head>
+<body data-section="settings">
+  <header class="gnb">
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      <a href="/pages/today/index.html" data-nav="today">오늘</a>
+      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
+      <a href="/pages/support/index.html" data-nav="support">지지</a>
+      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
+      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
+    </nav>
+    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
+  </header>
+  <main>
+    <div class="container page-shell">
+      <header class="page-header">
+        <div class="section-eyebrow">Settings</div>
+        <h1 class="page-title">내 설정</h1>
+        <p class="page-subtitle">프로필 정보와 계정 설정만 남기고, 기록 조회와 모임 관리는 다른 탭으로 분리합니다.</p>
+      </header>
+      <div class="settings-grid">
+        <section class="card">
+          <strong>프로필 설정</strong>
+          <div class="settings-row"><span>닉네임</span><span class="meta-text">김건강</span></div>
+          <div class="settings-row"><span>나이대</span><span class="meta-text">60대</span></div>
+          <div class="settings-row"><span>건강 관심사</span><span class="meta-text">관절·근력, 복약 관리</span></div>
+        </section>
+        <section class="card">
+          <strong>계정 설정</strong>
+          <div class="settings-row"><span>비밀번호 변경</span><button type="button" class="btn btn-outline btn-sm">변경하기</button></div>
+          <div class="settings-row"><span>로그아웃</span><button type="button" class="btn btn-outline btn-sm js-logout">로그아웃</button></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/settings/settings.js"></script>
+</body>
+</html>

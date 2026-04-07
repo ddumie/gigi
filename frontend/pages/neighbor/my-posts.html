@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 내 글</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/neighbor/neighbor.css">
+</head>
+<body data-section="neighbor">
+  <header class="gnb">
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      <a href="/pages/today/index.html" data-nav="today">오늘</a>
+      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
+      <a href="/pages/support/index.html" data-nav="support">지지</a>
+      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
+      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
+    </nav>
+    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
+  </header>
+  <main>
+    <div class="container page-shell">
+      <header class="page-header">
+        <div class="section-eyebrow">My Posts</div>
+        <h1 class="page-title">내 글</h1>
+        <p class="page-subtitle">내가 쓴 습관 공유 글과 group-search 글을 함께 모아봅니다.</p>
+      </header>
+      <section class="feed-list">
+        <article class="feed-card">
+          <strong>오늘의 스트레칭 기록</strong>
+          <p class="meta-text" style="margin-top:0.5rem;">습관 공유 글</p>
+        </article>
+        <article class="group-search-card">
+          <strong>함께 걷기 이웃 모임</strong>
+          <p class="meta-text" style="margin-top:0.5rem;">group-search 글</p>
+        </article>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/neighbor/neighbor.js"></script>
+</body>
+</html>

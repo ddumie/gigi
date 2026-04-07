@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 지지</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/support/support.css">
+</head>
+<body data-section="support">
+  <header class="gnb">
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      <a href="/pages/today/index.html" data-nav="today">오늘</a>
+      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
+      <a href="/pages/support/index.html" data-nav="support">지지</a>
+      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
+      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
+    </nav>
+    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
+  </header>
+  <div class="font-scaler">
+    <span>글씨 크기</span>
+    <input id="font-scale-slider" type="range" min="0" max="6" step="1">
+    <span id="font-scale-value">기본</span>
+  </div>
+  <main>
+    <div class="container page-shell">
+      <header class="page-header">
+        <div class="section-eyebrow">Support</div>
+        <h1 class="page-title">우리의 지지</h1>
+        <p class="page-subtitle">모임 게이지, 스트릭, 멤버 지지를 한 곳에서 확인합니다.</p>
+      </header>
+      <div class="page-actions">
+        <a href="/pages/support/create.html" class="btn btn-primary">모임 만들기</a>
+      </div>
+      <section class="group-list">
+        <article class="card group-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+            <div>
+              <strong>우리 가족</strong>
+              <p class="meta-text">가족 모임 · 레벨 나무</p>
+            </div>
+            <a href="/pages/support/manage.html" class="btn btn-outline btn-sm">모임 관리</a>
+          </div>
+          <div class="progress"><div class="progress-bar" style="width:72%;"></div></div>
+          <div class="member-list">
+            <div class="member-row"><span>김건강님</span><button type="button" class="btn btn-outline btn-sm" data-support-button>지지하기</button></div>
+            <div class="member-row"><span>이웃사촌님</span><button type="button" class="btn btn-outline btn-sm" data-support-button>지지하기</button></div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/support/support.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 오늘</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/today/today.css">
+</head>
+<body data-section="today">
+  <header class="gnb">
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      <a href="/pages/today/index.html" data-nav="today">오늘</a>
+      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
+      <a href="/pages/support/index.html" data-nav="support">지지</a>
+      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
+      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
+    </nav>
+    <div class="gnb-right">
+      <span id="gnb-username" class="gnb-user">사용자님</span>
+      <div class="gnb-noti">
+        <span id="noti-count" class="gnb-noti-badge"></span>
+      </div>
+    </div>
+  </header>
+  <div class="font-scaler">
+    <span>글씨 크기</span>
+    <input id="font-scale-slider" type="range" min="0" max="6" step="1">
+    <span id="font-scale-value">기본</span>
+  </div>
+  <main>
+    <div class="container page-shell">
+      <header class="page-header">
+        <div class="section-eyebrow">Today</div>
+        <h1 class="page-title">오늘의 내 습관</h1>
+        <p class="page-subtitle">받은 지지와 오늘 해야 할 습관을 한 번에 확인해요.</p>
+      </header>
+      <section class="card notification-list">
+        <strong>받은 지지 알림</strong>
+        <div class="list-row"><span>김걷기님이 오늘의 지지를 보냈어요.</span><span class="meta-text">방금 전</span></div>
+        <div class="list-row"><span>우리 가족 모임이 주간 목표를 달성했어요.</span><span class="meta-text">2시간 전</span></div>
+      </section>
+      <section class="card today-list">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <strong>오늘의 습관</strong>
+          <span class="today-pill">3개 중 1개 완료</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check-box"></div>
+          <div>
+            <strong>아침 10분 걷기</strong>
+            <p class="meta-text">운동 · 매일 · 07:30</p>
+          </div>
+        </div>
+        <div class="checklist-item checked">
+          <div class="check-box">✓</div>
+          <div>
+            <strong>복약 체크</strong>
+            <p class="meta-text">복약 · 매일 · 08:00</p>
+          </div>
+        </div>
+      </section>
+      <section class="card today-summary">
+        <strong>우리의 오늘</strong>
+        <p class="section-copy">현재 연결된 모임 2개의 달성률과 지지 현황을 요약해서 보여줍니다.</p>
+        <div class="page-actions">
+          <a href="/pages/support/index.html" class="btn btn-outline">지지 탭으로 이동</a>
+          <a href="/pages/habits/index.html" class="btn btn-outline">습관 추가하기</a>
+        </div>
+      </section>
+      <section class="card">
+        <strong>나의 현황</strong>
+        <div class="stat-grid" style="margin-top:1rem;">
+          <div class="stat-card"><div class="stat-value">67%</div><div class="stat-label">오늘 달성률</div></div>
+          <div class="stat-card"><div class="stat-value">5일</div><div class="stat-label">연속 스트릭</div></div>
+          <div class="stat-card"><div class="stat-value">12회</div><div class="stat-label">이번 주 체크</div></div>
+          <div class="stat-card"><div class="stat-value">2개</div><div class="stat-label">모임 습관</div></div>
+        </div>
+        <div class="mini-calendar" style="margin-top:1rem;">
+          <span>1</span><span class="done">2</span><span class="done">3</span><span>4</span><span>5</span><span class="done">6</span><span>7</span>
+          <span class="done">8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+        </div>
+      </section>
+      <section id="first-login-modal" class="card first-login-modal">
+        <strong>첫 로그인이에요</strong>
+        <p class="section-copy" style="margin-top:0.5rem;">모임을 만들거나 나중에 지지 탭에서 다시 시작할 수 있어요.</p>
+        <div class="page-actions" style="margin-top:1rem;">
+          <a href="/pages/support/create.html" class="btn btn-primary">모임 만들기</a>
+          <button id="dismiss-first-login-modal" class="btn btn-outline" type="button">나중에 할게요</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/today/today.js"></script>
+</body>
+</html>

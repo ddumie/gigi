@@ -1,0 +1,115 @@
+/* ============================================================
+   지지(GIGI) 공통 스타일 — CSS 변수 + 리셋
+   팀장(전연주) 작성 — 팀원은 shared/ 파일 수정 금지
+   페이지별 추가 스타일은 features/<도메인>/<도메인>.css 에 작성
+   ============================================================ */
+
+/* ── rem 기반 (글씨 크기 조절 대응) ── */
+html { font-size: 16px; }
+
+:root {
+  /* 컬러 시스템 (와이어프레임 기준) */
+  --color-primary: #185FA5;
+  --color-primary-light: #E6F1FB;
+  --color-primary-hover: #0C447C;
+
+  --color-ai: #534AB7;
+  --color-ai-light: #EEEDFE;
+  --color-ai-border: #AFA9EC;
+
+  --color-success: #1D9E75;
+  --color-success-light: #E1F5EE;
+
+  --color-green: #639922;
+  --color-green-light: #EAF3DE;
+
+  --color-amber: #BA7517;
+  --color-amber-light: #FAEEDA;
+
+  --color-coral: #D85A30;
+  --color-coral-light: #FAECE7;
+
+  --color-bg: #F8F7F4;
+  --color-card: #FFFFFF;
+  --color-text: #2C2C2A;
+  --color-text-secondary: #5F5E5A;
+  --color-text-tertiary: #888780;
+  --color-border: #D3D1C7;
+  --color-border-light: #E8E6E0;
+
+  /* 시니어 친화 타이포그래피 (rem) */
+  --font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-size-2xl: 1.75rem;
+
+  /* 터치/클릭 최소 영역 (시니어 48px) */
+  --touch-min: 3rem;
+
+  /* 레이아웃 */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+
+  --gnb-height: 3.5rem;
+  --container-max: 1080px;
+  --sidebar-width: 11.25rem;
+}
+
+/* ── 리셋 ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; display: block; }
+
+main {
+  padding: 2rem 0 3rem;
+}
+
+/* ── 공통 유틸리티 ── */
+.hidden { display: none !important; }
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-border-light);
+  margin: 1rem 0;
+}
+
+.section-eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.section-copy {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 모임 만들기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/support/support.css">
+</head>
+<body data-section="support">
+  <header class="gnb">
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      <a href="/pages/today/index.html" data-nav="today">오늘</a>
+      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
+      <a href="/pages/support/index.html" data-nav="support">지지</a>
+      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
+      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
+    </nav>
+    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
+  </header>
+  <main>
+    <div class="container auth-shell">
+      <section class="card auth-card">
+        <div class="page-header">
+          <div class="section-eyebrow">Create Group</div>
+          <h1 class="section-title">새 모임 만들기</h1>
+          <p class="section-copy">모임 이름과 유형을 정하면 바로 초대 코드를 발급할 수 있어요.</p>
+        </div>
+        <label class="input-label" for="group-name">모임 이름</label>
+        <input id="group-name" class="input-field" type="text" placeholder="예: 우리 가족 건강 모임">
+        <div class="selection-grid">
+          <button class="chip" data-chip-select="group-type">가족</button>
+          <button class="chip" data-chip-select="group-type">친구 모임</button>
+          <button class="chip" data-chip-select="group-type">건강 챌린지</button>
+          <button class="chip" data-chip-select="group-type">동네 이웃</button>
+        </div>
+        <a href="/pages/support/manage.html" class="btn btn-primary btn-full">모임 만들기</a>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/support/support.js"></script>
+</body>
+</html>
