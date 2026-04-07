@@ -31,6 +31,21 @@ gigi/
 
 자세한 폴더 구조와 수정 규칙은 [docs/GIGI_프로젝트_폴더구조.md](./docs/GIGI_프로젝트_폴더구조.md)를 참고하세요.
 
+## 작업 시작 가이드
+
+- 공통 스타일과 공통 스크립트는 `frontend/shared/`에서 수정합니다.
+- 화면별 마크업은 `frontend/pages/`에서 수정합니다.
+- 도메인별 전용 CSS/JS는 `frontend/features/<domain>/`에서 수정합니다.
+- 백엔드 기능은 `backend/domains/<domain>/` 단위로 작업합니다.
+- `today`, `settings`는 모델 없는 조합 도메인입니다.
+
+## 팀 작업 방식
+
+- 작업 시작 전 각자 본인 작업용 개별 브랜치를 생성합니다.
+- 하루 작업이 끝나면 작업 내용을 정리해 `main` 대상으로 Pull Request를 생성합니다.
+- 팀장 전연주가 변경사항을 확인한 뒤 `main`에 merge 합니다.
+- 공통 구조를 건드리는 변경은 PR 설명에 영향 범위를 함께 적습니다.
+
 ## 빠른 시작
 
 1. 가상환경을 만들고 활성화합니다.
@@ -41,26 +56,7 @@ gigi/
 
 ## 환경 변수
 
-- `DATABASE_URL`
-- `SECRET_KEY`
-- `ALGORITHM`
-- `ACCESS_TOKEN_EXPIRE_MINUTES`
-- `GEMINI_API_KEY`
-
-## 팀 작업 방식
-
-- 작업 시작 전 각자 본인 작업용 개별 브랜치를 생성합니다.
-- 하루 작업이 끝나면 작업 내용을 정리해 `main` 대상으로 Pull Request를 생성합니다.
-- 팀장 전연주가 변경사항을 확인한 뒤 `main`에 merge 합니다.
-- 공통 구조를 건드리는 변경은 PR 설명에 영향 범위를 함께 적습니다.
-
-## 작업 시작 가이드
-
-- 공통 스타일과 공통 스크립트는 `frontend/shared/`에서 수정합니다.
-- 화면별 마크업은 `frontend/pages/`에서 수정합니다.
-- 도메인별 전용 CSS/JS는 `frontend/features/<domain>/`에서 수정합니다.
-- 백엔드 기능은 `backend/domains/<domain>/` 단위로 작업합니다.
-- `today`, `settings`는 모델 없는 조합 도메인입니다.
+환경 변수는 [.env.example](./.env.example)을 참고해 작성합니다.
 
 ## 현재 상태
 
