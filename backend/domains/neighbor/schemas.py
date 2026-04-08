@@ -18,7 +18,7 @@ class PostListResponse(BaseModel):
     id : int
     title : str 
     content : str 
-    view_count : int
+    view_count : Optional[int] = 0
     support_count : Optional[int] = 0
     comment_count : Optional[int] = 0
     is_soft_deleted : bool

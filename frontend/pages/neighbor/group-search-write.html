@@ -31,16 +31,18 @@
           <h1 class="section-title">모임 구해요 글쓰기</h1>
           <p class="section-copy">모임 유형, 함께할 습관, 빈도를 입력해 함께할 이웃을 찾아요.</p>
         </div>
-        <input class="input-field" type="text" placeholder="제목">
-        <textarea class="input-field" rows="5" placeholder="함께하고 싶은 이유를 적어주세요"></textarea>
-        <input class="input-field" type="text" placeholder="함께할 습관 1개">
-        <input class="input-field" type="text" placeholder="빈도 예: 매일, 주 3회">
-        <a href="/pages/neighbor/group-search.html" class="btn btn-primary btn-full">글 등록하기</a>
+        <input id="title" class="input-field" type="text" placeholder="제목">
+        <textarea id="description" class="input-field" rows="5" placeholder="함께하고 싶은 이유를 적어주세요"></textarea>
+        <input id="habit_title" class="input-field" type="text" placeholder="함께할 습관 1개">
+        <input id="frequency" class="input-field" type="text" placeholder="빈도 예: 매일, 주 3회">
+        <button id="submit-btn" class="btn btn-primary btn-full">글 등록하기</button>
       </section>
     </div>
   </main>
   <script src="/shared/lib/api.js"></script>
   <script src="/shared/lib/common.js"></script>
   <script src="/features/neighbor/neighbor.js"></script>
+  <script src="/features/neighbor/button.js"></script>
+
 </body>
 </html>
