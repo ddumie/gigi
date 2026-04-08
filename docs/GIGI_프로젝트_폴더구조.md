@@ -120,10 +120,10 @@ gigi/
 | 담당자 | 담당 영역 | 주 작업 폴더 |
 |---|---|---|
 | 전연주(PM) | `today`, `habits`, 첫 로그인 모달, 오늘 탭 조합 조회 | `backend/domains/today/`, `backend/domains/habits/`, `frontend/pages/today/`, `frontend/pages/habits/`, `frontend/features/today/`, `frontend/features/habits/` |
-| 김평일 | `auth`, `settings` | `backend/domains/auth/`, `backend/domains/settings/`, `frontend/pages/auth/`, `frontend/pages/settings/`, `frontend/features/auth/`, `frontend/features/settings/` |
+| 김평일 | `auth`, `settings`, 랜딩 | `backend/domains/auth/`, `backend/domains/settings/`, `frontend/index.html`, `frontend/pages/auth/`, `frontend/pages/settings/`, `frontend/features/auth/`, `frontend/features/settings/` |
 | 김유선 | `onboarding`, AI 추천 흐름 | `backend/domains/onboarding/`, `frontend/pages/onboarding/`, `frontend/features/onboarding/` |
 | 이영진 | `neighbor` | `backend/domains/neighbor/`, `frontend/pages/neighbor/`, `frontend/features/neighbor/` |
-| 박기상 | `support`, 추후 배포 관련 파일 | `backend/domains/support/`, `frontend/pages/support/`, `frontend/features/support/`, `Dockerfile`, `docker-compose.yml` |
+| 박기상 | `support`, 모임 생성/관리, 추후 배포 관련 파일 | `backend/domains/support/`, `frontend/pages/support/`, `frontend/features/support/`, `Dockerfile`, `docker-compose.yml` |
 
 ### 공통 파일 담당
 
