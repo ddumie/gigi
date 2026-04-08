@@ -11,54 +11,54 @@
 ```text
 gigi/
 ├── backend/
-│   ├── main.py
-│   ├── config.py
-│   ├── database.py
+│   ├── main.py                     # 공통 진입점
+│   ├── config.py                   # 공통 설정
+│   ├── database.py                 # 공통 DB 연결
 │   │
 │   ├── api/
 │   │   ├── __init__.py
-│   │   └── router.py
+│   │   └── router.py               # 공통 API 라우터 통합
 │   │
 │   └── domains/
-│       ├── auth/
-│       ├── onboarding/
-│       ├── habits/
-│       ├── today/
-│       ├── support/
-│       ├── neighbor/
-│       └── settings/
+│       ├── auth/                   # 담당: 김평일
+│       ├── onboarding/             # 담당: 김유선
+│       ├── habits/                 # 담당: 전연주
+│       ├── today/                  # 담당: 전연주
+│       ├── support/                # 담당: 박기상
+│       ├── neighbor/               # 담당: 이영진
+│       └── settings/               # 담당: 김평일
 │
 ├── frontend/
-│   ├── index.html
+│   ├── index.html                  # 담당: 김평일(랜딩)
 │   ├── assets/
 │   ├── shared/
-│   │   ├── styles/
-│   │   └── lib/
+│   │   ├── styles/                 # 공통 스타일
+│   │   └── lib/                    # 공통 스크립트
 │   ├── features/
-│   │   ├── auth/
-│   │   ├── onboarding/
-│   │   ├── today/
-│   │   ├── habits/
-│   │   ├── support/
-│   │   ├── neighbor/
-│   │   └── settings/
+│   │   ├── auth/                   # 담당: 김평일
+│   │   ├── onboarding/             # 담당: 김유선
+│   │   ├── today/                  # 담당: 전연주
+│   │   ├── habits/                 # 담당: 전연주
+│   │   ├── support/                # 담당: 박기상
+│   │   ├── neighbor/               # 담당: 이영진
+│   │   └── settings/               # 담당: 김평일
 │   └── pages/
-│       ├── auth/
-│       ├── onboarding/
-│       ├── today/
-│       ├── habits/
-│       ├── support/
-│       ├── neighbor/
-│       └── settings/
+│       ├── auth/                   # 담당: 김평일
+│       ├── onboarding/             # 담당: 김유선
+│       ├── today/                  # 담당: 전연주
+│       ├── habits/                 # 담당: 전연주
+│       ├── support/                # 담당: 박기상
+│       ├── neighbor/               # 담당: 이영진
+│       └── settings/               # 담당: 김평일
 │
 ├── docs/
-│   └── GIGI_프로젝트_폴더구조.md
+│   └── GIGI_프로젝트_폴더구조.md    # 공통 문서
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
-├── docker-compose.yml
-├── Dockerfile
-└── README.md
+├── docker-compose.yml              # 담당: 박기상(배포 단계)
+├── Dockerfile                      # 담당: 박기상(배포 단계)
+└── README.md                       # 공통 문서
 ```
 
 ---
