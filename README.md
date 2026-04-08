@@ -87,7 +87,9 @@ gigi/
 9. `git push origin <my-branch-name>`
 10. GitHub에서 `main` 대상 PR 생성
 
-## 빠른 시작
+## 로컬 실행
+
+Git clone과 작업 브랜치 준비 후, 로컬 개발 환경을 실행하는 단계입니다.
 
 1. 가상환경을 만들고 활성화합니다.
 2. `pip install -r requirements.txt`로 의존성을 설치합니다.
