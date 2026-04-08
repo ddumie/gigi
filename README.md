@@ -46,6 +46,18 @@ gigi/
 - 팀장 전연주가 변경사항을 확인한 뒤 `main`에 merge 합니다.
 - 공통 구조를 건드리는 변경은 PR 설명에 영향 범위를 함께 적습니다.
 
+## Git 시작 방법
+
+1. 저장소를 clone 합니다.
+   `git clone <repo-url>`
+2. 작업 디렉토리로 이동합니다.
+   `cd gigi`
+3. 본인 작업 브랜치를 생성합니다.
+   `git checkout -b <my-branch-name>`
+4. 작업 후 커밋하고 원격에 push 합니다.
+   `git push origin <my-branch-name>`
+5. GitHub에서 `main` 대상 PR을 생성합니다.
+
 ## 빠른 시작
 
 1. 가상환경을 만들고 활성화합니다.
