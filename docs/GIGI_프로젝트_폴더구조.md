@@ -115,6 +115,32 @@ gigi/
 
 ---
 
+## 담당자별 작업 폴더
+
+| 담당자 | 담당 영역 | 주 작업 폴더 |
+|---|---|---|
+| 전연주(PM) | `today`, `habits`, 첫 로그인 모달, 오늘 탭 조합 조회 | `backend/domains/today/`, `backend/domains/habits/`, `frontend/pages/today/`, `frontend/pages/habits/`, `frontend/features/today/`, `frontend/features/habits/` |
+| 김평일 | `auth`, `settings` | `backend/domains/auth/`, `backend/domains/settings/`, `frontend/pages/auth/`, `frontend/pages/settings/`, `frontend/features/auth/`, `frontend/features/settings/` |
+| 김유선 | `onboarding`, AI 추천 흐름 | `backend/domains/onboarding/`, `frontend/pages/onboarding/`, `frontend/features/onboarding/` |
+| 이영진 | `neighbor` | `backend/domains/neighbor/`, `frontend/pages/neighbor/`, `frontend/features/neighbor/` |
+| 박기상 | `support`, 추후 배포 관련 파일 | `backend/domains/support/`, `frontend/pages/support/`, `frontend/features/support/`, `Dockerfile`, `docker-compose.yml` |
+
+### 공통 파일 담당
+
+| 구분 | 폴더/파일 | 메모 |
+|---|---|---|
+| 프론트 공통 | `frontend/shared/styles/`, `frontend/shared/lib/`, `frontend/index.html` | 공통 자산이므로 수정 시 팀 내 공유 후 진행 권장 |
+| 백엔드 공통 | `backend/config.py`, `backend/database.py`, `backend/main.py`, `backend/api/router.py` | 여러 도메인에 영향이 있으므로 변경 시 PR 설명에 영향 범위 명시 |
+| 문서 | `README.md`, `docs/GIGI_프로젝트_폴더구조.md` | 구조나 작업 방식이 바뀌면 함께 업데이트 |
+
+### 경계 메모
+
+- `today`는 자체 모델 없이 `habits`, `support` 데이터를 조합하는 도메인입니다.
+- `settings`는 자체 모델 없이 `auth.User`, `onboarding.UserPreference`를 수정하는 도메인입니다.
+- `neighbor`의 `group-search-join` 화면은 이웃 도메인에 속하지만, 실제 모임 생성과 습관 자동 추가는 백엔드 `today`/`habits` 및 `support` 연동이 필요할 수 있습니다.
+
+---
+
 ## 프론트 작업 규칙
 
 - 공통 CSS는 `frontend/shared/styles/`에서만 수정합니다.
