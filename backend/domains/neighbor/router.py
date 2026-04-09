@@ -15,12 +15,12 @@ class GroupSearchCreate(BaseModel):
     habit_title: str
     frequency: str
 
-
+# 글쓰기 post
 @router.post("/group-search")
 def create_group_search(post: GroupSearchCreate, db: Session = Depends(get_db)):
     # 1. 부모 Post 먼저 생성
     db_post = Post(
-        author_id=1,  # 실제론 현재 로그인 유저 id
+        author_id=1,  # 실제론 현재 로그인 유저 id current_user.id로 교체
         post_type="group_search"
     )
     db.add(db_post)
@@ -42,3 +42,25 @@ def create_group_search(post: GroupSearchCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_post)
     return {"id": db_post.id, "message": "등록 완료"}
+
+# 글쓰기 내용 읽어오기
+@router.get("/group-search")
+def list_group_search(db: Session = Depends(get_db)):
+    posts = (
+        db.query(GroupSearchPost)
+        .join(Post, GroupSearchPost.post_id == Post.id)
+        .filter(Post.is_active == True)
+        .order_by(Post.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": p.post_id,
+            "title": p.title,
+            "description": p.description,
+            "group_type": p.group_type,
+            "habit_title": p.habit_title,
+            "frequency": p.frequency,
+        }
+        for p in posts
+    ]
