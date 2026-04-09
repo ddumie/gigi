@@ -41,12 +41,55 @@ gigi/
 
 ## 팀 작업 방식
 
-- 작업 시작 전 각자 본인 작업용 개별 브랜치를 생성합니다.
 - 하루 작업이 끝나면 작업 내용을 정리해 `main` 대상으로 Pull Request를 생성합니다.
 - 팀장 전연주가 변경사항을 확인한 뒤 `main`에 merge 합니다.
 - 공통 구조를 건드리는 변경은 PR 설명에 영향 범위를 함께 적습니다.
 
-## 빠른 시작
+## Git 작업 가이드
+
+### 1. 작업 시작 전 `main` 최신화
+
+- 처음 한 번만 저장소를 clone 한 뒤 작업 디렉토리로 이동합니다.
+  `git clone <repo-url>`
+  `cd gigi`
+- 처음 작업할 때 본인 작업 브랜치를 생성합니다.
+  `git checkout -b <my-branch-name>`
+- 매일 작업 시작 전(아침) 원격 `main` 최신 내용을 본인 브랜치에 먼저 반영합니다.
+  `git fetch origin`
+  `git merge origin/main`
+
+### 2. `git add .` 대신 본인 파일만 add
+
+- 커밋 전에는 `git status`로 변경 파일을 확인합니다.
+- 가능하면 `git add .` 대신 본인이 수정한 파일이나 폴더만 지정해서 add 합니다.
+- 커밋 전 `git diff --staged --stat`으로 스테이징 범위를 다시 확인합니다.
+
+### 3. 공통 파일 수정 시 공유
+
+- 아래 파일과 폴더는 여러 작업에 영향을 줄 수 있으니 수정 전 팀에 먼저 공유하는 것을 권장합니다.
+- `frontend/shared/`
+- `frontend/index.html`
+- `backend/config.py`
+- `backend/database.py`
+- `backend/main.py`
+- `backend/api/router.py`
+
+### 4. 전체 작업 흐름
+
+1. `git fetch origin`
+2. `git checkout -b <my-branch-name>` 또는 기존 브랜치 체크아웃
+3. `git merge origin/main`
+4. 코드 작업
+5. `git status`
+6. `git add <내가 수정한 파일 또는 폴더>`
+7. `git diff --staged --stat`
+8. `git commit -m "메시지"`
+9. `git push origin <my-branch-name>`
+10. GitHub에서 `main` 대상 PR 생성
+
+## 로컬 실행
+
+Git clone과 작업 브랜치 준비 후, 로컬 개발 환경을 실행하는 단계입니다.
 
 1. 가상환경을 만들고 활성화합니다.
 2. `pip install -r requirements.txt`로 의존성을 설치합니다.

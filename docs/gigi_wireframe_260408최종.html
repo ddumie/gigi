@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지지 GIGI — 와이어프레임 v8</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-primary: #185FA5;
+  --color-primary-light: #E6F1FB;
+  --color-primary-hover: #0C447C;
+  --color-ai: #534AB7;
+  --color-ai-light: #EEEDFE;
+  --color-ai-border: #AFA9EC;
+  --color-success: #1D9E75;
+  --color-success-light: #E1F5EE;
+  --color-green: #639922;
+  --color-green-light: #EAF3DE;
+  --color-amber: #BA7517;
+  --color-amber-light: #FAEEDA;
+  --color-coral: #D85A30;
+  --color-coral-light: #FAECE7;
+  --color-bg: #F8F7F4;
+  --color-card: #FFFFFF;
+  --color-text: #2C2C2A;
+  --color-text-s: #5F5E5A;
+  --color-text-t: #888780;
+  --color-border: #D3D1C7;
+  --color-border-l: #E8E6E0;
+  --font: 'Noto Sans KR', -apple-system, sans-serif;
+  --r-sm: 0.375rem;
+  --r-md: 0.5rem;
+  --r-lg: 0.75rem;
+}
+html { font-size: 16px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); font-size: 1rem; color: var(--color-text); background: var(--color-bg); line-height: 1.7; }
+
+.ctrl { background: linear-gradient(135deg, #185FA5, #534AB7); color: #fff; padding: 0.75rem 1.5rem; }
+.ctrl-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+.ctrl-label { font-size: 0.7rem; letter-spacing: 1px; opacity: 0.6; }
+.ctrl-title { font-size: 0.85rem; margin-top: 2px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 0.5rem; }
+.tab { padding: 5px 12px; border-radius: 16px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; font-family: var(--font); transition: all .15s; }
+.tab.on { background: #fff; color: var(--color-primary); border-color: #fff; }
+
+.gnb { background: var(--color-primary); height: 3.25rem; display: flex; align-items: center; padding: 0 1.5rem; position: sticky; top: 0; z-index: 100; }
+.gnb-logo { font-size: 1.15rem; font-weight: 700; color: #fff; letter-spacing: 2px; margin-right: 2rem; cursor: pointer; }
+.gnb-nav { display: flex; height: 100%; }
+.gnb-ni { display: flex; align-items: center; padding: 0 1rem; height: 100%; font-size: 0.8rem; color: rgba(255,255,255,0.6); cursor: pointer; border-bottom: 2.5px solid transparent; transition: all .15s; }
+.gnb-ni.on { color: #fff; border-bottom-color: #fff; }
+.gnb-r { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+.gnb-user { font-size: 0.7rem; color: rgba(255,255,255,0.8); }
+.gnb-btn { padding: 0.35rem 0.85rem; border-radius: var(--r-md); font-size: 0.7rem; font-weight: 500; cursor: pointer; border: 1px solid rgba(255,255,255,0.5); color: #fff; background: transparent; }
+
+.font-scaler { background: var(--color-card); border-bottom: 0.5px solid var(--color-border-l); padding: 0.4rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+.fs-label { font-size: 0.7rem; color: var(--color-text-t); }
+.fs-sm { font-size: 0.75rem; color: var(--color-text-s); }
+.fs-lg { font-size: 1.1rem; color: var(--color-text-s); font-weight: 500; }
+.fs-input { flex: 0 0 160px; height: 4px; accent-color: var(--color-primary); cursor: pointer; }
+.fs-val { font-size: 0.7rem; color: var(--color-primary); font-weight: 500; min-width: 2.5rem; text-align: center; }
+
+.container { max-width: 640px; margin: 0 auto; padding: 1.5rem; }
+.container-wide { max-width: 860px; margin: 0 auto; padding: 1.5rem; }
+.page { display: none; }
+.page.on { display: block; }
+.stack { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.card { background: var(--color-card); border: 0.5px solid var(--color-border-l); border-radius: var(--r-lg); padding: 1rem; }
+.card + .card { margin-top: 0.6rem; }
+.card-t { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.6rem; }
+
+.stat { background: var(--color-bg); border-radius: var(--r-md); padding: 0.75rem; }
+.stat-label { font-size: 0.7rem; color: var(--color-text-s); margin-bottom: 2px; }
+.stat-val { font-size: 1.25rem; font-weight: 500; }
+
+.prog { height: 6px; border-radius: 3px; background: var(--color-border-l); overflow: hidden; margin-top: 4px; }
+.pf { height: 100%; border-radius: 3px; background: var(--color-primary); }
+.pf.g { background: var(--color-green); }
+.pf.s { background: var(--color-success); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 2.5rem; padding: 0.5rem 1.2rem; font-size: 0.8rem; font-weight: 500; font-family: var(--font); border: none; border-radius: var(--r-md); cursor: pointer; gap: 0.3rem; }
+.btn-p { background: var(--color-primary); color: #fff; }
+.btn-ai { background: var(--color-ai); color: #fff; }
+.btn-s { background: var(--color-success); color: #fff; }
+.btn-o { background: transparent; color: var(--color-text); border: 0.5px solid var(--color-border); }
+.btn-danger { background: transparent; color: var(--color-coral); border: 0.5px solid var(--color-coral); }
+.btn-sm { min-height: 2rem; padding: 0.3rem 0.75rem; font-size: 0.7rem; }
+.btn-full { width: 100%; }
+.btn-liked { background: var(--color-primary-light); color: var(--color-primary); border: 0.5px solid var(--color-primary); }
+.btn-skip { background: transparent; color: var(--color-text-t); border: none; font-size: 0.75rem; cursor: pointer; font-family: var(--font); text-decoration: underline; }
+
+.badge { display: inline-flex; padding: 2px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 500; }
+.b-bl { background: var(--color-primary-light); color: var(--color-primary-hover); }
+.b-gr { background: var(--color-green-light); color: #3B6D11; }
+.b-am { background: var(--color-amber-light); color: #633806; }
+.b-ai { background: var(--color-ai-light); color: #3C3489; }
+.b-co { background: var(--color-coral-light); color: #993C1D; }
+.b-su { background: var(--color-success-light); color: #0D6B4F; }
+
+.chk-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--color-bg); border-radius: var(--r-md); margin-bottom: 0.4rem; }
+.chk-box { width: 1rem; height: 1rem; border-radius: 3px; flex-shrink: 0; border: 1.5px solid var(--color-border); }
+.chk-box.done { background: var(--color-primary); border-color: var(--color-primary); }
+.chk-text { flex: 1; font-size: 0.8rem; }
+
+.share-inline { background: var(--color-success-light); border: 0.5px solid var(--color-success); border-radius: var(--r-md); padding: 0.5rem 0.75rem; margin-top: 0.3rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem; }
+.share-inp { flex: 1; border: none; background: transparent; font-size: 0.75rem; font-family: var(--font); color: var(--color-text); outline: none; }
+.share-inp::placeholder { color: var(--color-text-t); }
+
+.av { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 500; flex-shrink: 0; }
+.av-bl { background: #B5D4F4; color: var(--color-primary-hover); }
+.av-gr { background: #C0DD97; color: #3B6D11; }
+.av-am { background: #FAC775; color: #633806; }
+.av-pk { background: #ED93B1; color: #72243E; }
+
+.member-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--color-bg); border-radius: var(--r-md); margin-bottom: 0.4rem; }
+.member-info { flex: 1; }
+.member-name { font-size: 0.8rem; font-weight: 500; }
+
+.ai-box { background: var(--color-ai-light); border: 0.5px solid var(--color-ai-border); border-radius: var(--r-lg); padding: 0.85rem; margin-bottom: 0.75rem; }
+.ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-ai); display: inline-block; margin-right: 4px; vertical-align: middle; }
+.ai-label { font-size: 0.65rem; font-weight: 500; color: var(--color-ai); }
+
+.chip { display: inline-flex; padding: 0.35rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; border: 0.5px solid var(--color-border); color: var(--color-text-s); cursor: pointer; margin: 3px; }
+.chip.on { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
+
+.inp { width: 100%; min-height: 2.75rem; padding: 0.6rem 0.85rem; font-size: 0.9rem; font-family: var(--font); border: 1.5px solid var(--color-border); border-radius: var(--r-md); background: var(--color-card); outline: none; color: var(--color-text); }
+.inp:focus { border-color: var(--color-primary); }
+.inp-ok { border-color: var(--color-success); }
+.inp-hint { font-size: 0.72rem; margin-top: 0.3rem; }
+.inp-hint.ok { color: var(--color-success); }
+.inp-hint.err { color: var(--color-coral); }
+
+.div { height: 1px; background: var(--color-border-l); margin: 0.7rem 0; }
+
+.feed-card { background: var(--color-card); border: 0.5px solid var(--color-border-l); border-radius: var(--r-lg); padding: 0.85rem 1rem; margin-bottom: 0.6rem; }
+.feed-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.feed-routine { display: flex; align-items: center; gap: 0.5rem; background: var(--color-bg); border-radius: var(--r-md); padding: 0.4rem 0.6rem; margin-bottom: 0.4rem; }
+.feed-comment { font-size: 0.8rem; color: var(--color-text-s); margin: 0.3rem 0; }
+.feed-meta { display: flex; gap: 1rem; font-size: 0.7rem; color: var(--color-text-t); margin-top: 0.3rem; align-items: center; }
+
+.cal { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.cd { aspect-ratio: 1; border-radius: 3px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-text-t); }
+.cd.dn { background: var(--color-primary); color: #fff; }
+.cd.td { background: var(--color-primary-light); border: 1.5px solid var(--color-primary); color: var(--color-primary); font-weight: 700; }
+.cd.hd { font-size: 0.6rem; background: transparent; }
+
+.invite-box { border: 1.5px dashed var(--color-border); border-radius: var(--r-lg); padding: 1rem; text-align: center; }
+.invite-code { font-size: 1.3rem; font-weight: 700; color: var(--color-primary); letter-spacing: 4px; margin: 0.4rem 0 0.6rem; }
+
+.step-bar { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1.5rem; }
+.sn { width: 1.3rem; height: 1.3rem; border-radius: 50%; font-size: 0.65rem; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sn-d { background: var(--color-success); color: #fff; }
+.sn-c { background: var(--color-primary); color: #fff; }
+.sn-n { background: var(--color-border-l); color: var(--color-text-t); }
+.sl { flex: 1; height: 2px; background: var(--color-border-l); }
+.sl.d { background: var(--color-success); }
+.step-hint { font-size: 0.65rem; color: var(--color-text-t); margin-left: 0.4rem; }
+
+.rc { display: flex; align-items: center; gap: 0.6rem; background: var(--color-card); border: 0.5px solid var(--color-border-l); border-radius: var(--r-md); padding: 0.6rem; margin-bottom: 0.4rem; }
+.rc.sel { border-color: var(--color-primary); background: var(--color-primary-light); }
+.rc-chk { width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 1.5px solid var(--color-border); flex-shrink: 0; }
+.rc-chk.on { background: var(--color-primary); border-color: var(--color-primary); }
+.rc-icon { width: 2rem; height: 2rem; border-radius: var(--r-md); flex-shrink: 0; }
+.rc-info { flex: 1; }
+.rc-title { font-size: 0.8rem; font-weight: 500; }
+.rc-sub { font-size: 0.7rem; color: var(--color-text-t); }
+
+.habit-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.85rem; }
+.habit-icon { width: 2.2rem; height: 2.2rem; border-radius: var(--r-md); flex-shrink: 0; }
+.habit-info { flex: 1; }
+.habit-title { font-size: 0.85rem; font-weight: 500; }
+.habit-sub { font-size: 0.7rem; color: var(--color-text-t); }
+
+.group-card { background: var(--color-card); border: 0.5px solid var(--color-border-l); border-radius: var(--r-lg); padding: 1rem; margin-bottom: 0.75rem; }
+.group-plant { display: flex; align-items: center; gap: 0.5rem; background: var(--color-success-light); border-radius: var(--r-md); padding: 0.4rem 0.75rem; margin-bottom: 0.6rem; }
+.group-stat { flex: 1; background: var(--color-bg); border-radius: var(--r-md); padding: 0.4rem 0.5rem; text-align: center; }
+.group-stat-val { font-size: 0.9rem; font-weight: 500; color: var(--color-primary); }
+.group-stat-label { font-size: 0.6rem; color: var(--color-text-t); }
+
+.filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 1rem; }
+.filter-tab { padding: 0.3rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; border: 0.5px solid var(--color-border); color: var(--color-text-s); cursor: pointer; background: var(--color-card); }
+.filter-tab.on { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+.with-sb { display: flex; gap: 1.5rem; }
+.sb { width: 160px; flex-shrink: 0; }
+.sb-label { font-size: 0.7rem; font-weight: 500; color: var(--color-text-t); margin-bottom: 0.4rem; padding: 0 0.5rem; }
+.sb-item { padding: 0.4rem 0.6rem; border-radius: var(--r-md); font-size: 0.8rem; color: var(--color-text-s); cursor: pointer; margin-bottom: 2px; }
+.sb-item.on { background: var(--color-primary-light); color: var(--color-primary-hover); font-weight: 500; }
+.sb-div { height: 1px; background: var(--color-border-l); margin: 0.6rem 0; }
+.content { flex: 1; min-width: 0; }
+
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 0.5px solid var(--color-border-l); }
+.setting-label { font-size: 0.85rem; }
+.setting-value { font-size: 0.8rem; color: var(--color-text-t); }
+
+.notif-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: var(--r-md); background: var(--color-primary-light); margin-bottom: 0.3rem; }
+.notif-text { flex: 1; font-size: 0.78rem; color: var(--color-primary-hover); }
+.notif-time { font-size: 0.65rem; color: var(--color-text-t); }
+
+.landing-hero { display: flex; min-height: 400px; }
+.landing-left { flex: 1; padding: 2.5rem 2rem; display: flex; flex-direction: column; justify-content: center; }
+.landing-right { width: 300px; background: #F1EFE8; display: flex; align-items: center; justify-content: center; padding: 2rem; flex-shrink: 0; }
+.landing-tag { font-size: 0.65rem; font-weight: 500; color: var(--color-primary); letter-spacing: 0.08em; margin-bottom: 0.6rem; }
+.landing-h { font-size: 1.8rem; font-weight: 500; line-height: 1.35; margin-bottom: 0.6rem; }
+.landing-p { font-size: 0.85rem; color: var(--color-text-s); line-height: 1.7; margin-bottom: 1.5rem; }
+.landing-features { display: flex; gap: 1.2rem; margin-top: 0.5rem; flex-wrap: wrap; }
+.landing-feat { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--color-text-s); }
+.landing-dot { width: 8px; height: 8px; border-radius: 50%; }
+.landing-stats { background: var(--color-bg); border-top: 0.5px solid var(--color-border-l); padding: 1rem 2rem; display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+.landing-stat-val { font-size: 1.1rem; font-weight: 500; }
+.landing-stat-label { font-size: 0.65rem; color: var(--color-text-s); }
+
+.footer { border-top: 1px solid var(--color-border-l); padding: 1.2rem; text-align: center; margin-top: 2rem; font-size: 0.7rem; color: var(--color-text-t); }
+</style>
+</head>
+<body>
+
+<div class="ctrl">
+  <div class="ctrl-top">
+    <div>
+      <div class="ctrl-label">GIGI WIREFRAME v8</div>
+      <div class="ctrl-title">가입1·2·완료 / 온보딩 건너뛰기 / AI 재추천 / 빈 습관 홈 반영</div>
+    </div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<header class="gnb">
+  <div class="gnb-logo">지지</div>
+  <nav class="gnb-nav" id="gnb-nav"></nav>
+  <div class="gnb-r">
+    <span class="gnb-user">김건강님 🌳</span>
+    <button class="gnb-btn" onclick="go('settings')">설정</button>
+  </div>
+</header>
+
+<div class="font-scaler">
+  <span class="fs-label">글씨 크기</span>
+  <span class="fs-sm">가</span>
+  <input type="range" class="fs-input" min="0" max="6" step="1" value="2" oninput="scaleFn(this.value)">
+  <span class="fs-lg">가</span>
+  <span class="fs-val" id="fs-val">기본</span>
+</div>
+
+
+<!-- ① 랜딩 -->
+<div class="page" id="pg-landing">
+  <div style="max-width:1080px;margin:0 auto;padding:1rem;">
+    <div style="background:var(--color-card);border-radius:var(--r-lg);overflow:hidden;border:0.5px solid var(--color-border-l);">
+      <div class="landing-hero">
+        <div class="landing-left">
+          <div class="landing-tag">GENERATION TO GENERATION</div>
+          <div class="landing-h">세대를 잇는<br>건강한 응원</div>
+          <div class="landing-p">나이에 맞는 건강 습관을 기록하고<br>가족·친구와 함께 지지하는 웰니스 커뮤니티</div>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-p" onclick="go('signup1')">회원가입 시작하기</button>
+            <button class="btn btn-o">로그인</button>
+          </div>
+          <div class="landing-features">
+            <div class="landing-feat"><div class="landing-dot" style="background:var(--color-success);"></div>습관 체크</div>
+            <div class="landing-feat"><div class="landing-dot" style="background:var(--color-primary);"></div>함께 지지</div>
+            <div class="landing-feat"><div class="landing-dot" style="background:var(--color-ai);"></div>AI 추천</div>
+          </div>
+        </div>
+        <div class="landing-right">
+          <svg viewBox="0 0 260 300" width="200" xmlns="http://www.w3.org/2000/svg">
+            <rect x="30" y="10" width="200" height="280" rx="18" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="1.2"/>
+            <rect x="44" y="36" width="172" height="90" rx="10" fill="#fff" stroke="#B5D4F4" stroke-width="0.8"/>
+            <circle cx="70" cy="70" r="18" fill="#B5D4F4"/><text x="70" y="74" text-anchor="middle" font-size="11" fill="#0C447C" font-weight="500">김</text>
+            <rect x="96" y="58" width="100" height="8" rx="3" fill="#D3D1C7"/><rect x="96" y="72" width="70" height="6" rx="3" fill="#E6F1FB"/>
+            <rect x="44" y="140" width="172" height="44" rx="8" fill="#EAF3DE" stroke="#C0DD97" stroke-width="0.8"/>
+            <circle cx="62" cy="162" r="8" fill="#639922" opacity="0.7"/><rect x="76" y="157" width="80" height="6" rx="3" fill="#3B6D11" opacity="0.5"/>
+            <rect x="44" y="194" width="172" height="44" rx="8" fill="#EEEDFE" stroke="#AFA9EC" stroke-width="0.8"/>
+            <circle cx="62" cy="216" r="8" fill="#534AB7" opacity="0.7"/><rect x="76" y="211" width="60" height="6" rx="3" fill="#3C3489" opacity="0.5"/>
+            <rect x="50" y="252" width="160" height="26" rx="7" fill="#185FA5"/><text x="130" y="269" text-anchor="middle" font-size="10" fill="#fff" font-weight="500">지지하기</text>
+          </svg>
+        </div>
+      </div>
+      <div class="landing-stats">
+        <div><div class="landing-stat-val" style="color:var(--color-primary);">1,240+</div><div class="landing-stat-label">등록된 습관</div></div>
+        <div style="width:0.5px;height:28px;background:var(--color-border-l);"></div>
+        <div><div class="landing-stat-val" style="color:var(--color-success);">320+</div><div class="landing-stat-label">연결된 모임</div></div>
+        <div style="width:0.5px;height:28px;background:var(--color-border-l);"></div>
+        <div><div class="landing-stat-val" style="color:var(--color-ai);">AI 기반</div><div class="landing-stat-label">맞춤 습관 추천</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ② 가입 1단계 — 이메일 + 비밀번호 -->
+<div class="page" id="pg-signup1">
+  <div class="container">
+    <div style="font-size:1.2rem;font-weight:500;margin-bottom:0.3rem;">회원가입</div>
+    <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1.5rem;">1/2단계 — 계정 정보를 입력해주세요</div>
+    <div class="card">
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">이메일</div>
+        <input class="inp inp-ok" placeholder="예: gigi@naver.com" value="gigi@naver.com">
+        <div class="inp-hint ok">✓ 사용 가능한 이메일이에요</div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">비밀번호</div>
+        <input class="inp" type="password" placeholder="6자 이상 입력해주세요" value="••••••••">
+        <div class="inp-hint ok">✓ 사용 가능한 비밀번호예요</div>
+      </div>
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">비밀번호 확인</div>
+        <input class="inp inp-ok" type="password" placeholder="비밀번호를 한 번 더 입력해주세요" value="••••••••">
+        <div class="inp-hint ok">✓ 비밀번호가 일치해요</div>
+      </div>
+      <button class="btn btn-p btn-full" onclick="go('signup2')">다음으로</button>
+    </div>
+    <div style="text-align:center;margin-top:1rem;font-size:0.8rem;color:var(--color-text-s);">
+      이미 계정이 있으신가요? <span style="color:var(--color-primary);cursor:pointer;font-weight:500;">로그인</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ③ 가입 2단계 — 닉네임 -->
+<div class="page" id="pg-signup2">
+  <div class="container">
+    <div style="font-size:1.2rem;font-weight:500;margin-bottom:0.3rem;">회원가입</div>
+    <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1.5rem;">2/2단계 — 이웃들에게 보여질 이름을 정해주세요</div>
+    <div class="card">
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">닉네임</div>
+        <input class="inp inp-ok" placeholder="닉네임을 입력해주세요" value="김건강">
+        <div class="inp-hint ok">✓ 사용 가능한 닉네임이에요</div>
+        <div style="font-size:0.7rem;color:var(--color-text-t);margin-top:0.3rem;">이메일 앞부분(gigi)이 자동으로 채워졌어요. 원하시면 바꾸세요.</div>
+      </div>
+      <button class="btn btn-p btn-full" onclick="go('signup-done')">가입 완료</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ④ 가입 완료 -->
+<div class="page" id="pg-signup-done">
+  <div class="container">
+    <div style="background:var(--color-card);border-radius:var(--r-lg);border:0.5px solid var(--color-border-l);padding:2rem;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:0.75rem;">🎉</div>
+      <div style="font-size:1.2rem;font-weight:500;margin-bottom:0.4rem;">환영해요, 김건강님!</div>
+      <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1.5rem;line-height:1.8;">지지에 오신 걸 환영해요.<br>이제 나에게 맞는 건강 습관을 찾아볼까요?</div>
+      <button class="btn btn-ai btn-full" style="margin-bottom:0.5rem;" onclick="go('ob1')">AI 습관 추천받기</button>
+      <button class="btn btn-o btn-full btn-sm" onclick="go('home-empty')">직접 등록할게요</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑤ 온보딩 Step1 — 나이대 -->
+<div class="page" id="pg-ob1">
+  <div class="container">
+    <div class="step-bar">
+      <div class="sn sn-c">1</div><div class="sl"></div>
+      <div class="sn sn-n">2</div><div class="sl"></div>
+      <div class="sn sn-n">3</div>
+      <span class="step-hint">나이대 선택 · 관심사 선택 · AI 추천</span>
+    </div>
+    <div style="font-size:1.2rem;font-weight:500;margin-bottom:0.4rem;">나이대를 알려주세요</div>
+    <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:0.5rem;">나이에 맞는 건강 습관을 추천해드려요</div>
+    <div style="background:var(--color-primary-light);border-radius:var(--r-md);padding:0.5rem 0.75rem;margin-bottom:1.5rem;font-size:0.75rem;color:var(--color-primary-hover);">
+      💡 나이대를 입력하면 더 정확한 AI 추천을 받을 수 있어요
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem;">
+      <button class="btn btn-o btn-full" style="font-size:1rem;min-height:3.2rem;justify-content:flex-start;padding:0 1.5rem;">40대 이하</button>
+      <button class="btn btn-o btn-full" style="font-size:1rem;min-height:3.2rem;justify-content:flex-start;padding:0 1.5rem;">50대</button>
+      <button class="btn btn-p btn-full" style="font-size:1rem;min-height:3.2rem;justify-content:flex-start;padding:0 1.5rem;">60대 ✓ <span style="font-size:0.75rem;margin-left:auto;opacity:0.8;">선택됨</span></button>
+      <button class="btn btn-o btn-full" style="font-size:1rem;min-height:3.2rem;justify-content:flex-start;padding:0 1.5rem;">70대 이상</button>
+    </div>
+    <button class="btn btn-ai btn-full" style="margin-bottom:0.5rem;" onclick="go('ob2')">다음으로</button>
+    <div style="text-align:center;"><button class="btn-skip" onclick="go('ob2')">건너뛰기</button></div>
+  </div>
+</div>
+
+
+<!-- ⑥ 온보딩 Step2 — 관심사 -->
+<div class="page" id="pg-ob2">
+  <div class="container">
+    <div class="step-bar">
+      <div class="sn sn-d">1</div><div class="sl d"></div>
+      <div class="sn sn-c">2</div><div class="sl"></div>
+      <div class="sn sn-n">3</div>
+      <span class="step-hint">나이대 선택 · 관심사 선택 · AI 추천</span>
+    </div>
+    <div style="font-size:1.1rem;font-weight:500;margin-bottom:2px;">건강 관심사를 알려주세요</div>
+    <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1.2rem;">선택하신 정보로 AI가 맞춤 습관을 추천해드려요</div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.5rem;">건강 관심 분야 (복수 선택)</div>
+      <span class="chip on">운동·체력</span><span class="chip on">복약 관리</span><span class="chip">식단·영양</span>
+      <span class="chip">수면 개선</span><span class="chip">혈압·혈당</span><span class="chip">관절·근력</span><span class="chip">치매 예방</span>
+    </div>
+    <div style="background:var(--color-ai-light);border:0.5px solid var(--color-ai-border);border-radius:var(--r-md);padding:0.5rem 0.75rem;margin-bottom:1rem;font-size:0.75rem;color:#3C3489;">
+      <span class="ai-dot"></span> 입력 정보는 AI 습관 추천에만 사용되며 언제든 수정할 수 있어요
+    </div>
+    <button class="btn btn-ai btn-full" style="margin-bottom:0.5rem;" onclick="go('ob3')">AI 습관 추천받기</button>
+    <div style="text-align:center;"><button class="btn-skip" onclick="go('home-empty')">건너뛰고 직접 등록하기</button></div>
+  </div>
+</div>
+
+
+<!-- ⑦ 온보딩 Step3 — AI 추천 + 다시 추천받기 -->
+<div class="page" id="pg-ob3">
+  <div class="container">
+    <div class="step-bar">
+      <div class="sn sn-d">1</div><div class="sl d"></div>
+      <div class="sn sn-d">2</div><div class="sl d"></div>
+      <div class="sn sn-c">3</div>
+      <span class="step-hint">나이대 선택 · 관심사 선택 · AI 추천</span>
+    </div>
+    <div style="font-size:1.1rem;font-weight:500;margin-bottom:2px;">AI가 추천하는 습관이에요</div>
+    <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1rem;">원하는 습관만 선택해 바로 등록하세요</div>
+    <div class="ai-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><span class="ai-dot"></span><span class="ai-label">Gemini AI 분석 — 60대 · 운동·복약 관심</span></div>
+        <button class="btn btn-o btn-sm" style="font-size:0.65rem;border-color:var(--color-ai-border);color:var(--color-ai);">🔄 다시 추천받기 (1회 남음)</button>
+      </div>
+      <div style="font-size:0.75rem;color:#3C3489;margin-top:4px;">꾸준한 아침 산책과 복약 관리를 중심으로 습관을 추천했어요.</div>
+    </div>
+    <div class="rc sel"><div class="rc-chk on"></div><div class="rc-icon" style="background:#B5D4F4;"></div><div class="rc-info"><div class="rc-title">아침 산책 30분</div><div class="rc-sub">운동 · 매일</div></div><span class="badge b-bl">AI 추천</span></div>
+    <div class="rc sel"><div class="rc-chk on"></div><div class="rc-icon" style="background:#C0DD97;"></div><div class="rc-info"><div class="rc-title">혈압약 복용</div><div class="rc-sub">복약 · 매일</div></div><span class="badge b-bl">AI 추천</span></div>
+    <div class="rc sel"><div class="rc-chk on"></div><div class="rc-icon" style="background:#FAC775;"></div><div class="rc-info"><div class="rc-title">가벼운 스트레칭 10분</div><div class="rc-sub">운동 · 매일</div></div><span class="badge b-bl">AI 추천</span></div>
+    <div class="rc"><div class="rc-chk"></div><div class="rc-icon" style="background:#9FE1CB;"></div><div class="rc-info"><div class="rc-title">취침 준비 루틴</div><div class="rc-sub">수면 · 매일</div></div><span class="badge b-ai">AI 추천</span></div>
+    <button class="btn btn-p btn-full" style="margin-top:0.75rem;margin-bottom:0.5rem;" onclick="go('first-home')">선택한 습관 3개 등록하고 시작하기</button>
+    <div style="text-align:center;"><button class="btn-skip" onclick="go('home-empty')">건너뛰고 직접 등록하기</button></div>
+  </div>
+</div>
+
+
+<!-- ⑧ 홈 첫 진입 모달 -->
+<div class="page" id="pg-first-home">
+  <div class="container">
+    <div style="background:var(--color-card);border-radius:var(--r-lg);border:0.5px solid var(--color-border-l);padding:1.5rem;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:0.5rem;">🎉</div>
+      <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">습관이 등록됐어요!</div>
+      <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1.2rem;line-height:1.7;">함께하면 더 오래 지속돼요.<br>가족이나 친구를 초대해 모임을 만들어볼까요?</div>
+      <div style="background:var(--color-success-light);border-radius:var(--r-md);padding:0.75rem;margin-bottom:1rem;font-size:0.8rem;color:#0D6B4F;">
+        모임을 만들면 서로의 습관을 응원하고,<br>함께할수록 칭호와 레벨이 올라가요 🌱
+      </div>
+      <button class="btn btn-p btn-full" style="margin-bottom:0.4rem;" onclick="go('group-create')">모임 만들기</button>
+      <button class="btn btn-o btn-full btn-sm" onclick="go('home')">나중에 할게요</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑨ 오늘 탭 — 습관 없는 상태 (건너뛴 경우) -->
+<div class="page" id="pg-home-empty">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:1.1rem;font-weight:500;">안녕하세요, 김건강님</div>
+        <div style="font-size:0.8rem;color:var(--color-text-s);">오늘의 내 습관</div>
+      </div>
+      <span class="badge b-bl">2026.04.07 화</span>
+    </div>
+    <!-- 빈 습관 안내 -->
+    <div class="card" style="margin-bottom:0.75rem;text-align:center;padding:2rem 1rem;">
+      <div style="font-size:1.5rem;margin-bottom:0.5rem;">🌱</div>
+      <div style="font-size:0.9rem;font-weight:500;margin-bottom:0.4rem;">첫 습관을 추가해보세요</div>
+      <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1.2rem;line-height:1.7;">건강한 습관 하나가<br>건강한 하루를 만들어요</div>
+      <button class="btn btn-ai btn-full" style="margin-bottom:0.4rem;" onclick="go('ob1')">AI 습관 추천받기</button>
+      <button class="btn btn-o btn-full btn-sm" onclick="go('habits')">직접 습관 추가하기</button>
+    </div>
+    <!-- 우리의 오늘 -->
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+        <div class="card-t" style="margin-bottom:0;">👥 우리의 오늘</div>
+        <button class="btn btn-o btn-sm" onclick="go('support')">지지 탭 바로가기</button>
+      </div>
+      <div style="font-size:0.8rem;color:var(--color-text-t);text-align:center;padding:0.5rem;">아직 속한 모임이 없어요</div>
+    </div>
+    <!-- 나의 현황 -->
+    <div class="card">
+      <div class="card-t">📊 나의 현황</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+        <div class="stat"><div class="stat-label">오늘 달성률</div><div class="stat-val" style="font-size:1rem;color:var(--color-text-t);">—</div></div>
+        <div class="stat"><div class="stat-label">이번 주 평균</div><div class="stat-val" style="font-size:1rem;color:var(--color-text-t);">—</div></div>
+        <div class="stat"><div class="stat-label">연속 달성</div><div class="stat-val" style="font-size:1rem;color:var(--color-text-t);">—</div></div>
+        <div class="stat"><div class="stat-label">내 칭호</div><div class="stat-val" style="font-size:0.85rem;color:var(--color-text-t);">🌱 씨앗</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑩ 오늘 탭 — 습관 있는 상태 -->
+<div class="page" id="pg-home">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:1.1rem;font-weight:500;">안녕하세요, 김건강님</div>
+        <div style="font-size:0.8rem;color:var(--color-text-s);">오늘의 내 습관</div>
+      </div>
+      <span class="badge b-bl">2026.04.07 화</span>
+    </div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-t">👍 받은 지지</div>
+      <div class="notif-item"><span style="font-size:1rem;">👍</span><span class="notif-text">어머니(이건강)님이 지지를 보냈어요!</span><span class="notif-time">30분 전</span></div>
+      <div class="notif-item"><span style="font-size:1rem;">👍</span><span class="notif-text">박걷기님이 지지를 보냈어요!</span><span class="notif-time">2시간 전</span></div>
+      <div class="notif-item"><span style="font-size:1rem;">👍</span><span class="notif-text">김자녀님이 지지를 보냈어요!</span><span class="notif-time">어제</span></div>
+      <button class="btn btn-o btn-full btn-sm" style="margin-top:0.5rem;">더보기 (총 12개) ▼</button>
+    </div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-t">✅ 오늘의 습관</div>
+      <div class="chk-item"><div class="chk-box done"></div><div class="chk-text">아침 산책 30분</div><span class="badge b-gr">완료</span></div>
+      <div class="share-inline">
+        <span style="font-size:0.7rem;color:var(--color-success);font-weight:500;">이웃에 공유</span>
+        <input class="share-inp" placeholder="한줄 코멘트 (선택 사항)">
+        <button class="btn btn-s btn-sm">공유</button>
+        <button class="btn btn-o btn-sm">건너뛰기</button>
+      </div>
+      <div class="chk-item"><div class="chk-box done"></div><div class="chk-text">혈압약 복용</div><span class="badge b-gr">완료</span></div>
+      <div class="chk-item"><div class="chk-box done"></div><div class="chk-text">과일·채소 섭취</div><span class="badge b-gr">완료</span></div>
+      <div class="chk-item"><div class="chk-box"></div><div class="chk-text">스트레칭 10분</div><span class="badge b-am">미완료</span></div>
+      <div class="chk-item" style="border:0.5px solid var(--color-success-light);"><div class="chk-box"></div><div class="chk-text">아침 산책 30분 <span class="badge b-su" style="margin-left:4px;">모임</span></div><span class="badge b-am">미완료</span></div>
+      <button class="btn btn-o btn-full btn-sm" style="margin-top:0.5rem;" onclick="go('habits')">+ 습관 추가 (습관 탭으로 이동)</button>
+    </div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+        <div class="card-t" style="margin-bottom:0;">👥 우리의 오늘</div>
+        <button class="btn btn-o btn-sm" onclick="go('support')">지지 탭 바로가기</button>
+      </div>
+      <div class="member-row"><div class="av av-gr" style="width:2rem;height:2rem;">이</div><div class="member-info"><div class="member-name">어머니 (이건강)</div><div class="prog"><div class="pf g" style="width:100%"></div></div></div><span class="badge b-gr">100%</span></div>
+      <div class="member-row"><div class="av av-am" style="width:2rem;height:2rem;">박</div><div class="member-info"><div class="member-name">박걷기</div><div class="prog"><div class="pf" style="width:80%"></div></div></div><span class="badge b-bl">80%</span></div>
+    </div>
+    <div class="card">
+      <div class="card-t">📊 나의 현황</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem;">
+        <div class="stat"><div class="stat-label">오늘 달성률</div><div class="stat-val">67%</div><div class="prog"><div class="pf" style="width:67%"></div></div></div>
+        <div class="stat"><div class="stat-label">이번 주 평균</div><div class="stat-val">72%</div><div class="prog"><div class="pf" style="width:72%"></div></div></div>
+        <div class="stat"><div class="stat-label">연속 달성</div><div class="stat-val">5일 🔥</div></div>
+        <div class="stat"><div class="stat-label">내 칭호</div><div class="stat-val" style="font-size:1rem;">🌳 나무</div></div>
+      </div>
+      <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">이번 달 습관 기록</div>
+      <div class="cal">
+        <div class="cd hd">일</div><div class="cd hd">월</div><div class="cd hd">화</div><div class="cd hd">수</div><div class="cd hd">목</div><div class="cd hd">금</div><div class="cd hd">토</div>
+        <div class="cd"></div><div class="cd dn">1</div><div class="cd dn">2</div><div class="cd dn">3</div><div class="cd dn">4</div><div class="cd dn">5</div><div class="cd dn">6</div>
+        <div class="cd td">7</div><div class="cd">8</div><div class="cd">9</div><div class="cd">10</div><div class="cd">11</div><div class="cd">12</div><div class="cd">13</div>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:0.4rem;font-size:0.6rem;color:var(--color-text-t);">
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:10px;height:10px;background:var(--color-primary);border-radius:2px;"></span>완료</span>
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:10px;height:10px;background:var(--color-primary-light);border:1.5px solid var(--color-primary);border-radius:2px;"></span>오늘</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑪ 습관 탭 -->
+<div class="page" id="pg-habits">
+  <div class="container-wide">
+    <div class="with-sb">
+      <aside class="sb">
+        <div class="sb-label">내 습관</div>
+        <div class="sb-item on">전체</div>
+        <div class="sb-item">운동</div><div class="sb-item">복약</div>
+        <div class="sb-item">식단</div><div class="sb-item">수면</div><div class="sb-item">기타</div>
+        <div class="sb-div"></div>
+        <button class="btn btn-p btn-full btn-sm">+ 습관 추가</button>
+        <button class="btn btn-ai btn-full btn-sm" style="margin-top:0.4rem;">AI 습관 추천</button>
+      </aside>
+      <div class="content">
+        <div style="font-size:1rem;font-weight:500;margin-bottom:2px;">내 습관 관리</div>
+        <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1rem;">총 5개의 습관이 등록되어 있어요</div>
+        <div class="ai-box">
+          <div><span class="ai-dot"></span><span class="ai-label">AI 습관 추천</span></div>
+          <div style="font-size:0.75rem;color:#3C3489;margin-top:4px;">관심사를 바탕으로 새로운 습관을 추천받아보세요</div>
+        </div>
+        <div class="card habit-row"><div class="habit-icon" style="background:var(--color-primary-light);"></div><div class="habit-info"><div class="habit-title">아침 산책 30분</div><div class="habit-sub">매일 07:00 · 운동</div></div><span class="badge b-bl">매일</span><span class="badge b-ai" style="margin-left:4px;">AI</span><button class="btn btn-o btn-sm" style="margin-left:4px;">수정</button></div>
+        <div class="card habit-row"><div class="habit-icon" style="background:var(--color-green-light);"></div><div class="habit-info"><div class="habit-title">혈압약 복용</div><div class="habit-sub">매일 08:00 · 복약</div></div><span class="badge b-gr">매일</span><span class="badge b-ai" style="margin-left:4px;">AI</span><button class="btn btn-o btn-sm" style="margin-left:4px;">수정</button></div>
+        <div class="card habit-row"><div class="habit-icon" style="background:var(--color-amber-light);"></div><div class="habit-info"><div class="habit-title">과일·채소 섭취</div><div class="habit-sub">매일 점심 · 식단</div></div><span class="badge b-am">매일</span><button class="btn btn-o btn-sm" style="margin-left:4px;">수정</button></div>
+        <div class="card habit-row" style="border-color:var(--color-success);"><div class="habit-icon" style="background:var(--color-success-light);"></div><div class="habit-info"><div class="habit-title">아침 산책 30분</div><div class="habit-sub">매일 · 운동 · 우리 걷기 모임</div></div><span class="badge b-gr">매일</span><span class="badge b-su" style="margin-left:4px;">모임</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑫ 지지 탭 -->
+<div class="page" id="pg-support">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:1rem;font-weight:500;">우리의 지지</div>
+        <div style="font-size:0.8rem;color:var(--color-text-s);">함께하는 사람들과 서로를 지지해요</div>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="go('group-create')">+ 모임 만들기</button>
+    </div>
+
+    <!-- 모임 카드 1: 우리 가족 -->
+    <div class="group-card" style="margin-bottom:0.75rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+        <div style="font-size:0.9rem;font-weight:500;">우리 가족</div>
+        <div style="display:flex;gap:0.4rem;align-items:center;">
+          <span class="badge b-bl">가족</span>
+          <button class="btn btn-o btn-sm" onclick="go('group-manage-1')">모임 관리</button>
+        </div>
+      </div>
+      <!-- 2열: 레벨+누적지지 / 연속 지지 스트릭 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.6rem;">
+        <div class="group-stat" style="display:flex;flex-direction:column;gap:0.15rem;">
+          <div style="display:flex;align-items:center;gap:0.4rem;">
+            <span style="font-size:1.1rem;">🌳</span>
+            <div>
+              <div style="font-size:0.75rem;font-weight:600;color:#0D6B4F;">나무 레벨 · 247회</div>
+              <div style="font-size:0.6rem;color:var(--color-text-t);">다음 레벨까지 23회 남음</div>
+            </div>
+          </div>
+          <div class="group-stat-label" style="padding-top:0.1rem;">레벨 + 누적 지지</div>
+        </div>
+        <div class="group-stat">
+          <div class="group-stat-val">🔥 12일</div>
+          <div class="group-stat-label">연속 지지 스트릭</div>
+        </div>
+      </div>
+      <div class="member-row"><div class="av av-bl" style="width:1.8rem;height:1.8rem;">김</div><div class="member-info"><div class="member-name">김건강 (나)</div><div class="prog"><div class="pf" style="width:67%"></div></div></div><span style="font-size:0.75rem;color:var(--color-primary);">67%</span></div>
+      <div class="member-row"><div class="av av-gr" style="width:1.8rem;height:1.8rem;">이</div><div class="member-info"><div class="member-name">어머니 (이건강)</div><div class="prog"><div class="pf g" style="width:100%"></div></div></div><span style="font-size:0.75rem;color:var(--color-green);">100%</span><button class="btn btn-s btn-sm" style="margin-left:0.5rem;">👍 지지(1)</button></div>
+      <div class="member-row"><div class="av av-am" style="width:1.8rem;height:1.8rem;">김</div><div class="member-info"><div class="member-name">김자녀</div><div class="prog"><div class="pf" style="width:55%"></div></div></div><span style="font-size:0.75rem;color:var(--color-primary);">55%</span><button class="btn btn-liked btn-sm" style="margin-left:0.5rem;">👍 지지(완료)</button></div>
+    </div>
+
+    <!-- 모임 카드 2: 함께 걷기 이웃 모임 (모임 구해요 경유 자동 생성) -->
+    <div class="group-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+        <div style="font-size:0.9rem;font-weight:500;">함께 걷기 이웃 모임</div>
+        <div style="display:flex;gap:0.4rem;align-items:center;">
+          <span class="badge b-gr">건강 챌린지</span>
+          <button class="btn btn-o btn-sm">모임 관리</button>
+        </div>
+      </div>
+      <!-- 함께하는 습관 고정 표시 -->
+      <div style="background:var(--color-green-light,#E8F5EC);border-radius:6px;padding:0.35rem 0.6rem;font-size:0.72rem;font-weight:500;color:#0D6B4F;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.35rem;">
+        📌 함께하는 습관: 저녁 산책 20분 · 매일
+      </div>
+      <!-- 2열: 레벨+누적지지 / 연속 지지 스트릭 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.6rem;">
+        <div class="group-stat" style="display:flex;flex-direction:column;gap:0.15rem;">
+          <div style="display:flex;align-items:center;gap:0.4rem;">
+            <span style="font-size:1.1rem;">🌱</span>
+            <div>
+              <div style="font-size:0.75rem;font-weight:600;color:#0D6B4F;">씨앗 레벨 · 8회</div>
+              <div style="font-size:0.6rem;color:var(--color-text-t);">다음 레벨까지 42회 남음</div>
+            </div>
+          </div>
+          <div class="group-stat-label" style="padding-top:0.1rem;">레벨 + 누적 지지</div>
+        </div>
+        <div class="group-stat">
+          <div class="group-stat-val">🔥 3일</div>
+          <div class="group-stat-label">연속 지지 스트릭</div>
+        </div>
+      </div>
+      <div class="member-row"><div class="av av-gr" style="width:1.8rem;height:1.8rem;">최</div><div class="member-info"><div class="member-name">이웃1 (최이웃)</div><div class="prog"><div class="pf" style="width:80%"></div></div></div><span style="font-size:0.75rem;color:var(--color-primary);">80%</span><button class="btn btn-s btn-sm" style="margin-left:0.5rem;">👍 지지(1)</button></div>
+      <div class="member-row"><div class="av av-am" style="width:1.8rem;height:1.8rem;">정</div><div class="member-info"><div class="member-name">이웃2 (정건강)</div><div class="prog"><div class="pf" style="width:40%"></div></div></div><span style="font-size:0.75rem;color:var(--color-primary);">40%</span><button class="btn btn-s btn-sm" style="margin-left:0.5rem;">👍 지지(1)</button></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ⑫-1 모임 만들기 -->
+<div class="page" id="pg-group-create">
+  <div class="container">
+    <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">모임 만들기</div>
+    <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1.2rem;">모임을 만들고 가족·친구를 초대해보세요</div>
+    <div class="card">
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">모임 이름</div>
+        <input class="inp" placeholder="예: 우리 가족, 건강 산책 친구들">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.5rem;">모임 유형</div>
+        <span class="chip on">가족</span><span class="chip">친구 모임</span><span class="chip">건강 챌린지</span><span class="chip">동네 이웃</span>
+      </div>
+      <button class="btn btn-p btn-full" onclick="go('support')">모임 만들기</button>
+      <div style="font-size:0.7rem;color:var(--color-text-t);text-align:center;margin-top:0.5rem;">모임 생성 즉시 초대 코드가 발급돼요</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑫-2 모임 관리 통합 -->
+<div class="page" id="pg-group-manage-1">
+  <div class="container">
+    <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">모임 관리 — 우리 가족</div>
+    <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1.2rem;">모임 정보 수정, 초대 코드, 탈퇴를 관리해요</div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-t">모임 정보</div>
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">모임 이름</div>
+        <input class="inp" value="우리 가족">
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.5rem;">모임 유형</div>
+        <span class="chip on">가족</span><span class="chip">친구 모임</span><span class="chip">건강 챌린지</span><span class="chip">동네 이웃</span>
+      </div>
+      <button class="btn btn-p btn-sm">저장</button>
+    </div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-t">초대 코드</div>
+      <div class="invite-box">
+        <div style="font-size:0.7rem;color:var(--color-text-s);">이 코드를 공유하면 모임에 참여할 수 있어요</div>
+        <div class="invite-code">GIGI-4823</div>
+        <button class="btn btn-p btn-sm">초대 코드 복사</button>
+      </div>
+      <div class="div"></div>
+      <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">코드 입력으로 모임 참여</div>
+      <input class="inp" placeholder="GIGI-XXXX" style="margin-bottom:0.5rem;">
+      <button class="btn btn-o btn-full btn-sm">코드로 모임 참여하기</button>
+    </div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-t">멤버 (3명)</div>
+      <div class="member-row"><div class="av av-bl" style="width:1.8rem;height:1.8rem;">김</div><div class="member-info"><div class="member-name">김건강 (나)</div></div><span class="badge b-bl">🌳 나무</span></div>
+      <div class="member-row"><div class="av av-gr" style="width:1.8rem;height:1.8rem;">이</div><div class="member-info"><div class="member-name">이건강</div></div><span class="badge b-gr">🌿 새싹</span></div>
+      <div class="member-row"><div class="av av-am" style="width:1.8rem;height:1.8rem;">김</div><div class="member-info"><div class="member-name">김자녀</div></div><span class="badge b-am">🌱 씨앗</span></div>
+    </div>
+    <div class="card" style="border-color:var(--color-coral-light);">
+      <div class="card-t" style="color:var(--color-coral);">모임 탈퇴</div>
+      <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:0.75rem;">탈퇴하면 이 모임의 기록을 볼 수 없어요.<br>모임 습관도 내 습관 탭에서 함께 삭제돼요.</div>
+      <button class="btn btn-danger btn-full btn-sm">우리 가족 모임 탈퇴</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑬ 이웃 탭 -->
+<div class="page" id="pg-neighbor">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+      <div>
+        <div style="font-size:1rem;font-weight:500;">이웃과 나누는 습관</div>
+        <div style="font-size:0.8rem;color:var(--color-text-s);">오늘 달성한 습관을 이웃과 나눠요</div>
+      </div>
+    </div>
+    <div class="filter-tabs">
+      <div class="filter-tab on">전체</div>
+      <div class="filter-tab">운동</div><div class="filter-tab">복약</div>
+      <div class="filter-tab">식단</div><div class="filter-tab">수면</div><div class="filter-tab">기타</div>
+      <div class="filter-tab" style="background:var(--color-ai-light);color:var(--color-ai);border-color:var(--color-ai-border);" onclick="go('neighbor-group')">모임 구해요</div>
+      <div class="filter-tab" style="background:var(--color-amber-light);color:#633806;border-color:var(--color-amber);" onclick="go('neighbor-mypost')">내 글</div>
+    </div>
+    <div class="feed-card">
+      <div class="feed-head">
+        <div class="av av-gr" style="width:2rem;height:2rem;">이</div>
+        <div style="flex:1;">
+          <div style="font-size:0.85rem;font-weight:500;">이건강 <span class="badge b-su" style="margin-left:4px;">🌳 나무</span></div>
+          <div style="font-size:0.65rem;color:var(--color-text-t);">30분 전</div>
+        </div>
+        <span class="badge b-gr">운동</span>
+      </div>
+      <div class="feed-routine">
+        <div class="chk-box done" style="width:0.9rem;height:0.9rem;"></div>
+        <span style="font-size:0.8rem;font-weight:500;">아침 산책 30분 완료</span>
+      </div>
+      <div class="feed-comment">한강변에 벚꽃이 피었어요 🌸</div>
+      <div class="feed-meta">
+        <button class="btn btn-o btn-sm" style="font-size:0.7rem;min-height:1.7rem;padding:0.2rem 0.6rem;">👍 지지 14</button>
+        <span style="margin-left:auto;">2026.04.07</span>
+      </div>
+    </div>
+    <div class="feed-card">
+      <div class="feed-head">
+        <div class="av av-bl" style="width:2rem;height:2rem;">박</div>
+        <div style="flex:1;">
+          <div style="font-size:0.85rem;font-weight:500;">박건강 <span class="badge b-bl" style="margin-left:4px;">🌿 새싹</span></div>
+          <div style="font-size:0.65rem;color:var(--color-text-t);">1시간 전</div>
+        </div>
+        <span class="badge b-am">복약</span>
+      </div>
+      <div class="feed-routine">
+        <div class="chk-box done" style="width:0.9rem;height:0.9rem;"></div>
+        <span style="font-size:0.8rem;font-weight:500;">혈압약 복용 완료</span>
+      </div>
+      <div class="feed-meta">
+        <button class="btn btn-liked btn-sm" style="font-size:0.7rem;min-height:1.7rem;padding:0.2rem 0.6rem;">👍 지지 9 (취소)</button>
+        <span style="margin-left:auto;">2026.04.07</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑬-1 모임 구해요 -->
+<div class="page" id="pg-neighbor-group">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div style="font-size:1rem;font-weight:500;">모임 구해요</div>
+      <button class="btn btn-p btn-sm" onclick="go('neighbor-group-write')">글쓰기</button>
+    </div>
+    <div class="feed-card" style="border-color:var(--color-ai-border);background:var(--color-ai-light);">
+      <div class="feed-head">
+        <div class="av av-am" style="width:2rem;height:2rem;">김</div>
+        <div style="flex:1;">
+          <div style="font-size:0.85rem;font-weight:500;">김함께 <span class="badge b-ai" style="margin-left:4px;">🌱 씨앗</span></div>
+          <div style="font-size:0.65rem;color:var(--color-text-t);">2일 전</div>
+        </div>
+        <span class="badge b-ai">친구 모임</span>
+      </div>
+      <div style="font-size:0.85rem;font-weight:500;margin-bottom:0.3rem;">60대 여성분들과 함께 걷기 모임 구해요 🚶‍♀️</div>
+      <div style="font-size:0.78rem;color:var(--color-text-s);margin-bottom:0.5rem;">매일 아침 30분 걷기 목표로 서로 응원해요!</div>
+      <div style="background:var(--color-card);border-radius:var(--r-md);padding:0.4rem 0.75rem;margin-bottom:0.5rem;font-size:0.78rem;">
+        📌 함께할 습관: <strong>아침 산책 30분</strong> · 매일
+      </div>
+      <div class="feed-meta">
+        <button class="btn btn-p btn-sm" style="font-size:0.75rem;" onclick="go('neighbor-join')">함께하기</button>
+        <span style="margin-left:auto;font-size:0.7rem;color:var(--color-text-t);">신청 3명</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑬-2 모임 구해요 글쓰기 -->
+<div class="page" id="pg-neighbor-group-write">
+  <div class="container">
+    <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">모임 구해요 글쓰기</div>
+    <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1.2rem;">함께할 이웃을 찾아보세요</div>
+    <div class="card">
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">제목</div>
+        <input class="inp" placeholder="예: 60대 여성분들과 함께 걷기 모임 구해요">
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">내용</div>
+        <textarea class="inp" style="min-height:5rem;resize:none;" placeholder="모임 소개, 참여 방법 등을 자유롭게 작성해주세요"></textarea>
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.5rem;">모임 유형</div>
+        <span class="chip">가족</span><span class="chip on">친구 모임</span><span class="chip">건강 챌린지</span><span class="chip">동네 이웃</span>
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">함께할 습관 (1개)</div>
+        <input class="inp" placeholder="예: 아침 산책 30분" style="margin-bottom:0.4rem;">
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;margin-top:0.5rem;">습관 카테고리</div>
+        <span class="chip on">운동</span><span class="chip">복약</span><span class="chip">식단</span><span class="chip">수면</span><span class="chip">기타</span>
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;margin-top:0.75rem;">빈도</div>
+        <span class="chip on">매일</span><span class="chip">주중(월~금)</span><span class="chip">주말</span><span class="chip">직접 선택</span>
+      </div>
+      <button class="btn btn-p btn-full" onclick="go('neighbor-group')">글 등록하기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑬-3 함께하기 확인 -->
+<div class="page" id="pg-neighbor-join">
+  <div class="container">
+    <div style="background:var(--color-card);border-radius:var(--r-lg);border:0.5px solid var(--color-border-l);padding:1.5rem;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:0.5rem;">🤝</div>
+      <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">모임에 함께할까요?</div>
+      <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1rem;line-height:1.7;">60대 여성분들과 함께 걷기 모임</div>
+      <div style="background:var(--color-success-light);border-radius:var(--r-md);padding:0.75rem;margin-bottom:1rem;font-size:0.8rem;color:#0D6B4F;text-align:left;">
+        📌 함께하는 습관: <strong>아침 산책 30분 · 매일</strong><br>
+        <span style="font-size:0.72rem;margin-top:0.3rem;display:block;">이 습관이 내 습관 탭에 자동으로 추가돼요</span>
+      </div>
+      <button class="btn btn-p btn-full" style="margin-bottom:0.4rem;" onclick="go('support')">함께하기 — 지지 탭에서 확인</button>
+      <button class="btn btn-o btn-full btn-sm" onclick="go('neighbor-group')">취소</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑬-4 내 글 -->
+<div class="page" id="pg-neighbor-mypost">
+  <div class="container">
+    <div style="font-size:1rem;font-weight:500;margin-bottom:1rem;">내 글</div>
+    <div class="feed-card">
+      <div class="feed-head">
+        <div class="av av-bl" style="width:2rem;height:2rem;">김</div>
+        <div style="flex:1;">
+          <div style="font-size:0.85rem;font-weight:500;">김건강 <span class="badge b-su" style="margin-left:4px;">🌳 나무</span></div>
+          <div style="font-size:0.65rem;color:var(--color-text-t);">오늘 · 운동</div>
+        </div>
+        <button class="btn btn-o btn-sm" style="font-size:0.65rem;min-height:1.6rem;padding:0.2rem 0.5rem;">수정</button>
+      </div>
+      <div class="feed-routine">
+        <div class="chk-box done" style="width:0.9rem;height:0.9rem;"></div>
+        <span style="font-size:0.8rem;font-weight:500;">아침 산책 30분 완료</span>
+      </div>
+      <div class="feed-comment">한강변에 벚꽃이 피었어요 🌸</div>
+      <div class="feed-meta"><span>👍 지지 14</span><span style="margin-left:auto;">2026.04.07</span></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ⑭ 설정 탭 -->
+<div class="page" id="pg-settings">
+  <div class="container">
+    <div style="font-size:1rem;font-weight:500;margin-bottom:1.2rem;">내 설정</div>
+    <div style="display:flex;align-items:center;gap:1rem;background:var(--color-card);border-radius:var(--r-lg);padding:1rem;border:0.5px solid var(--color-border-l);margin-bottom:0.75rem;">
+      <div class="av av-bl" style="width:3.2rem;height:3.2rem;font-size:1rem;">김</div>
+      <div>
+        <div style="font-size:0.9rem;font-weight:500;">김건강</div>
+        <div style="font-size:0.75rem;color:var(--color-text-s);">60대 · 운동·복약 관심</div>
+        <div style="font-size:0.75rem;color:var(--color-primary);margin-top:2px;">🌳 나무 (우리 가족 기준)</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-t">프로필 설정</div>
+      <div class="setting-row"><span class="setting-label">닉네임</span><span class="setting-value">김건강 ›</span></div>
+      <div class="setting-row"><span class="setting-label">나이대</span><span class="setting-value">60대 ›</span></div>
+      <div class="setting-row" style="border-bottom:none;"><span class="setting-label">건강 관심사</span><span class="setting-value">운동·체력, 복약 관리 ›</span></div>
+    </div>
+    <div class="card">
+      <div class="card-t">계정 설정</div>
+      <div class="setting-row"><span class="setting-label">비밀번호 변경</span><span class="setting-value">›</span></div>
+      <div class="setting-row" style="border-bottom:none;"><span class="setting-label" style="color:var(--color-coral);">로그아웃</span></div>
+    </div>
+  </div>
+</div>
+
+
+<footer class="footer">지지 GIGI — 세대를 잇는 건강한 응원 · Generation to Generation © 2026</footer>
+
+<script>
+const STEPS = [80,90,100,110,120,130,150];
+
+const PAGES = [
+  {id:'landing',              label:'① 랜딩'},
+  {id:'signup1',              label:'② 가입1 — 이메일·비밀번호'},
+  {id:'signup2',              label:'③ 가입2 — 닉네임'},
+  {id:'signup-done',          label:'④ 가입 완료'},
+  {id:'ob1',                  label:'⑤ 온보딩1 — 나이대'},
+  {id:'ob2',                  label:'⑥ 온보딩2 — 관심사'},
+  {id:'ob3',                  label:'⑦ 온보딩3 — AI추천'},
+  {id:'first-home',           label:'⑧ 홈 첫 진입 모달'},
+  {id:'home-empty',           label:'⑨ 오늘 (습관 없음)'},
+  {id:'home',                 label:'⑩ 오늘 (습관 있음)'},
+  {id:'habits',               label:'⑪ 습관'},
+  {id:'support',              label:'⑫ 지지'},
+  {id:'group-create',         label:'⑫-1 모임 만들기'},
+  {id:'group-manage-1',       label:'⑫-2 모임 관리'},
+  {id:'neighbor',             label:'⑬ 이웃'},
+  {id:'neighbor-group',       label:'⑬-1 모임 구해요'},
+  {id:'neighbor-group-write', label:'⑬-2 글쓰기'},
+  {id:'neighbor-join',        label:'⑬-3 함께하기 확인'},
+  {id:'neighbor-mypost',      label:'⑬-4 내 글'},
+  {id:'settings',             label:'⑭ 설정'},
+];
+
+const NAV = [
+  {id:'home',     label:'오늘'},
+  {id:'habits',   label:'습관'},
+  {id:'support',  label:'지지'},
+  {id:'neighbor', label:'이웃'},
+  {id:'settings', label:'설정'},
+];
+
+function buildTabs() {
+  const t = document.getElementById('tabs');
+  t.innerHTML = '';
+  PAGES.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.textContent = p.label;
+    btn.onclick = () => go(p.id);
+    t.appendChild(btn);
+  });
+}
+
+function buildNav() {
+  const n = document.getElementById('gnb-nav');
+  n.innerHTML = '';
+  NAV.forEach((item,i) => {
+    const d = document.createElement('div');
+    d.className = 'gnb-ni' + (i===0?' on':'');
+    d.textContent = item.label;
+    d.dataset.id = item.id;
+    d.onclick = () => go(item.id);
+    n.appendChild(d);
+  });
+}
+
+function go(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  const el = document.getElementById('pg-'+id);
+  if(el) el.classList.add('on');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  const tabs = document.querySelectorAll('.tab');
+  PAGES.forEach((p,i) => { if(p.id===id && tabs[i]) tabs[i].classList.add('on'); });
+  document.querySelectorAll('.gnb-ni').forEach(n => n.classList.toggle('on', n.dataset.id===id));
+  window.scrollTo(0,0);
+}
+
+function scaleFn(v) {
+  const pct = STEPS[v];
+  document.documentElement.style.fontSize = (16*pct/100)+'px';
+  document.getElementById('fs-val').textContent = pct===100?'기본':pct+'%';
+}
+
+buildTabs();
+buildNav();
+go('landing');
+</script>
+</body>
+</html>
