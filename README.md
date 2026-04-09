@@ -47,7 +47,7 @@ gigi/
   모든 작업은 각자 작업 브랜치(feature/...)에서 진행함.  
   PR 생성 전에 아래 명령어로 최신 main을 반영하기  
   
-  git checkout `<my-branch-name>`  
+  git checkout `<my-branch-name>`  #본인 작업 브랜치로 이동(필요 시)  
   git fetch origin  
   git merge origin/main  
     
