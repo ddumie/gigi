@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from backend.database import get_db
@@ -50,6 +50,37 @@ def list_group_search(db: Session = Depends(get_db)):
         db.query(GroupSearchPost)
         .join(Post, GroupSearchPost.post_id == Post.id)
         .filter(Post.is_active == True)
+        .order_by(Post.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": p.post_id,
+            "title": p.title,
+            "description": p.description,
+            "group_type": p.group_type,
+            "habit_title": p.habit_title,
+            "frequency": p.frequency,
+        }
+        for p in posts
+    ]
+# 글 삭제 기능(docs용)
+@router.delete("/group-search/{post_id}")
+def delete_group_search(post_id: int, db: Session = Depends(get_db)):
+    post = db.query(Post).filter(Post.id == post_id, Post.author_id == 1).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
+    post.is_active = False
+    db.commit()
+    return {"message": "삭제 완료"}
+
+# my posts 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
+@router.get("/group-search/my")
+def list_my_group_search(db: Session = Depends(get_db)):
+    posts = (
+        db.query(GroupSearchPost)
+        .join(Post, GroupSearchPost.post_id == Post.id)
+        .filter(Post.is_active == True, Post.author_id == 1)  # 나중에 current_user.id로 교체
         .order_by(Post.created_at.desc())
         .all()
     )

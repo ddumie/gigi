@@ -1,11 +1,11 @@
-// group-search 용 자바스크립트
+// my-posts 용 자바스크립트
 (async () => {
-const res = await fetch('/api/v1/neighbor/group-search');
+const res = await fetch('/api/v1/neighbor/group-search/my');
 const posts = await res.json();
-const list = document.getElementById('group-search-list');
+const list = document.getElementById('my-posts-list');
 
 if (posts.length === 0) {
-    list.innerHTML = '<p class="meta-text">등록된 모임이 없습니다.</p>';
+    list.innerHTML = '<p class="meta-text">작성한 글이 없습니다.</p>';
     return;
 }
 
@@ -16,9 +16,7 @@ list.innerHTML = posts.map(p => `
         ${p.group_type} · 함께할 습관: ${p.habit_title} · ${p.frequency}
     </p>
     <p style="margin-top:0.5rem;">${p.description ?? ''}</p>
-    <div class="page-actions" style="margin-top:1rem;">
-        <a href="/pages/neighbor/group-search-join.html" class="btn btn-outline btn-sm">함께하기</a>
-    </div>
     </article>
 `).join('');
 })();
+
