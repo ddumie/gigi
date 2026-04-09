@@ -2,7 +2,6 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.sql import func
 from backend.database import Base
 
-
 class Group(Base):
     """모임 메타데이터와 집계 상태를 함께 저장한다."""
 
@@ -10,18 +9,17 @@ class Group(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=True, default=None)
-    level_name = Column(String, nullable=False, default="seed")
     total_support_count = Column(Integer, nullable=False, default=0)
     support_streak = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 # 모임 명, 모임 유형은 사용자별 별도 저장
 class GroupProfile(Base):
-    __tablename__ = "group_profile"
+    __tablename__ = "group_profiles"
 
     id = Column(Integer, primary_key=True, index=True)
     group_id = Column(Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("groups.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
     group_type = Column(String, nullable=False)     # "family", "friend", "health_challenge", "neighbors"
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -59,8 +57,8 @@ class Support(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     group_id = Column(Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False, index=True)
-    from_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    to_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    from_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    to_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

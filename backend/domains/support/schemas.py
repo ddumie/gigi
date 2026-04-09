@@ -14,8 +14,6 @@ class GroupResponse(BaseModel):
     id: int
     name: str
     group_type: str
-    owner_id: int
-    level_name: str
     total_support_count: int
     support_streak: int
     created_at: datetime
