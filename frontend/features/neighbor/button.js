@@ -1,5 +1,6 @@
 document.getElementById('submit-btn').addEventListener('click', async () => {
 const body = {
+    group_type: document.getElementById('group_type').value,
     title: document.getElementById('title').value,
     description: document.getElementById('description').value,
     habit_title: document.getElementById('habit_title').value,
