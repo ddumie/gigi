@@ -10,7 +10,6 @@ class Group(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=True, default=None)
-    habit = Column(String, nullable=True)
     level_name = Column(String, nullable=False, default="seed")
     total_support_count = Column(Integer, nullable=False, default=0)
     support_streak = Column(Integer, nullable=False, default=0)

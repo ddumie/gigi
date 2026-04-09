@@ -5,7 +5,6 @@ from typing import Optional
 class GroupCreate(BaseModel):
     name: str
     group_type: str
-    habit: Optional[str] = None
 
 class GroupParticipate(BaseModel):
     group_id: int
