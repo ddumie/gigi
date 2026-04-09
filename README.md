@@ -42,6 +42,15 @@ gigi/
 ## 팀 작업 방식
 
 - 기능 구현이 끝나면 작업 내용을 정리해 `main` 대상으로 Pull Request를 생성합니다.
+  [PR 전 브랜치 최신화 규칙]
+  모든 작업은 각자 작업 브랜치(feature/...)에서 진행함.
+  PR 생성 전에 아래 명령어로 최신 main을 반영하기
+
+  git fetch origin
+  git merge origin/main
+
+  -> 위 작업은 본인 브랜치에서 실행해야 함
+  -> 최신화 후 충돌이 발생하면 해결 후 PR을 생성 (혼자 해결 불가한 경우에는 논의!)
 - 팀장 전연주가 변경사항을 확인한 뒤 `main`에 merge 합니다.
 - 공통 구조를 건드리는 변경은 PR 설명에 영향 범위를 함께 적습니다.
 
@@ -86,6 +95,15 @@ gigi/
 8. `git commit -m "메시지"`
 9. `git push origin <my-branch-name>`
 10. GitHub에서 `main` 대상 PR 생성
+    [PR 전 브랜치 최신화 규칙]
+    모든 작업은 각자 작업 브랜치(feature/...)에서 진행함.
+    PR 생성 전에 아래 명령어로 최신 main을 반영하기
+
+    git fetch origin
+    git merge origin/main
+
+    -> 위 작업은 본인 브랜치에서 실행해야 함
+    -> 최신화 후 충돌이 발생하면 해결 후 PR을 생성 (혼자 해결 불가한 경우에는 논의!)
 
 ## 로컬 실행
 
