@@ -1,22 +1,44 @@
 // my-posts 용 자바스크립트
 (async () => {
-const res = await fetch('/api/v1/neighbor/group-search/my');
-const posts = await res.json();
-const list = document.getElementById('my-posts-list');
+  const [groupRes, feedRes] = await Promise.all([
+    fetch('/api/v1/neighbor/group-search/my'),
+    fetch('/api/v1/neighbor/feed/my')
+  ]);
 
-if (posts.length === 0) {
-    list.innerHTML = '<p class="meta-text">작성한 글이 없습니다.</p>';
-    return;
-}
+  const groupPosts = await groupRes.json();
+  const feedPosts = await feedRes.json();
+  // group-search 글 렌더링
+  const list_gs = document.getElementById('my-posts-list-gs');
+  groupPosts.forEach(p => {
+    const article = document.createElement('article');
+    article.className = 'group-search-card';
 
-list.innerHTML = posts.map(p => `
-    <article class="group-search-card">
-    <strong>${p.title}</strong>
-    <p class="meta-text" style="margin-top:0.5rem;">
-        ${p.group_type} · 함께할 습관: ${p.habit_title} · ${p.frequency}
-    </p>
-    <p style="margin-top:0.5rem;">${p.description ?? ''}</p>
-    </article>
-`).join('');
+    const title = document.createElement('strong');
+    title.textContent = p.title;
+
+    const meta = document.createElement('p');
+    meta.className = 'meta-text';
+    meta.textContent = `모임 구해요 · ${p.group_type} · ${p.habit_title}`;
+
+    article.append(title, meta);
+    list_gs.appendChild(article);
+  });
+
+  // feed 글 렌더링
+  const list_f = document.getElementById('my-posts-list-fd')
+  feedPosts.forEach(p => {
+    const article = document.createElement('article');
+    article.className = 'feed-card';
+
+    const title = document.createElement('strong');
+    title.textContent = `${p.category} 완료`;
+
+    const body = document.createElement('p');
+    body.textContent = p.content ?? '';
+
+    article.append(title, body);
+    list_f.appendChild(article);
+  });
 })();
+
 
