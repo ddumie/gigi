@@ -1,5 +1,5 @@
-#제미나이 연동, 선택한 습관 등록
-#Gemini API 호출, 프롬프트 구성, 응답 파싱, 재추천 1회 제한 로직
+# 제미나이 연동, 선택한 습관 등록
+# Gemini API 호출, 프롬프트 구성, 응답 파싱, 재추천 1회 제한 로직
 
 import json
 import google.generativeai as genai
@@ -33,10 +33,13 @@ def get_ai_recommendations(age_group: str | None, health_interests: list[str] | 
     ]
     """
 
-    response = model.generate_content(prompt)
+    try:
+        response = model.generate_content(prompt)
+    except Exception:
+        raise ValueError("Gemini API 호출에 실패했습니다.")
     text = response.text.strip()
 
-    #Gemini 답변의 불필요 형식 제거(코드블록 제거)
+    # Gemini 답변의 불필요 형식 제거(코드블록 제거)
     if "```" in text:
         text = text.split("```")[1]
         if text.startswith("json"):
@@ -45,23 +48,27 @@ def get_ai_recommendations(age_group: str | None, health_interests: list[str] | 
 
     try:
         return [AIHabitItem(**h) for h in json.loads(text)]
-    except (json.JSONDecodeError, KeyError):
+    except (json.JSONDecodeError, KeyError, TypeError):
         raise ValueError("Gemini 응답에 실패했습니다.")
 
 
 def save_selected_habits(db: Session, user_id: int, selected: list[AIHabitItem]) -> None:
     """AI 추천 습관 저장과 온보딩 완료처리"""
-    for item in selected:
-        db.add(Habit(
-            user_id = user_id,
-            title = item.title,
-            category = item.category,
-            description = item.description,
-            repeat_type = "매일",
-            is_ai_recommended = True
+    try:
+        for item in selected:
+            db.add(Habit(
+                user_id = user_id,
+                title = item.title,
+                category = item.category,
+                description = item.description,
+                repeat_type = "매일",
+                is_ai_recommended = True
 
-        ))
-    user = db.query(User).filter(User.id == user_id).first()
-    if user:
-        user.is_first_login = False #첫로그인이면 온보딩안한상태(True), 아니면 이미 사용유저(False)
-    db.commit()
+            ))
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.is_first_login = False # 첫로그인이면 온보딩안한상태(True), 아니면 이미 사용유저(False)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise ValueError("습관 저장 중 오류가 발생했습니다.")

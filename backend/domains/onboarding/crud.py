@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 from backend.domains.onboarding.models import UserPreference
 
-#온보딩 DB CRUD
+# 온보딩 DB CRUD
 def get_preferences(db: Session, user_id: int):
     """사용자 조회"""
     return db.query(UserPreference).filter(UserPreference.user_id == user_id).first()
+
 
 def save_preferences(db: Session, user_id: int, age_group: str | None, health_interests: list[str] | None):
     """나이대, 관심사 저장 또는 수정"""
@@ -18,11 +19,14 @@ def save_preferences(db: Session, user_id: int, age_group: str | None, health_in
     db.commit()
     db.refresh(db_pref)
     return db_pref
-트
+
+
 def incre_recommend_count(db: Session, user_id: int):
     """AI 재추천 횟수 증가(+1)"""
     db_pref = get_preferences(db, user_id)
-    db_pref.recommend_count += 1 #일단 1회 추천가능으로 되어있음(0-처음 추천, 1-재추천 사용, 2-재추천 불가)
+    if db_pref is None: # 데이터가 없으면 에러방지로 None처리, 라우터에서 에러처리예정
+        return None 
+    db_pref.recommend_count += 1 # 일단 1회 추천가능으로 되어있음(0-처음 추천, 1-재추천 사용, 2-재추천 불가)
     db.commit()
     db.refresh(db_pref)
     return db_pref
