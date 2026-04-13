@@ -20,7 +20,7 @@
           <h1 class="section-title">함께하기 확인</h1>
           <p class="section-copy">참여하면 지지 탭에 모임이 생성되고 내 습관 탭에 습관이 자동 추가됩니다.</p>
         </div>
-        <div class="auth-summary">함께할 습관: 20분 걷기 · 빈도: 주 3회</div>
+        <div id="join-summary" class="auth-summary"></div>
         <div class="page-actions">
           <a href="/pages/support/index.html" class="btn btn-primary btn-full">함께하기</a>
           <a href="/pages/neighbor/group-search.html" class="btn btn-outline btn-full">취소</a>
@@ -31,5 +31,11 @@
   <script src="/shared/lib/api.js"></script>
   <script src="/shared/lib/common.js"></script>
   <script src="/features/neighbor/neighbor.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const habitTitle = params.get('habit_title') ?? '-';
+    const frequency  = params.get('frequency')  ?? '-';
+    document.getElementById('join-summary').textContent = `함께할 습관: ${habitTitle} · 빈도: ${frequency}`;
+  </script>
 </body>
 </html>
