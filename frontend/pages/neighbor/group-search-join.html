@@ -35,8 +35,7 @@
     const params = new URLSearchParams(location.search);
     const habitTitle = params.get('habit_title') ?? '-';
     const frequency  = params.get('frequency')  ?? '-';
-    document.getElementById('join-summary').textContent =
-    `함께할 습관: ${habitTitle} · 빈도: ${frequency}`;
+    document.getElementById('join-summary').textContent = `함께할 습관: ${habitTitle} · 빈도: ${frequency}`;
   </script>
 </body>
 </html>
