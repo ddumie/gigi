@@ -7,6 +7,7 @@ const body = {
     habit_title: document.getElementById('habit_title').value,
     frequency: document.getElementById('frequency').value,
 };
+// user_id 추후에 current_user.id로 교체
 const res = await fetch('/api/v1/neighbor/group-search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -10,12 +10,11 @@ from backend.domains.auth.models import User
 
 # 현재 로그인 사용자 기준이 아니라 author_id와 동일한 user.id를 1로 고정하였기 때문에,
 # 추후 수정해야 함.
-
 # 글쓰기 post
 def create_group_search(post: GroupSearchCreate, db: Session = Depends(get_db)):
     # 1. 부모 Post 먼저 생성
     db_post = Post(
-        author_id=1,  # auth가 아직 없어서 임시 테스트 값으로 1을 넣음. 실제론 현재 로그인 유저 id current_user.id로 교체
+        author_id=2,  # auth가 아직 없어서 임시 테스트 값으로 1을 넣음. 실제론 현재 로그인 유저 id current_user.id로 교체
         post_type="group_search"
     )
     db.add(db_post)
@@ -49,7 +48,7 @@ def list_group_search(db: Session = Depends(get_db)):
 
 # 글 삭제 기능(docs용)
 def delete_group_search(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(Post).filter(Post.id == post_id, Post.author_id == 1).first() # 나중에 author_id를 current_user.id 로 교체
+    post = db.query(Post).filter(Post.id == post_id, Post.author_id == 2).first() # 나중에 author_id를 current_user.id 로 교체
     if not post:
         raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     post.is_active = False
@@ -61,7 +60,7 @@ def list_my_group_search(db: Session = Depends(get_db)):
     posts = (
         db.query(GroupSearchPost)
         .join(Post, GroupSearchPost.post_id == Post.id)
-        .filter(Post.is_active == True, Post.author_id == 1)  # 나중에 author_id를 current_user.id로 교체
+        .filter(Post.is_active == True, Post.author_id == 2)  # 나중에 author_id를 current_user.id로 교체
         .order_by(Post.created_at.desc())
         .all()
 
@@ -73,7 +72,7 @@ def list_my_feed(db: Session = Depends(get_db)):
     posts = (
         db.query(FeedPost)
         .join(Post, FeedPost.post_id == Post.id)
-        .filter(Post.is_active == True, Post.author_id == 1)  # 나중에 author_id를 current_user.id로 교체
+        .filter(Post.is_active == True, Post.author_id == 2)  # 나중에 author_id를 current_user.id로 교체
         .order_by(Post.created_at.desc())
         .all()
 
@@ -116,7 +115,7 @@ def list_feed(category: str = None, db: Session = Depends(get_db)): # category =
 
 # 피드 목록 지우기
 def delete_feed(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(Post).filter(Post.id == post_id, Post.author_id == 1).first()  # 나중에 author_id를 current_user.id로 교체
+    post = db.query(Post).filter(Post.id == post_id, Post.author_id == 2).first()  # 나중에 author_id를 current_user.id로 교체
     if not post:
         raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     post.is_active = False
