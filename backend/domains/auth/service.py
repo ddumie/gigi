@@ -60,8 +60,8 @@ def get_current_user(token: str, db: Session) -> User:
         raise ValueError("유효하지 않은 토큰입니다")
 
     user = crud.get_user_by_id(db, user_id)
-    if not user:
-        raise ValueError("유저를 찾을 수 없습니다")
+    if not user or not user.is_active:
+        raise ValueError("유효하지 않은 계정입니다")
     return user
 
 

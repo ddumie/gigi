@@ -1,5 +1,124 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
+
+from backend.database import get_db
+from backend.domains.auth import service
+from backend.domains.auth.models import User
+from backend.domains.auth.schemas import (
+    RegisterRequest,
+    LoginRequest,
+    EmailCheckRequest,
+    NicknameCheckRequest,
+    CheckResponse,
+    TokenResponse,
+    UserResponse,
+    PasswordChangeRequest,
+)
 
 router = APIRouter()
+bearer_scheme = HTTPBearer(auto_error=False)
 
-# TODO: 엔드포인트 작성 (담당: 김평일)
+
+# ──────────────────────────────────────────
+# 인증 의존성
+# ──────────────────────────────────────────
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    """Authorization: Bearer {token} 헤더에서 유저 추출"""
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="인증 토큰이 필요합니다",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    try:
+        return service.get_current_user(credentials.credentials, db)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+# ──────────────────────────────────────────
+# 회원가입
+# ──────────────────────────────────────────
+
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+def register(data: RegisterRequest, db: Session = Depends(get_db)):
+    """회원가입 → JWT + 유저 정보 반환"""
+    try:
+        user = service.register(db, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+
+    token = service.create_access_token(user.id)
+    return TokenResponse(access_token=token, user=UserResponse.model_validate(user))
+
+
+# ──────────────────────────────────────────
+# 로그인
+# ──────────────────────────────────────────
+
+@router.post("/login", response_model=TokenResponse)
+def login(data: LoginRequest, db: Session = Depends(get_db)):
+    """로그인 → JWT + 유저 정보 반환"""
+    try:
+        token, user = service.login(db, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+    return TokenResponse(access_token=token, user=UserResponse.model_validate(user))
+
+
+# ──────────────────────────────────────────
+# 내 정보 조회
+# ──────────────────────────────────────────
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    """현재 로그인 유저 정보 반환"""
+    return UserResponse.model_validate(current_user)
+
+
+# ──────────────────────────────────────────
+# 중복 확인
+# ──────────────────────────────────────────
+
+@router.post("/check/email", response_model=CheckResponse)
+def check_email(data: EmailCheckRequest, db: Session = Depends(get_db)):
+    """이메일 중복 확인"""
+    available = service.check_email(db, data.email)
+    message = "사용 가능한 이메일입니다" if available else "이미 사용 중인 이메일입니다"
+    return CheckResponse(available=available, message=message)
+
+
+@router.post("/check/nickname", response_model=CheckResponse)
+def check_nickname(data: NicknameCheckRequest, db: Session = Depends(get_db)):
+    """닉네임 중복 확인"""
+    available = service.check_nickname(db, data.nickname)
+    message = "사용 가능한 닉네임입니다" if available else "이미 사용 중인 닉네임입니다"
+    return CheckResponse(available=available, message=message)
+
+
+# ──────────────────────────────────────────
+# 비밀번호 변경
+# ──────────────────────────────────────────
+
+@router.put("/password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    data: PasswordChangeRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """비밀번호 변경 (로그인 필요)"""
+    try:
+        service.change_password(db, current_user, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return None
