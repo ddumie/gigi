@@ -1,3 +1,4 @@
+// 글쓴 후 글 등록하기 버튼처리
 document.getElementById('submit-btn').addEventListener('click', async () => {
 const body = {
     group_type: document.getElementById('group_type').value,
