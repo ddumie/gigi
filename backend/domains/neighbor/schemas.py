@@ -27,6 +27,7 @@ class GroupSearchCreate(BaseModel):
 
 class GroupSearchResponse(BaseModel):
     id: int
+    post_id: int
     title: str
     description: str
     group_type: str

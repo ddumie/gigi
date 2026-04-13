@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from . import models, schemas
-from neighbor.models import GroupSearchPost
+from backend.domains.neighbor.models import GroupSearchPost
 import secrets, string
 
 # 메모
