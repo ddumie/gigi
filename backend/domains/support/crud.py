@@ -1,7 +1,10 @@
-from fastapi import HTTPException
+from datetime import date
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from . import models, schemas
-from neighbor.models import GroupSearchPost
+from neighbor.models import GroupSearchPost, FeedPost
+from auth.models import User
+from habits.models import Habit, HabitCheck
 import secrets, string
 
 # 메모
@@ -75,7 +78,41 @@ def get_group(db: Session, group_id: int, user_id: int):
                 "habit_title": post_info.habit_title,
                 "frequency": post_info.frequency
             }
-    return group, groupprofile, invite, members, habit_info
+
+    # 각 멤버별 최고 total_support_count 찾기
+    member_top_exp = {}
+    member_nicknames = {}
+    for m in members:
+        top_support = (
+            db.query(models.Group.total_support_count)
+            .join(models.GroupMember, models.Group.id == models.GroupMember.group_id)
+            .filter(models.GroupMember.user_id == m.user_id)
+            .order_by(desc(models.Group.total_support_count))
+            .scalar()
+        )
+        if top_support:
+            member_top_exp[m.user_id] = top_support
+        user = db.query(User).filter(User.id == m.user_id).one_or_none()
+        if user:
+            member_nicknames[m.user_id] = user.nickname
+
+    # 각 멤버별 달성율 체크용
+    complete_rates = {}
+    for m in members:
+        habit_count = db.query(Habit).filter(Habit.user_id == m.user_id).count()
+        target_date = date.today()
+        checked_count = (
+            db.query(HabitCheck)
+            .join(Habit, HabitCheck.habit_id == Habit.id)
+            .filter(Habit.user_id == m.user_id, HabitCheck.checked_date == target_date)
+            .count()
+        )
+        if habit_count == 0:
+            member_complete_rate = 0
+        else:
+            member_complete_rate = checked_count / habit_count * 100
+        complete_rates[m.user_id] = member_complete_rate
+    return group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates
 
 # 초대코드로 그룹 ID 조회
 def get_group_id_by_code(db: Session, invite_code: str):
@@ -118,10 +155,34 @@ def add_group_member(db: Session, group_id: int, user_id: int):
     db.commit()
     db.refresh(new_member)
 
+    # 습관 추가 (Group의 post_id가 None이 아닌 경우만.)
+    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    new_habit = None
+    if group and group.post_id:
+        post_info = db.query(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id).first()
+        post_category = db.query(FeedPost.category).filter(FeedPost.post_id == group.post_id).scalar()
+
+        if post_info and post_category:
+            new_habit = Habit(
+                user_id = user_id,
+                group_id = group_id,
+                title = post_info.habit_title,
+                category = post_category,
+                repeat_type = post_info.frequency
+            )
+            db.add(new_habit)
+            db.commit()
+            db.refresh(new_habit)
+
     return new_member
 
 # 모임 탈퇴
 def remove_group_member(db: Session, group_id: int, user_id: int):
+    # group 습관이 존재 했으면 삭제
+    group_habits = db.query(Habit).filter(Habit.group_id == group_id, Habit.user_id == user_id).all()
+    for habit in group_habits:
+        db.delete(habit)
+    
     member = db.query(models.GroupMember).filter(
         models.GroupMember.group_id == group_id,
         models.GroupMember.user_id == user_id
@@ -146,3 +207,37 @@ def update_group_profile(db: Session, group_id: int, user_id: int, group: schema
     db.commit()
     db.refresh(groupprofile)
     return groupprofile
+
+# 지지하기 생성
+def create_support(db: Session, group_id: int, from_user_id: int, to_user_id: int):
+    support = models.Support(
+        group_id=group_id,
+        from_user_id=from_user_id,
+        to_user_id=to_user_id
+    )
+    db.add(support)
+    db.commit()
+    db.refresh(support)
+    return support
+
+# 오늘 이미 지지했는지 확인
+def check_support_exists(db: Session, group_id: int, from_user_id: int, to_user_id: int):
+    today = date.today()
+    return db.query(models.Support).filter(
+        models.Support.group_id == group_id,
+        models.Support.from_user_id == from_user_id,
+        models.Support.to_user_id == to_user_id,
+        func.date(models.Support.created_at) == today
+    ).first()
+
+# 알림 생성
+def create_notification(db: Session, user_id: int, type: str, content: str):
+    notification = models.Notification(
+        user_id=user_id,
+        type=type,
+        content=content
+    )
+    db.add(notification)
+    db.commit()
+    db.refresh(notification)
+    return notification
