@@ -46,11 +46,11 @@ def create_group_habit(
 ) -> Habit:
     """모임 참여 시 그룹 습관을 자동으로 생성한다 (Flow A/B 공통)."""
     habit = Habit(
-        user_id=user_id,
-        group_id=group_id,
-        title=title,
-        category=category,
-        repeat_type=repeat_type,
+        user_id     = user_id,
+        group_id    = group_id,
+        title       = title,
+        category    = category,
+        repeat_type = repeat_type,
     )
     db.add(habit)
     db.commit()
@@ -119,7 +119,7 @@ def check_habit(db: Session, habit_id: int, checked_date: date) -> HabitCheck:
     existing = get_check(db, habit_id, checked_date)
     if existing:
         return existing
-    check = HabitCheck(habit_id=habit_id, checked_date=checked_date)
+    check = HabitCheck(habit_id = habit_id, checked_date = checked_date)
     db.add(check)
     db.commit()
     db.refresh(check)

@@ -20,28 +20,28 @@ router = APIRouter()
 
 @router.get("/", response_model=list[HabitResponse])
 def list_habits(
-    category: str | None = Query(None, description="카테고리 필터"),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    category:     str | None = Query(None, description="카테고리 필터"),
+    db:           Session    = Depends(get_db),
+    current_user: User       = Depends(get_current_user),
 ):
     return service.get_habits(db, current_user.id, category)
 
 
 @router.post("/", response_model=HabitResponse, status_code=status.HTTP_201_CREATED)
 def create_habit(
-    data: HabitCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    data:         HabitCreate,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
 ):
     return service.create_habit(db, current_user.id, data)
 
 
 @router.put("/{habit_id}", response_model=HabitResponse)
 def update_habit(
-    habit_id: int,
-    data: HabitUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    habit_id:     int,
+    data:         HabitUpdate,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
 ):
     try:
         return service.update_habit(db, current_user.id, habit_id, data)
@@ -51,9 +51,9 @@ def update_habit(
 
 @router.delete("/{habit_id}")
 def delete_habit(
-    habit_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    habit_id:     int,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
 ):
     try:
         service.deactivate_habit(db, current_user.id, habit_id)
@@ -68,10 +68,10 @@ def delete_habit(
     status_code=status.HTTP_201_CREATED,
 )
 def check_habit(
-    habit_id: int,
-    body: HabitCheckRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    habit_id:     int,
+    body:         HabitCheckRequest,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
 ):
     try:
         return service.check_habit(db, current_user.id, habit_id, body.checked_date)
@@ -81,10 +81,10 @@ def check_habit(
 
 @router.delete("/{habit_id}/check")
 def uncheck_habit(
-    habit_id: int,
-    checked_date: date = Query(default_factory=date.today),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    habit_id:     int,
+    checked_date: date    = Query(default_factory=date.today),
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
 ):
     try:
         service.uncheck_habit(db, current_user.id, habit_id, checked_date)
