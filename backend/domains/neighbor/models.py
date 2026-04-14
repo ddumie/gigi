@@ -48,6 +48,14 @@ class GroupSearchPost(Base):
 
     post = relationship("Post", back_populates="group_search")
 
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class PostSupport(Base):
     """게시글 지지 토글."""

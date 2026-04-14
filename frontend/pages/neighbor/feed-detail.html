@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 피드 상세</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/neighbor/neighbor.css">
+</head>
+<body data-section="neighbor">
+  <header class="gnb">
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      <a href="/pages/today/index.html" data-nav="today">오늘</a>
+      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
+      <a href="/pages/support/index.html" data-nav="support">지지</a>
+      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
+      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
+    </nav>
+    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
+  </header>
+  <main>
+    <div class="container page-shell">
+      <header class="page-header">
+        <a href="/pages/neighbor/feed.html" class="btn btn-outline btn-sm" style="margin-bottom:1rem;">← 피드로 돌아가기</a>
+        <div id="feed-detail-content">로딩 중...</div>
+      </header>
+
+      <section style="margin-top:2rem;">
+        <h2 class="section-label">댓글</h2>
+        <div id="comment-list" style="margin-top:1rem; display:grid; gap:0.75rem;"></div>
+      </section>
+
+      <section style="margin-top:1.5rem;">
+        <h3 class="section-label">댓글 작성</h3>
+        <textarea id="comment-input" class="input" rows="3" placeholder="댓글을 입력하세요" style="width:100%; margin-top:0.5rem;"></textarea>
+        <div class="page-actions" style="margin-top:0.75rem;">
+          <button id="comment-submit" class="btn btn-primary btn-sm">등록</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/neighbor/feed-detail.js"></script>
+</body>
+</html>
