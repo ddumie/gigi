@@ -2,22 +2,21 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from . import schemas, service
 from backend.database import get_db
+from backend.domains.auth.service import get_current_user
+from backend.domains.auth.models import User
 
 router = APIRouter()
 
-CUI = 1 # TODO auth 모듈 완료 되면 반드시 고칠 것!
 # ============== 12 지지 ========================
 # 코드로 모임 참여하기
 @router.post("/group/invite/{invite_code}")
 def invited_group(
     invite_code: str,
     db: Session = Depends(get_db),
-    current_user_id: int = CUI
+    current_user : User = Depends(get_current_user)
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
     try:
-        return service.invited_group_service(db, invite_code, current_user_id)
+        return service.invited_group_service(db, invite_code, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -25,14 +24,12 @@ def invited_group(
 @router.get("/groups")
 def my_groups(
     db: Session = Depends(get_db),
-    current_user_id: int = CUI,
+    current_user : User = Depends(get_current_user),
     limit: int = 3, # 한 번에 불러오는 갯수
     offset: int = 0
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")    
     try:
-        return service.groups_info_service(db, current_user_id, limit, offset)
+        return service.groups_info_service(db, current_user.id, limit, offset)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -42,12 +39,11 @@ def send_support(
     group_id: int,
     to_user_id: int,
     db: Session = Depends(get_db),
-    current_user_id: int = CUI
+    current_user : User = Depends(get_current_user)
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
     try:
-        return service.send_support_service(db, group_id, current_user_id, to_user_id)
+        return service.send_support_service(db, group_id, current_user.id, to_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -58,11 +54,9 @@ def send_support(
 def create_group(
     group: schemas.GroupCreate,
     db: Session = Depends(get_db),
-    current_user_id: int = CUI
+    current_user : User = Depends(get_current_user)
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
-    return service.create_group_service(db, group, user_id = current_user_id)
+    return service.create_group_service(db, group, user_id = current_user.id)
 
 
 # =============== 12-2 모임 관리 ====================
@@ -72,28 +66,25 @@ def update_group_profile(
     group_id: int,
     group: schemas.GroupCreate,
     db: Session = Depends(get_db),
-    current_user_id: int = CUI
+    current_user : User = Depends(get_current_user)
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
     try:
-        return service.update_group_profile_service(db, group_id, current_user_id, group)
+        return service.update_group_profile_service(db, group_id, current_user.id, group)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 # 모임 읽어오기 (모임명, 모임 종류, 초대코드, 습관)
 @router.get("/group/{group_id}/settings")
 def group_settings(
     group_id: int,
     db: Session = Depends(get_db),
-    current_user_id: int = CUI
+    current_user : User = Depends(get_current_user)
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
     try:
-        return service.group_settings_service(db, group_id, current_user_id)
+        return service.group_settings_service(db, group_id, current_user.id)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # 모임 탈퇴하기
@@ -101,12 +92,10 @@ def group_settings(
 def leave_group(
     group_id: int,
     db: Session = Depends(get_db),
-    current_user_id: int = CUI
+    current_user : User = Depends(get_current_user)
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
     try:
-        return service.leave_group_service(db, group_id, current_user_id)
+        return service.leave_group_service(db, group_id, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -120,11 +109,10 @@ def leave_group(
 def join_group(
     post_id: int,
     db: Session = Depends(get_db),
-    current_user_id: int = CUI
+    current_user : User = Depends(get_current_user)
 ):
-    if not current_user_id:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
     try:
-        return service.join_by_post_service(db, post_id, current_user_id)
+        return service.join_by_post_service(db, post_id, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
