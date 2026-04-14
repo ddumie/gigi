@@ -75,6 +75,8 @@ function initFontScaler() {
 }
 
 function initActiveNav() {
+  // initGnb()에서 active 클래스를 직접 설정하므로
+  // 기존 HTML에 하드코딩된 헤더가 남아있는 페이지를 위한 폴백
   const section = document.body.dataset.section;
   if (!section) return;
 
@@ -134,13 +136,39 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
-// ── GNB 초기화 ──
+// ── GNB 동적 생성 + 초기화 ──
 function initGnb() {
-  const user = getCurrentUser();
-  const userLabel = document.getElementById('gnb-username');
-  if (userLabel && user) {
-    userLabel.textContent = user.nickname + '님';
-  }
+  // 이미 HTML에 <header class="gnb">가 있으면 제거 (중복 방지)
+  const existing = document.querySelector('header.gnb');
+  if (existing) existing.remove();
+
+  const section  = document.body.dataset.section;
+  const user     = getCurrentUser();
+  const nickname = user ? user.nickname + '님' : '사용자님';
+
+  const nav = (pageKey, sectionKey, label) =>
+    `<a href="${PAGES[pageKey]}" data-nav="${sectionKey}" class="${section === sectionKey ? 'active' : ''}">${label}</a>`;
+
+  const header = document.createElement('header');
+  header.className = 'gnb';
+  header.innerHTML = `
+    <div class="gnb-logo">지지</div>
+    <nav class="gnb-nav">
+      ${nav('today',    'today',    '오늘')}
+      ${nav('habits',   'habits',   '습관')}
+      ${nav('support',  'support',  '지지')}
+      ${nav('feed',     'neighbor', '이웃')}
+      ${nav('settings', 'settings', '설정')}
+    </nav>
+    <div class="gnb-right">
+      <span id="gnb-username" class="gnb-user">${nickname}</span>
+      <div class="gnb-noti">
+        <span id="noti-count" class="gnb-noti-badge"></span>
+      </div>
+    </div>
+  `;
+
+  document.body.prepend(header);
 }
 
 // ── 로그아웃 ──
