@@ -18,7 +18,7 @@ const list = document.getElementById('group-search-list');
     article.className = 'group-search-card';
 
     const title = document.createElement('strong');
-    title.textContent = p.title;
+    title.textContent = `${p.title} · ${p.author?.nickname ?? '알 수 없음'}`;
 
     const meta = document.createElement('p');
     meta.className = 'meta-text';
