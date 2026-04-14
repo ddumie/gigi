@@ -31,10 +31,12 @@ class RegisterRequest(BaseModel):
     def validate_password(cls, v):
         """
         비밀번호 유효성 검사
-        기획서 기준: 6자 이상, 종류 제한 없음
+        기획서 기준: 6자 이상 18자 이하, 종류 제한 없음
         """
         if len(v) < 6:
             raise ValueError("비밀번호는 6자 이상이어야 합니다")
+        if len(v) > 18:
+            raise ValueError("비밀번호는 18자 이하여야 합니다")
         return v
 
     @field_validator("nickname")
@@ -42,13 +44,13 @@ class RegisterRequest(BaseModel):
     def validate_nickname(cls, v):
         """
         닉네임 유효성 검사
-        공백 제거 후 최대 50자
+        공백 제거 후 최대 12자
         """
         v = v.strip()
         if not v:
             raise ValueError("닉네임을 입력해주세요")
-        if len(v) > 50:
-            raise ValueError("닉네임은 50자 이하여야 합니다")
+        if len(v) > 12:
+            raise ValueError("닉네임은 12자 이하여야 합니다")
         return v
 
     @field_validator("name")
@@ -61,8 +63,10 @@ class RegisterRequest(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("이름을 입력해주세요")
-        if len(v) > 50:
-            raise ValueError("이름은 50자 이하여야 합니다")
+        if len(v) < 2:
+            raise ValueError("이름은 2자 이상이어야 합니다")
+        if len(v) > 12:
+            raise ValueError("이름은 12자 이하여야 합니다")
         return v
 
     @model_validator(mode='after')
@@ -90,6 +94,8 @@ class NicknameCheckRequest(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("닉네임을 입력해주세요")
+        if len(v) > 12:
+            raise ValueError("닉네임은 12자 이하여야 합니다")
         return v
 
 class CheckResponse(BaseModel):
@@ -156,6 +162,8 @@ class PasswordChangeRequest(BaseModel):
     def validate_new_password(cls, v):
         if len(v) < 6:
             raise ValueError("비밀번호는 6자 이상이어야 합니다")
+        if len(v) > 18:
+            raise ValueError("비밀번호는 18자 이하여야 합니다")
         return v
 
     @model_validator(mode='after')
