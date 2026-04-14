@@ -12,17 +12,7 @@
   <link rel="stylesheet" href="/features/support/support.css">
 </head>
 <body data-section="support">
-  <header class="gnb">
-    <div class="gnb-logo">지지</div>
-    <nav class="gnb-nav">
-      <a href="/pages/today/index.html" data-nav="today">오늘</a>
-      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
-      <a href="/pages/support/index.html" data-nav="support">지지</a>
-      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
-      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
-    </nav>
-    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
-  </header>
+
   <div class="font-scaler">
     <span>글씨 크기</span>
     <input id="font-scale-slider" type="range" min="0" max="6" step="1">
@@ -31,27 +21,84 @@
   <main>
     <div class="container page-shell">
       <header class="page-header">
-        <div class="section-eyebrow">Support</div>
-        <h1 class="page-title">우리의 지지</h1>
-        <p class="page-subtitle">모임 게이지, 스트릭, 멤버 지지를 한 곳에서 확인합니다.</p>
+        <div>
+          <div class="section-eyebrow">Support</div>
+          <h1 class="page-title">우리의 지지</h1>
+          <p class="page-subtitle">모임 게이지, 스트릭, 멤버 지지를 한 곳에서 확인합니다.</p>
+        </div>
+        <div class="page-actions">
+          <a href="/pages/support/join.html" class="btn btn-primary">모임 가입하기</a>
+          <a href="/pages/support/create.html" class="btn btn-primary">+ 모임 만들기</a>
+        </div>
       </header>
-      <div class="page-actions">
-        <a href="/pages/support/create.html" class="btn btn-primary">모임 만들기</a>
-      </div>
       <section class="group-list">
         <article class="card group-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-            <div>
+          <!-- 카드 헤더 -->
+          <div class="group-card-header">
+            <div class="group-title">
               <strong>우리 가족</strong>
-              <p class="meta-text">가족 모임 · 레벨 나무</p>
             </div>
-            <a href="/pages/support/manage.html" class="btn btn-outline btn-sm">모임 관리</a>
+            <div class="group-actions">
+              <span class="group-type badge">가족</span>
+              <a href="/pages/support/manage.html" class="btn btn-outline btn-sm">모임 관리</a>
+            </div>
           </div>
-          <div class="progress"><div class="progress-bar" style="width:72%;"></div></div>
+          <!-- 레벨 & 스트릭 박스 -->
+          <div class="group-stats">
+            <!-- 첫 번째 stat-box: 그룹 레벨 -->
+            <div class="stat-box">
+              <div class="stat-row">
+                <span class="stat-icon">🌳</span>
+                <div>
+                  <div class="stat-main">나무 레벨 · 247회</div>
+                  <div class="stat-sub">다음 레벨까지 23회 남음</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 두 번째 stat-box: 스트릭 -->
+            <div class="stat-box">
+              <div class="stat-row">
+                <span class="stat-icon">🔥</span>
+                <div>
+                  <div class="stat-main">연속 지지 스트릭 · 5일</div>
+                  <div class="stat-sub">최고 기록 12일</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- 멤버 리스트 -->
           <div class="member-list">
-            <div class="member-row"><span>김건강님</span><button type="button" class="btn btn-outline btn-sm" data-support-button>지지하기</button></div>
-            <div class="member-row"><span>이웃사촌님</span><button type="button" class="btn btn-outline btn-sm" data-support-button>지지하기</button></div>
+            <div class="member-row">
+              <!-- 프로필 글상자 -->
+              <div class="member-avatar">김</div>
+
+              <!-- 이름 + 진행바 -->
+              <div class="member-info">
+                <div class="member-name">김건강님</div>
+                <div class="member-progress">
+                  <div class="progress-bar green" style="width:100%;"></div>
+                </div>
+              </div>
+
+              <!-- 지지하기 버튼 -->
+              <button type="button" class="btn btn-outline btn-sm" data-support-button>지지하기</button>
+            </div>
+
+            <div class="member-row">
+              <div class="member-avatar">이</div>
+              <div class="member-info">
+                <div class="member-name">이웃사촌님</div>
+                <div class="member-progress">
+                  <div class="progress-bar blue" style="width:60%;"></div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline btn-sm" data-support-button>지지하기</button>
+            </div>
           </div>
+
         </article>
       </section>
     </div>
