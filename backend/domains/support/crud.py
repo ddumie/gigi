@@ -174,7 +174,10 @@ def add_group_member(db: Session, group_id: int, user_id: int):
             db.commit()
             db.refresh(new_habit)
 
-    return new_member
+    return {
+    "group_id": int(new_member.group_id),
+    "user_id": int(new_member.user_id)
+}
 
 # 모임 탈퇴
 def remove_group_member(db: Session, group_id: int, user_id: int):

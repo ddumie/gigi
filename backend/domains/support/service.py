@@ -109,8 +109,8 @@ def join_group_service(db: Session, group_id: int, user_id: int):
     ).first()
     if existing_member:
         raise ValueError("이미 모임에 가입 된 사용자입니다.")
-
-    return crud.add_group_member(db, group_id, user_id)    
+    new_member = crud.add_group_member(db, group_id, user_id)    
+    return {"group_id": new_member.group_id, "user_id": new_member.user_id}
 
 # 모임 탈퇴하기
 def leave_group_service(db: Session, group_id: int, user_id: int):
