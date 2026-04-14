@@ -3,7 +3,7 @@
 
 import json
 import logging
-import google.generativeai as genai
+from google import genai
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from backend.domains.onboarding.schemas import AIHabitItem
@@ -13,8 +13,13 @@ from backend.domains.auth.models import User
 
 logger = logging.getLogger(__name__)
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")  # gemini-3.1-flash-lite-preview
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+# try:
+#     for model in client.models.list():
+#         print(f"가용한 모델명: {model.name}")
+# except Exception as e:
+#     print(f"모델 리스트 조회 실패: {e}")
 
 
 def get_ai_recommendations(age_group: str | None, health_interests: list[str] | None) -> list[AIHabitItem]:
@@ -23,7 +28,7 @@ def get_ai_recommendations(age_group: str | None, health_interests: list[str] | 
     prompt = f"""
     사용자의 나이대: {age_group if age_group else "미입력"}
     사용자의 관심사: {interests_str}
-    
+
     위 정보를 바탕으로 사용자에게 추천할 수 있는 건강 습관 3가지를 JSON 형식으로 제공해주세요.
     각 습관은 title(습관 제목), category(카테고리), description(짧고 간단한 설명)을 포함해야 합니다.
     카테고리는 다음 중 하나여야 합니다: 운동, 복약, 식단, 수면, 기타
@@ -39,7 +44,10 @@ def get_ai_recommendations(age_group: str | None, health_interests: list[str] | 
     """
 
     try:
-        response = model.generate_content(prompt, request_options={"timeout": 10})
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
         text = response.text.strip()
     except Exception as e:
         logger.error(f"Gemini API 호출 중 오류 발생: {e}", exc_info=True)
