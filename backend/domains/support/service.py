@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from auth.models import User
+from backend.domains.auth.models import User
 from . import crud, schemas, models
 
 # 초대코드로 모임 가입

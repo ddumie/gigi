@@ -2,9 +2,9 @@ from datetime import date
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from . import models, schemas
-from neighbor.models import GroupSearchPost, FeedPost
-from auth.models import User
-from habits.models import Habit, HabitCheck
+from backend.domains.neighbor.models import GroupSearchPost, FeedPost
+from backend.domains.auth.models import User
+from backend.domains.habits.models import Habit, HabitCheck
 import secrets, string
 
 # 메모

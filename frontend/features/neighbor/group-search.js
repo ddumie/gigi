@@ -34,7 +34,7 @@ const list = document.getElementById('group-search-list');
     actions.style.marginTop = '1rem';
 
     const link = document.createElement('a');
-    link.href = '/pages/neighbor/group-search-join.html';
+    link.href = `/pages/neighbor/group-search-join.html?habit_title=${encodeURIComponent(p.habit_title)}&frequency=${encodeURIComponent(p.frequency)}`;
     link.className = 'btn btn-outline btn-sm';
     link.textContent = '함께하기';
 
