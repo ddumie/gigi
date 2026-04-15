@@ -3,7 +3,7 @@
 let allPosts = [];  // 전체 피드 캐시
 
 // 피드 카드 렌더링
-function renderFeed(posts) {
+async function renderFeed(posts) {
   const list = document.querySelector('.feed-list');
   list.innerHTML = '';
 
@@ -15,13 +15,13 @@ function renderFeed(posts) {
     return;
   }
 
-  posts.forEach(p => {
+  for (const p of posts) {
     const article = document.createElement('article');
     article.className = 'feed-card';
     article.dataset.category = p.category;
 
     const title = document.createElement('strong');
-    title.textContent = `${p.category} 완료`;
+    title.textContent = `${p.category ?? '기타'} 완료`;
 
     const body = document.createElement('p');
     body.className = 'section-copy';
@@ -38,13 +38,14 @@ function renderFeed(posts) {
     btn.textContent = '지지하기 ❤ 0';
 
     // 초기 지지 상태 로드
-    fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
+    const res = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    }).then(res => res.ok ? res.json() : null).then(data => {
-      if (!data) return;
-      btn.textContent = `지지하기 ❤ ${data.support_count}`;
-      if (data.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
-    });
+    })
+    const data = res.ok ? await res.json() : null;
+    if (!data) continue;
+    btn.textContent = `지지하기 ❤ ${data.support_count}`;
+    if (data.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
+   
 
     // =================================================================================
 
@@ -74,9 +75,10 @@ function renderFeed(posts) {
     }
     if (!res.ok) return;
 
-    const info = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
+    const infoRes = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    }).then(r => r.json());
+    })
+    const info = await infoRes.json();
 
     btn.textContent = `지지하기 ❤ ${info.support_count}`;
     if (info.is_supported) {
@@ -87,7 +89,7 @@ function renderFeed(posts) {
   });
 
     list.appendChild(article);
-  });
+  };
 }
 
 // 카테고리 필터 칩 연결
@@ -112,6 +114,7 @@ function initCategoryFilter() {
   const res = await fetch('/api/v1/neighbor/feed', { 
     headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
   });
+  if (!res.ok) return;
   allPosts = await res.json();
   renderFeed(allPosts);
   initCategoryFilter();
