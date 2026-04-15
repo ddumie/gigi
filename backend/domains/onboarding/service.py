@@ -32,6 +32,7 @@ def get_ai_recommendations(age_group: str | None, health_interests: list[str] | 
     위 정보를 바탕으로 사용자에게 추천할 수 있는 건강 습관 3가지를 JSON 형식으로 제공해주세요.
     각 습관은 title(습관 제목), category(카테고리), description(짧고 간단한 설명)을 포함해야 합니다.
     카테고리는 다음 중 하나여야 합니다: 운동, 복약, 식단, 수면, 기타
+    매번 호출할 때마다 서로 다른 습관을 추천해주세요. 이전에 추천했을 가능성이 있는 습관은 피하고, 다양한 관점에서 새로운 습관을 제안해주세요.
     JSON 형식은 다음과 같아야 합니다:
     [
         {{
