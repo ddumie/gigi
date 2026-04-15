@@ -1,28 +1,154 @@
+/* 페이지 헤더 (support 전용) */
+body[data-section="support"] .page-header {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 그룹 리스트 */
 .group-list {
   display: grid;
   gap: 1rem;
 }
 
+/* 그룹 카드 */
 .group-card {
-  display: grid;
-  gap: 0.875rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.member-list {
+/* 카드 헤더 */
+.group-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.group-card-header strong {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+/* 그룹 액션 영역 (종류 + 버튼) */
+.group-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 그룹 종류 박스 */
+.group-type.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  background-color: var(--color-green-light);
+  color: var(--color-text);
+}
+
+/* 그룹 통계 (레벨, 스트릭) */
+.group-stats {
   display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.stat-box {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.stat-icon {
+  font-size: 1.1rem;
+}
+
+.stat-main {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0D6B4F;
+}
+
+.stat-sub {
+  font-size: 0.6rem;
+  color: var(--color-text-t);
+}
+
+/* 멤버 리스트 */
+.member-list {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
 .member-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
   padding: 0.75rem;
   border-radius: var(--radius-md);
   background: var(--color-bg);
 }
 
+.member-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.member-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.member-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.member-progress {
+  height: 0.5rem;
+  background: var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.progress-bar.blue {
+  background-color: var(--color-primary);
+}
+
+.progress-bar.green {
+  background-color: var(--color-success);
+}
+
+/* 초대 코드 박스 */
 .invite-code-box {
   text-align: center;
   padding: 1rem;

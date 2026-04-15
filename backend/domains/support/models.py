@@ -9,6 +9,8 @@ class Group(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=True, default=None)  # 그룹 습관은 연결 된 post에서 찾아온다.
+    name = Column(String, nullable=False)
+    group_type = Column(String, nullable=False)     # "family", "friend", "health_challenge", "neighbors"    
     total_support_count = Column(Integer, nullable=False, default=0)        # 경험치로 이용
     support_streak = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
