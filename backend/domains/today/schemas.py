@@ -1,1 +1,27 @@
-# TODO: Pydantic 응답 스키마 작성 (담당: 전연주)
+from datetime import date
+
+from pydantic import BaseModel
+
+
+class TodayHabitItem(BaseModel):
+    id:          int
+    title:       str
+    category:    str
+    time:        str | None = None
+    repeat_type: str
+    is_checked:  bool
+    is_group:    bool = False
+
+
+class TodayStat(BaseModel):
+    checked_count:       int
+    total_count:         int
+    completion_rate:     int
+    weekly_average:      int
+    streak_days:         int
+    weekly_checked_dates: list[date]
+
+
+class TodayDashboardResponse(BaseModel):
+    habits: list[TodayHabitItem]
+    stats:  TodayStat
