@@ -27,9 +27,9 @@ def invited_group_service(db: Session, invite_code: str, user_id: int):
 # 모임 생성
 def create_group_service(db: Session, group: schemas.GroupCreate, user_id: int):
     db_group = crud.create_group(db, group, user_id)
-    return {"group" : {"id": db_group.id}}
+    return {"id": db_group.id}
 
-# 모임 목록 출력 TODO: get_group limti, offset 해결하기
+# 모임 목록 출력
 def groups_info_service(
     db: Session,
     user_id: int,
@@ -61,6 +61,7 @@ def groups_info_service(
                 "group_type": groupprofile.group_type,
                 "exp": group.total_support_count,
                 "streak": group.support_streak,
+                "max_streak": group.max_streak,
                 "habit": habit_info["habit_title"] if habit_info else None,
                 "frequency": habit_info["frequency"] if habit_info else None
             },
