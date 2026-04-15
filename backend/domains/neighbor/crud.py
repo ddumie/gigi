@@ -2,7 +2,7 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.database import get_db
-from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Comment
+from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Comment, PostSupport
 from backend.domains.neighbor.schemas import GroupSearchCreate, PostAuthorResponse
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
@@ -192,4 +192,22 @@ def delete_feed_comment(comment_id: int, post_id: int, user_id: int, db: Session
     db.commit()
     return {"message": "댓글 삭제 완료"}
 
-
+# 지지하기 토글 (누르면 추가, 다시 누르면 취소)
+def toggle_support(post_id: int, user_id: int, db: Session):
+    existing = db.query(PostSupport).filter(
+        PostSupport.post_id == post_id,
+        PostSupport.user_id == user_id
+    ).first()
+    if existing:
+        db.delete(existing)
+        db.commit()
+        return {"supported": False}
+    else:
+        db.add(PostSupport(post_id=post_id, user_id=user_id))
+        db.commit()
+        return {"supported": True}
+    
+# 지지 횟수 + 내가 눌렀는지 조회
+def get_support_info(post_id: int, db: Session):
+    count = db.query(PostSupport).filter(PostSupport.post_id == post_id).count()
+    return {"support_count": count}

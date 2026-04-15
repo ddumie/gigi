@@ -17,7 +17,8 @@ from backend.domains.neighbor.crud import (
     list_feed,
     delete_feed,
     get_feed_detail, get_feed_comments, create_feed_comment,
-    delete_feed_comment 
+    delete_feed_comment,
+    toggle_support, get_support_info
 )
 
 router = APIRouter()
@@ -101,3 +102,19 @@ def feed_comment_delete(
 ):
     return delete_feed_comment(comment_id, post_id, current_user.id, db)
 
+# 지지하기 토글
+@router.post("/feed/{post_id}/support")
+def feed_support_toggle(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return toggle_support(post_id, current_user.id, db)
+
+# 지지 횟수 조회
+@router.get("/feed/{post_id}/support")
+def feed_support_info(
+    post_id: int,
+    db: Session = Depends(get_db),
+):
+    return get_support_info(post_id, db)

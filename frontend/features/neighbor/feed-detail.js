@@ -57,6 +57,16 @@ async function loadComments() {
     list.appendChild(card);
   });
 }
+async function loadSupport() {
+  const res = await fetch(`/api/v1/neighbor/feed/${postId}/support`);
+  if (!res.ok) return;
+  const data = await res.json();
+
+  document.getElementById('support-count').textContent = data.support_count;
+  const btn = document.getElementById('support-btn');
+  btn.classList.toggle('btn-primary', data.is_supported);
+  btn.classList.toggle('btn-outline', !data.is_supported);
+}
 
 document.getElementById('comment-submit').addEventListener('click', async () => {
   const content = document.getElementById('comment-input').value.trim();
@@ -74,8 +84,30 @@ document.getElementById('comment-submit').addEventListener('click', async () => 
   if (res.ok) {
     document.getElementById('comment-input').value = '';
     await loadComments();
+  } else if (res.status === 401) {
+    alert('로그인이 필요합니다.');
+    location.href = '/pages/auth/login.html';
+  } else {
+    alert('댓글 등록에 실패했습니다. 다시 시도해주세요.');
   }
 });
 
+// 이벤트 리스너들
+
+document.getElementById('support-btn').addEventListener('click', async () => {
+  const res = await fetch(`/api/v1/neighbor/feed/${postId}/support`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+  });
+  if (res.ok) {
+    await loadSupport();
+  } else if (res.status === 401) {
+    alert('로그인이 필요합니다.');
+    location.href = '/pages/auth/login.html';
+  }
+});
+
+
 loadDetail();
 loadComments();
+loadSupport();
