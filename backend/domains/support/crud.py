@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from . import models, schemas
@@ -223,6 +223,29 @@ def create_support(db: Session, group_id: int, from_user_id: int, to_user_id: in
         to_user_id=to_user_id
     )
     db.add(support)
+
+    # 그룹 streak 갱신
+    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    if group:
+        today = datetime.now().date()
+
+        last_supoprt = (
+            db.query(models.Support)
+            .filter(models.Support.group_id == group_id)
+            .order_by(models.Support.created_at.desc())
+            .first()
+        )
+    
+        if last_supoprt and last_supoprt.created_at.date() == today - timedelta(days=1):
+            group.support_streak += 1
+        else:
+            group.support_streak = 1
+
+        if group.support_streak > group.max_streak:
+            group.max_streak = group.support_streak
+        
+        group.total_support_count += 1
+    
     db.commit()
     db.refresh(support)
     return support
@@ -280,7 +303,7 @@ def get_group_summary(db: Session, invite_code: str, limit: int = 10, offset: in
     return group, nicknames
     
 # uid로 그룹 id 목록 가져오기
-def get_group_ids_by_uid(db: Session, user_id: int, limit: int = 3, offset: int = 3):
+def get_group_ids_by_uid(db: Session, user_id: int, limit: int = 3, offset: int = 0):
     return (
         db.query(models.GroupMember.group_id)
         .filter(models.GroupMember.user_id == user_id)

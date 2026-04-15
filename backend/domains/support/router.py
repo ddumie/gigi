@@ -8,11 +8,12 @@ from backend.domains.auth.models import User
 
 router = APIRouter()
 
-# TODO
+# TODO 로그인 기능 구현 끝나면 get_current_user_id 바꾸기
 
 # ================= 공용 부분 ===================
 def get_current_user_id(current_user: User = Depends(get_current_user)) -> int:
-    return UserResponse.model_validate(current_user).id
+    # return UserResponse.model_validate(current_user).id
+    return 1
 
 # ============== 12 지지 ========================
 
@@ -21,8 +22,8 @@ def get_current_user_id(current_user: User = Depends(get_current_user)) -> int:
 def group_summary(
     invite_code: str,
     db: Session = Depends(get_db),
-    limit = 10,
-    offset = 0
+    limit: int = 10,
+    offset: int = 0
 ):
     try:
         return service.group_summary_service(db, invite_code, limit, offset)
