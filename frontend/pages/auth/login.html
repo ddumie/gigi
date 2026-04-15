@@ -22,10 +22,12 @@
         </div>
         <label class="input-label" for="login-email">이메일</label>
         <input id="login-email" class="input-field" type="email" placeholder="gigi@example.com">
+        <div id="login-email-error" class="input-error hidden"></div>
         <label class="input-label" for="login-password">비밀번호</label>
         <input id="login-password" class="input-field" type="password" placeholder="비밀번호를 입력하세요">
+        <div id="login-password-error" class="input-error hidden"></div>
         <div class="page-actions">
-          <a href="/pages/today/index.html" class="btn btn-primary btn-full">로그인</a>
+          <button id="login-submit" class="btn btn-primary btn-full">로그인</button>
         </div>
         <div class="auth-links">
           <a href="/pages/auth/signup-step1.html">회원가입</a>
