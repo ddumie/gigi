@@ -55,6 +55,7 @@ function initStep2() {
       });
       // ai-recommend 호출 → localStorage 저장 → step3 이동
       const result = await apiPost('/onboarding/ai-recommend');
+      if (!result) return; // 401 등으로 이미 리다이렉트된 경우
       localStorage.setItem('gigi_ai_habits', JSON.stringify(result)); //결과 저장
       window.location.href = PAGES.onboard3;
     } catch (err) {
@@ -68,7 +69,7 @@ function initStep2() {
 // Step3: AI 추천 습관 선택
 function initStep3() {
   const stored = localStorage.getItem('gigi_ai_habits');
-  if (!stored) {
+  if (!stored || stored === 'undefined') {
     showToast('추천 정보를 불러올 수 없습니다. 다시 시도해주세요.');
     window.location.href = PAGES.onboard2;
     return;

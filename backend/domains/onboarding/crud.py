@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from sqlalchemy.orm import Session
 from backend.domains.onboarding.models import UserPreference
 
@@ -31,12 +32,17 @@ def save_preferences(db: Session, user_id: int, age_group: str | None, health_in
 
 
 def incre_recommend_count(db: Session, user_id: int):
-    """AI 재추천 횟수 증가(+1)"""
+    """AI 재추천 횟수 증가 (+1), 날짜 바뀌면 자동 초기화 (하루 3회 제한)"""
     try:
         db_pref = get_preferences(db, user_id)
-        if db_pref is None:  # 데이터가 없으면 에러방지로 None처리, 라우터에서 에러처리예정
+        if db_pref is None:
             return None
-        db_pref.recommend_count += 1  # 일단 1회 추천가능으로 되어있음(0-처음 추천, 1-재추천 사용, 2-재추천 불가)
+        today = date.today()
+        # 날짜가 바뀌면 횟수 초기화(3회)
+        if db_pref.last_recommend_date != today:
+            db_pref.recommend_count = 0
+        db_pref.recommend_count += 1
+        db_pref.last_recommend_date = today
         db.commit()
         db.refresh(db_pref)
         return db_pref
