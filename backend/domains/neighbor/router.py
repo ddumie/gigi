@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.database import get_db
+from backend.domains.neighbor.service import (
+    create_group_search,
+    list_group_search_logic,
+    delete_group_search_logic,
+)
 from backend.domains.neighbor.schemas import (
     GroupSearchCreate, GroupSearchResponse, FeedPostResponse,
     FeedDetailResponse, NeighborCommentCreate, NeighborCommentResponse
@@ -8,9 +13,9 @@ from backend.domains.neighbor.schemas import (
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
 from backend.domains.neighbor.crud import (
-    create_group_search,
-    list_group_search,
-    delete_group_search,
+
+    
+    
     list_my_group_search,
     list_my_feed,
     create_feed_post,
@@ -29,18 +34,18 @@ router = APIRouter()
 
 # 글쓰기 post
 @router.post("/group-search")
-def create_group_search_post(post: GroupSearchCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return create_group_search(post, current_user.id, db)
+def post_group_search(post: GroupSearchCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return create_group_search(post=post, user_id=current_user.id, db=db)
 
 # 글쓰기 내용 읽어오기
 @router.get("/group-search", response_model=list[GroupSearchResponse])
 def list_group_search_get(db: Session = Depends(get_db)):
-    return list_group_search(db)
+    return list_group_search_logic(db=db)
 
 # 글 삭제 기능(docs용)
 @router.delete("/group-search/{post_id}")
 def group_search_del(post_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return delete_group_search(post_id, current_user.id, db)
+    return delete_group_search_logic(post_id, current_user.id, db)
 
 # my posts 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
 @router.get("/group-search/my", response_model=list[GroupSearchResponse])
