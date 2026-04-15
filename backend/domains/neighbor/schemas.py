@@ -37,7 +37,7 @@ class GroupSearchResponse(BaseModel):
 
     class Config:
         from_attributes = True  # ORM 객체 → Pydantic 자동 변환
-
+# =====================================================================================
 # 게시글 목록 / 상세 응답
 class PostListResponse(BaseModel):
     id : int
@@ -68,7 +68,7 @@ class CommentResponse(BaseModel):
     post_id : int 
     parent_id : int 
     created_at : datetime
-
+# ============================================================================
 # 피드 상세 응답
 class FeedDetailResponse(BaseModel):
     post_id: int
@@ -76,6 +76,8 @@ class FeedDetailResponse(BaseModel):
     content: Optional[str] = None
     author: Optional[PostAuthorResponse] = None
     created_at: Optional[datetime] = None
+    support_count: int = 0
+    is_supported: bool = False
 
     class Config:
         from_attributes = True
@@ -95,7 +97,7 @@ class NeighborCommentResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
+# ============================================================================
 # 좋아요
 class support(BaseModel):
     id : int

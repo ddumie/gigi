@@ -35,7 +35,18 @@ function renderFeed(posts) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn btn-outline btn-sm support-toggle';
-    btn.textContent = '지지하기';
+    btn.textContent = '지지하기 ❤ 0';
+
+    // 초기 지지 상태 로드
+    fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+    }).then(res => res.ok ? res.json() : null).then(data => {
+      if (!data) return;
+      btn.textContent = `지지하기 ❤ ${data.support_count}`;
+      if (data.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
+    });
+
+    // =================================================================================
 
     actions.appendChild(btn);
     const commentBtn = document.createElement('button');
@@ -50,11 +61,30 @@ function renderFeed(posts) {
     article.append(title, body, actions);
 
     // 지지하기 토글
-    btn.addEventListener('click', (e) => {
-      const btn = e.currentTarget;
-      btn.classList.toggle('active');
-      btn.textContent = btn.classList.contains('active') ? '지지 취소' : '지지하기';
+  // 클릭 시 API 호출
+  btn.addEventListener('click', async () => {
+    const res = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
     });
+    if (res.status === 401) {
+      alert('로그인이 필요합니다.');
+      location.href = '/pages/auth/login.html';
+      return;
+    }
+    if (!res.ok) return;
+
+    const info = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+    }).then(r => r.json());
+
+    btn.textContent = `지지하기 ❤ ${info.support_count}`;
+    if (info.is_supported) {
+      btn.classList.replace('btn-outline', 'btn-primary');
+    } else {
+      btn.classList.replace('btn-primary', 'btn-outline');
+    }
+  });
 
     list.appendChild(article);
   });
