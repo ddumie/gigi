@@ -33,6 +33,7 @@ class GroupSearchResponse(BaseModel):
     group_type: str
     habit_title: str
     frequency: str
+    author: PostAuthorResponse
 
     class Config:
         from_attributes = True  # ORM 객체 → Pydantic 자동 변환
@@ -67,6 +68,33 @@ class CommentResponse(BaseModel):
     post_id : int 
     parent_id : int 
     created_at : datetime
+
+# 피드 상세 응답
+class FeedDetailResponse(BaseModel):
+    post_id: int
+    category: Optional[str] = None
+    content: Optional[str] = None
+    author: Optional[PostAuthorResponse] = None
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+# 이웃 댓글 작성 요청
+class NeighborCommentCreate(BaseModel):
+    content: str
+
+# 이웃 댓글 응답
+class NeighborCommentResponse(BaseModel):
+    id: int
+    post_id: int
+    author_id: int
+    author_nickname: Optional[str] = None
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 # 좋아요
 class support(BaseModel):

@@ -20,3 +20,7 @@
   border-color: var(--color-primary);
   background: var(--color-primary-light);
 }
+
+.ai-box .section-copy {
+  margin-top: 0.5rem;
+}

@@ -38,6 +38,15 @@ function renderFeed(posts) {
     btn.textContent = '지지하기';
 
     actions.appendChild(btn);
+    const commentBtn = document.createElement('button');
+    commentBtn.type = 'button';
+    commentBtn.className = 'btn btn-outline btn-sm';
+    commentBtn.textContent = '댓글';
+    commentBtn.addEventListener('click', () => {
+    location.href = `/pages/neighbor/feed-detail.html?post_id=${p.post_id}`;
+    });
+    
+    actions.appendChild(commentBtn);
     article.append(title, body, actions);
 
     // 지지하기 토글
@@ -70,7 +79,9 @@ function initCategoryFilter() {
 
 // 초기 로드
 (async () => {
-  const res = await fetch('/api/v1/neighbor/feed');
+  const res = await fetch('/api/v1/neighbor/feed', { 
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+  });
   allPosts = await res.json();
   renderFeed(allPosts);
   initCategoryFilter();
