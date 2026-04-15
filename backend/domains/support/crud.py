@@ -10,7 +10,6 @@ import secrets, string
 # 메모
 # 모임 구해요에서 온 모임에는 GroupSearchPost에서 가져온 habit_title과 frequency를 받아다 출력
 
-
 # 초대코드 생성 (4자리의 숫자 or 알파벳 소문자)
 def generate_invitecode(length = 4):
     d4code = string.ascii_lowercase + string.digits
@@ -30,6 +29,8 @@ def create_unique_invitecode(db: Session, prefix="GIGI-", length=4, max_attempts
 def create_group(db: Session, group: schemas.GroupCreate, user_id: int):
     # group 생성
     db_group = models.Group(
+        name = group.name,
+        group_type = group.group_type,
         total_support_count = 0,
         support_streak = 0
     )
@@ -63,10 +64,16 @@ def create_group(db: Session, group: schemas.GroupCreate, user_id: int):
     return db_group
 
 # 모임 읽어오기
-def get_group(db: Session, group_id: int, user_id: int):
+def get_group(db: Session, group_id: int, user_id: int, limit: int = 10, offset: int = 0):
     groupprofile = db.query(models.GroupProfile).filter(models.GroupProfile.group_id == group_id, models.GroupProfile.user_id == user_id).first()
     invite = db.query(models.InviteCode).filter(models.InviteCode.group_id == group_id).first()
-    members = db.query(models.GroupMember).filter(models.GroupMember.group_id == group_id).all()
+    members = (
+        db.query(models.GroupMember)
+        .filter(models.GroupMember.group_id == group_id)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
     # 습관 조회 (Group의 post_id가 None이 아닌 경우만.)
     group = db.query(models.Group).filter(models.Group.id == group_id).first()
@@ -174,10 +181,7 @@ def add_group_member(db: Session, group_id: int, user_id: int):
             db.commit()
             db.refresh(new_habit)
 
-    return {
-    "group_id": int(new_member.group_id),
-    "user_id": int(new_member.user_id)
-}
+    return new_member
 
 # 모임 탈퇴
 def remove_group_member(db: Session, group_id: int, user_id: int):
@@ -244,3 +248,67 @@ def create_notification(db: Session, user_id: int, type: str, content: str):
     db.commit()
     db.refresh(notification)
     return notification
+
+# 초대코드로 그룹 정보 가져오기
+def get_group_summary(db: Session, invite_code: str, limit: int = 10, offset: int = 0):
+    # 초대코드 확인
+    invite = db.query(models.InviteCode).filter(
+        models.InviteCode.code == invite_code,
+        models.InviteCode.is_active == True
+    ).first()
+    if not invite:
+        return None
+    
+    # 그룹 조회
+    group = db.query(models.Group).filter(models.Group.id == invite.group_id).first()
+    if not group:
+        return None
+    
+    # 그룹 맴버 조회 및 닉네임 반환
+    members = (
+        db.query(models.GroupMember)
+        .filter(models.GroupMember.group_id == invite.group_id)
+        .offset(offset)
+        .limit(limit)
+        .all())
+    nicknames = []
+    for m in members:
+        user = db.query(User).filter(User.id == m.user_id).first()
+        if user:
+            nicknames.append(user.nickname)
+
+    return group, nicknames
+    
+# uid로 그룹 id 목록 가져오기
+def get_group_ids_by_uid(db: Session, user_id: int, limit: int = 3, offset: int = 3):
+    return (
+        db.query(models.GroupMember.group_id)
+        .filter(models.GroupMember.user_id == user_id)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+# 모임 존재 여부 확인
+def get_group_by_id(db: Session, group_id: int):
+    return db.query(models.Group).filter(models.Group.id == group_id).first()
+
+# 특정 모임의 특정 맴버 조회
+def get_group_member(db: Session, group_id: int, user_id: int):
+    return db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+
+# 당일 그룹 지지 리스트 반환
+def check_group_support(db: Session, group_id: int, from_user_id: int):
+    today = date.today()
+    return db.query(models.Support).filter(
+        models.Support.group_id == group_id,
+        models.Support.from_user_id == from_user_id,
+        models.Support.created_at >= today
+    ).all()
+
+# 특정 유저 조회
+def get_user_by_id(db: Session, user_id: int):
+    return db.query(User).filter(User.id == user_id).first()

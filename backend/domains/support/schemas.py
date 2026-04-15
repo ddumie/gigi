@@ -2,6 +2,12 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
+# 그룹 정보 요청 (초대코드)
+class GroupSummary(BaseModel):
+    name: str
+    group_type: str
+    members: dict   # {"nickname": str}
+
 # 그룹 생성 요청
 class GroupCreate(BaseModel):
     name: str
@@ -18,6 +24,7 @@ class GroupCreateResponse(BaseModel):
 class MemberInfo(BaseModel):
     nickname: Optional[str]
     complete_rate: Optional[float]
+    supported_today: bool
 
 class GroupInfo(BaseModel):
     id: int

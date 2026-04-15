@@ -9,21 +9,36 @@ from backend.domains.auth.models import User
 router = APIRouter()
 
 # TODO
-# 1) 코드로 모임 가입시 그룹 정보 확인 (그룹명, 종류, 가입자 일부)
-# 2) 이를 위해서 그룹 생성시 기본 그룹명, 종류가 들어가게 변경
-# 3) 13-1에서 생성 되는 그룹은 지금처럼 타이틀을 그룹명으로 가져오기
+
+# ================= 공용 부분 ===================
+def get_current_user_id(current_user: User = Depends(get_current_user)) -> int:
+    return UserResponse.model_validate(current_user).id
 
 # ============== 12 지지 ========================
 
-# 코드로 모임 참여하기
-@router.post("/group/invite/{invite_code}", response_model=schemas.InviteResponse)
-def invited_group(
+# 코드 입력시 모임 정보 가져오기
+@router.get("/group/summary/{invite_code}", response_model=schemas.GroupSummary)
+def group_summary(
     invite_code: str,
-    db : Session = Depends(get_db),
-    current_user : User = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    limit = 10,
+    offset = 0
 ):
     try:
-        return service.invited_group_service(db, invite_code, UserResponse.model_validate(current_user).id)
+        return service.group_summary_service(db, invite_code, limit, offset)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# 코드로 모임 참여하기
+@router.post("/group/invite/{invite_code}", response_model=schemas.InviteResponse)
+def join_group_by_invite(
+    invite_code: str,
+    db : Session = Depends(get_db),
+    current_user_id : int = Depends(get_current_user_id)
+):
+    
+    try:
+        return service.invited_group_service(db, invite_code, current_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -31,12 +46,15 @@ def invited_group(
 @router.get("/groups", response_model=schemas.GroupsResponse)
 def my_groups(
     db: Session = Depends(get_db),
-    current_user : User = Depends(get_current_user),
-    limit: int = 3, # 한 번에 불러오는 갯수
-    offset: int = 0
+    current_user_id : int = Depends(get_current_user_id),
+    group_limit: int = 3,
+    group_offset: int = 0,
+    member_limit: int = 10,
+    member_offset: int = 0
 ):
+    
     try:
-        return service.groups_info_service(db, UserResponse.model_validate(current_user).id, limit, offset)
+        return service.groups_info_service(db, current_user_id, group_limit, group_offset, member_limit, member_offset)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -46,11 +64,11 @@ def send_support(
     group_id: int,
     to_user_id: int,
     db: Session = Depends(get_db),
-    current_user : User = Depends(get_current_user)
+    current_user_id : int = Depends(get_current_user_id)
 ):
-
+    
     try:
-        return service.send_support_service(db, group_id, UserResponse.model_validate(current_user).id, to_user_id)
+        return service.send_support_service(db, group_id, current_user_id, to_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -61,9 +79,10 @@ def send_support(
 def create_group(
     group: schemas.GroupCreate,
     db: Session = Depends(get_db),
-    current_user : User = Depends(get_current_user)
+    current_user_id : int = Depends(get_current_user_id)
 ):
-    return service.create_group_service(db, group, user_id = UserResponse.model_validate(current_user).id)
+    
+    return service.create_group_service(db, group, user_id = current_user_id)
 
 
 # =============== 12-2 모임 관리 ====================
@@ -73,11 +92,11 @@ def update_group_profile(
     group_id: int,
     group: schemas.GroupCreate,
     db: Session = Depends(get_db),
-    current_user : User = Depends(get_current_user)
+    current_user_id : int = Depends(get_current_user_id)
 ):
-
+    
     try:
-        return service.update_group_profile_service(db, group_id, UserResponse.model_validate(current_user).id, group)
+        return service.update_group_profile_service(db, group_id, current_user_id, group)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -86,10 +105,11 @@ def update_group_profile(
 def group_settings(
     group_id: int,
     db: Session = Depends(get_db),
-    current_user : User = Depends(get_current_user)
+    current_user_id : int = Depends(get_current_user_id)
 ):
+    
     try:
-        return service.group_settings_service(db, group_id, UserResponse.model_validate(current_user).id)
+        return service.group_settings_service(db, group_id, current_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -99,10 +119,11 @@ def group_settings(
 def leave_group(
     group_id: int,
     db: Session = Depends(get_db),
-    current_user : User = Depends(get_current_user)
+    current_user_id : int = Depends(get_current_user_id)
 ):
+    
     try:
-        return service.leave_group_service(db, group_id, UserResponse.model_validate(current_user).id)
+        return service.leave_group_service(db, group_id, current_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -113,13 +134,13 @@ def leave_group(
 
 # 함께하기로 모임 참가
 @router.post("/group/post/{post_id}", response_model=schemas.JoinByPostResponse)
-def join_group(
+def join_group_by_post(
     post_id: int,
     db: Session = Depends(get_db),
-    current_user : User = Depends(get_current_user)
+    current_user_id : int = Depends(get_current_user_id)
 ):
-
+    
     try:
-        return service.join_by_post_service(db, post_id, UserResponse.model_validate(current_user).id)
+        return service.join_by_post_service(db, post_id, current_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -1,6 +1,20 @@
 from sqlalchemy.orm import Session
-from backend.domains.auth.models import User
-from . import crud, schemas, models
+from . import crud, schemas
+
+# 초대코드로 그룹 정보 조회
+def group_summary_service(db: Session, invite_code: str, limit: int = 10, offset: int = 0):
+    result = crud.get_group_summary(db, invite_code, limit, offset)
+    if not result:
+        raise ValueError("초대코드가 잘못 되었거나 만료되었습니다.")
+    
+    group, nicknames = result
+
+    return {
+        "id": group.id,
+        "name": group.name,
+        "group_type": group.group_type,
+        "members": nicknames
+    }
 
 # 초대코드로 모임 가입
 def invited_group_service(db: Session, invite_code: str, user_id: int):
@@ -15,19 +29,23 @@ def create_group_service(db: Session, group: schemas.GroupCreate, user_id: int):
     db_group = crud.create_group(db, group, user_id)
     return {"group" : {"id": db_group.id}}
 
-# 모임 목록 출력
-def groups_info_service(db: Session, user_id: int, limit: int = 3, offset: int = 0):
+# 모임 목록 출력 TODO: get_group limti, offset 해결하기
+def groups_info_service(
+    db: Session,
+    user_id: int,
+    group_limit: int = 3,
+    group_offset: int = 0,
+    member_limit: int = 10,
+    member_offset: int = 0
+):
     # 사용자가 가입한 모든 그룹 id 가져오기
-    group_ids = (
-        db.query(models.GroupMember.group_id)
-        .filter(models.GroupMember.user_id == user_id)
-        .offset(offset)
-        .limit(limit)
-        .all())
+    group_ids = crud.get_group_ids_by_uid(db, user_id, group_limit, group_offset)
     results = []
     for gid_tuple in group_ids:
         gid = gid_tuple[0]
-        group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates = crud.get_group(db, gid, user_id)
+        group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates = crud.get_group(db, gid, user_id, member_limit, member_offset)
+        supports_today = crud.check_group_support(db, gid, user_id)
+        supported_map = {s.to_user_id: True for s in supports_today}
         if not group:
             raise ValueError("모임을 찾을 수 없습니다.")
         if not groupprofile:
@@ -50,7 +68,8 @@ def groups_info_service(db: Session, user_id: int, limit: int = 3, offset: int =
             "members": [
                 {
                     "nickname": member_nicknames.get(m.user_id),
-                    "complete_rate": complete_rates.get(m.user_id)
+                    "complete_rate": complete_rates.get(m.user_id),
+                    "supported_today": supported_map.get(m.user_id, False)
                 }
                 for m in members
             ]
@@ -93,37 +112,31 @@ def join_by_post_service(db: Session, post_id: int, user_id: int):
     if not group_id:
         raise ValueError("해당 post_id에 연결 된 그룹을 찾을 수 없습니다.")
     new_member = join_group_service(db, group_id, user_id)
-    return {"message": "함께하기로 모임 가입", "group_id": new_member.group_id, "user_id": new_member.user_id}
+    return {"group_id": new_member.group_id, "user_id": new_member.user_id}
 
 # 가져온 그룹 id로 가입하기
 def join_group_service(db: Session, group_id: int, user_id: int):
     # 모임 존재 확인
-    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    group = crud.get_group_by_id(db, group_id)
     if not group:
         raise ValueError("모임을 찾을 수 없습니다.")
 
     # 중복가입 확인
-    existing_member = db.query(models.GroupMember).filter(
-        models.GroupMember.group_id == group_id,
-        models.GroupMember.user_id == user_id
-    ).first()
+    existing_member = crud.get_group_member(db, group_id, user_id)
     if existing_member:
         raise ValueError("이미 모임에 가입 된 사용자입니다.")
     new_member = crud.add_group_member(db, group_id, user_id)    
-    return {"group_id": new_member.group_id, "user_id": new_member.user_id}
+    return new_member
 
 # 모임 탈퇴하기
 def leave_group_service(db: Session, group_id: int, user_id: int):
     # 모임 확인
-    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    group = crud.get_group_by_id(db, group_id)
     if not group:
         raise ValueError("모임을 찾을 수 없습니다.")
     
     # 가입 여부 확인
-    member = db.query(models.GroupMember).filter(
-        models.GroupMember.group_id == group_id,
-        models.GroupMember.user_id == user_id
-    ).first()
+    member = crud.get_group_member(db, group_id, user_id)
     if not member:
         raise ValueError("가입된 사용자가 아닙니다.")
     
@@ -137,21 +150,15 @@ def update_group_profile_service(db: Session, group_id: int, user_id: int, group
     if not updated_profile:
         raise ValueError("해당 사용자에 대한 그룹 프로필을 찾을 수 없습니다.")
     return {
-        "message": "모임 정보가 수정되었습니다.",
-        "group": {
-            "id": updated_profile.group_id,
-            "name": updated_profile.name,
-            "group_type": updated_profile.group_type
-        }
+        "id": updated_profile.group_id,
+        "name": updated_profile.name,
+        "group_type": updated_profile.group_type
     }
 
 # 지지하기 알림
 def send_support_service(db: Session, group_id: int, from_user_id: int, to_user_id: int):
     # 그룹 멤버 여부 확인
-    member = db.query(models.GroupMember).filter(
-        models.GroupMember.group_id == group_id,
-        models.GroupMember.user_id == from_user_id
-    ).first()
+    member = crud.get_group_member(db, group_id, to_user_id)
     if not member:
         raise ValueError("해당 그룹에 가입된 사용자만 지지할 수 있습니다.")
 
@@ -164,9 +171,7 @@ def send_support_service(db: Session, group_id: int, from_user_id: int, to_user_
     support = crud.create_support(db, group_id, from_user_id, to_user_id)
 
     # 알림 생성
-    from_user = db.query(User).filter(User.id == from_user_id).first()
-    if not from_user:
-        raise ValueError("보낸 사용자를 찾을 수 없습니다.")
+    from_user = crud.get_user_by_id(db, from_user_id)
 
     content = f"{from_user.nickname}님이 지지를 보냈어요!"
     notification = crud.create_notification(db, to_user_id, "support", content)
