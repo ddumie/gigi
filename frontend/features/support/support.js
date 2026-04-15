@@ -8,6 +8,14 @@
 //   });
 // });
 
+// ============ 페이지 로드 =================
+document.addEventListener("DOMContentLoaded", () => {
+  requireLogin();
+  // 초기화 코드들
+  loadGroups();
+});
+
+
 
 // =============그룹 리스트 출력===============
 const groupList = document.querySelector(".group-list");
@@ -146,9 +154,6 @@ async function loadGroups() {
     loading = false;
   }
 }
-
-// 첫 로딩
-loadGroups();
 
 // 스크롤 이벤트로 추가 로딩
 window.addEventListener("scroll", () => {

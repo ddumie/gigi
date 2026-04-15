@@ -5,6 +5,7 @@ from . import models, schemas
 from backend.domains.neighbor.models import GroupSearchPost, FeedPost
 from backend.domains.auth.models import User
 from backend.domains.habits.models import Habit, HabitCheck
+from backend.domains.habits.crud import create_group_habit
 import secrets, string
 
 # 메모
@@ -170,16 +171,14 @@ def add_group_member(db: Session, group_id: int, user_id: int):
         post_category = db.query(FeedPost.category).filter(FeedPost.post_id == group.post_id).scalar()
 
         if post_info and post_category:
-            new_habit = Habit(
+            new_habit = create_group_habit(
+                db = db,
                 user_id = user_id,
                 group_id = group_id,
                 title = post_info.habit_title,
                 category = post_category,
                 repeat_type = post_info.frequency
             )
-            db.add(new_habit)
-            db.commit()
-            db.refresh(new_habit)
 
     return new_member
 
