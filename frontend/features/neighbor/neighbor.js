@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  requireLogin();
   document.querySelectorAll('.support-toggle').forEach((button) => {
     button.addEventListener('click', () => {
       button.classList.toggle('active');
