@@ -47,7 +47,7 @@ def recommend_habits(db: Session = Depends(get_db), current_user = Depends(get_c
     if pref.recommend_count >= 3:
         raise HTTPException(status_code=400, detail="오늘 추천 횟수를 모두 사용했습니다. 내일 다시 시도해주세요.")
 
-    # 2단계: Gemini AI 호출(Gemini가 습관추천에 성공하면 카운트 +1, 실패하면 에러반환(카운트 증가X))
+    # 2단계: Gemini AI 호출 - 습관추천받기
     try:
         habits = service.get_ai_recommendations(pref.age_group, pref.health_interests)
     except ValueError:
