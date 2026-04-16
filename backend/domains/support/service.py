@@ -2,18 +2,21 @@ from sqlalchemy.orm import Session
 from . import crud, schemas
 
 # 초대코드로 그룹 정보 조회
-def group_summary_service(db: Session, invite_code: str, limit: int = 10, offset: int = 0):
+def group_summary_service(db: Session, invite_code: str, user_id: int, limit: int = 10, offset: int = 0):
     result = crud.get_group_summary(db, invite_code, limit, offset)
     if not result:
         raise ValueError("초대코드가 잘못 되었거나 만료되었습니다.")
     
-    group, nicknames = result
+    group, nicknames, member_ids = result  # member_ids도 반환하도록 crud 수정
+
+    already_joined = user_id in member_ids
 
     return {
         "id": group.id,
         "name": group.name,
         "group_type": group.group_type,
-        "members": nicknames
+        "members": nicknames,
+        "already_joined": already_joined
     }
 
 # 초대코드로 모임 가입
@@ -27,6 +30,8 @@ def invited_group_service(db: Session, invite_code: str, user_id: int):
 # 모임 생성
 def create_group_service(db: Session, group: schemas.GroupCreate, user_id: int):
     db_group = crud.create_group(db, group, user_id)
+
+    join_group_service(db, db_group.id, user_id)
     return {"id": db_group.id}
 
 # 모임 목록 출력
@@ -48,17 +53,17 @@ def groups_info_service(
         supported_map = {s.to_user_id: True for s in supports_today}
         if not group:
             raise ValueError("모임을 찾을 수 없습니다.")
-        if not groupprofile:
-            raise ValueError("모임 설정을 찾을 수 없습니다.")
+        # if not groupprofile:
+        #     raise ValueError("모임 설정을 찾을 수 없습니다.")
         if not invite:
             raise ValueError("초대코드를 찾을 수 없습니다.")
         if not members:
             raise ValueError("해당 그룹에 맴버가 없습니다.")
         results.append({
             "group": {
-                "id": groupprofile.group_id,
-                "name": groupprofile.name,
-                "group_type": groupprofile.group_type,
+                "id": (groupprofile.group_id if groupprofile else group.id),
+                "name": (groupprofile.name if groupprofile else group.name),
+                "group_type": (groupprofile.group_type if groupprofile else group.group_type),
                 "exp": group.total_support_count,
                 "streak": group.support_streak,
                 "max_streak": group.max_streak,
@@ -68,6 +73,7 @@ def groups_info_service(
             "invite": {"code": invite.code},
             "members": [
                 {
+                    "user_id": m.user_id,
                     "nickname": member_nicknames.get(m.user_id),
                     "complete_rate": complete_rates.get(m.user_id),
                     "supported_today": supported_map.get(m.user_id, False)
@@ -75,6 +81,7 @@ def groups_info_service(
                 for m in members
             ]
         })
+
     return {"groups": results}
 
 # 모임 관리
@@ -158,6 +165,10 @@ def update_group_profile_service(db: Session, group_id: int, user_id: int, group
 
 # 지지하기 알림
 def send_support_service(db: Session, group_id: int, from_user_id: int, to_user_id: int):
+    # 셀프 지지 방지
+    if from_user_id == to_user_id:
+        raise ValueError("자기 자신은 지지 할 수 없습니다.")
+
     # 그룹 멤버 여부 확인
     member = crud.get_group_member(db, group_id, to_user_id)
     if not member:
@@ -182,3 +193,7 @@ def send_support_service(db: Session, group_id: int, from_user_id: int, to_user_
         "support_id": support.id,
         "notification_id": notification.id
     }
+
+def unread_notifications_service(db: Session, user_id: int):
+    count = crud.get_unread_notification_count(db, user_id)
+    return {"count": count}
