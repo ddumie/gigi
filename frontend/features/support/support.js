@@ -1,21 +1,8 @@
-// document.addEventListener('DOMContentLoaded', () => {
-//   document.querySelectorAll('[data-support-button]').forEach((button) => {
-//     button.addEventListener('click', () => {
-//       button.disabled = true;
-//       button.textContent = '오늘 지지 완료';
-//       showToast('오늘의 지지를 보냈어요.');
-//     });
-//   });
-// });
-
 // ============ 페이지 로드 =================
 document.addEventListener("DOMContentLoaded", () => {
   requireLogin();
-  // 초기화 코드들
   loadGroups();
 });
-
-
 
 // =============그룹 리스트 출력===============
 const groupList = document.querySelector(".group-list");
@@ -25,28 +12,35 @@ let loading = false;
 
 async function sendSupport(groupId, toUserId, button, card) {
   try {
+    const token = localStorage.getItem("gigi_token");
     const res = await fetch(`/api/v1/support/group/${groupId}/support/${toUserId}`, {
-      method: "POST"
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
     });
     if (!res.ok) {
       const err = await res.json();
       showToast(err.detail || "지지 실패");
       return;
     }
-    await res.json(); // SupportResponse는 여기서 사용하지 않음
+    await res.json();
 
-    // 버튼 상태 변경
     button.disabled = true;
     button.textContent = "오늘 지지 완료";
     showToast("오늘의 지지를 보냈어요.");
 
     // 그룹 정보 다시 불러오기
-    const groupRes = await fetch(`/api/v1/support/group/${groupId}/settings`);
+    const groupRes = await fetch(`/api/v1/support/group/${groupId}/settings`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     if (groupRes.ok) {
       const groupData = await groupRes.json();
+      // console.log("group settings 응답:", groupData); // 응답 구조 확인용 로그
       const groupInfo = groupData.group;
 
-      // DOM 업데이트
       card.querySelector("[data-stat='exp']").textContent = `경험치 · ${groupInfo.exp}회`;
       card.querySelector("[data-stat='streak']").textContent = `연속 지지 스트릭 · ${groupInfo.streak}일`;
       card.querySelector("[data-stat='max-streak']").textContent = `최고 기록 ${groupInfo.max_streak}일`;
@@ -56,22 +50,43 @@ async function sendSupport(groupId, toUserId, button, card) {
   }
 }
 
-
 async function loadGroups() {
   if (loading) return;
   loading = true;
   try {
-    // 첫 로딩 시 기존 하드코딩 제거
-    // if (groupOffset === 0) {
-    //   groupList.innerHTML = ""; 
-    // }
-    const res = await fetch(`/api/v1/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`);
+    if (groupOffset === 0) {
+      groupList.innerHTML = ""; 
+    }
+    const token = localStorage.getItem("gigi_token");
+    const res = await fetch(`/api/v1/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      console.error("그룹 불러오기 실패:", await res.text());
+      return;
+    }
     const data = await res.json();
+
+    // 데이터 없으면 기본 카드 표시
+    if (!data.groups || data.groups.length === 0) {
+      const card = document.createElement("article");
+      card.className = "card group-card";
+      card.innerHTML = `
+        <div class="group-card-header">
+          <div class="group-title"><strong>가입한 그룹이 없어요</strong></div>
+        </div>
+      `;
+      groupList.appendChild(card);
+      return;
+    }
+
+    // 그룹 있을 때 기존 카드 렌더링
     data.groups.forEach(item => {
       const group = item.group;
       const members = item.members;
 
-      // 카드 생성
       const card = document.createElement("article");
       card.className = "card group-card";
       card.innerHTML = `
@@ -105,7 +120,6 @@ async function loadGroups() {
         </div>
       `;
 
-      // 멤버 리스트
       const memberList = document.createElement("div");
       memberList.className = "member-list";
       members.forEach(m => {
@@ -124,7 +138,6 @@ async function loadGroups() {
         button.textContent = m.supported_today ? "오늘 지지 완료" : "지지하기";
         button.disabled = m.supported_today;
 
-        // 클릭 이벤트 연결
         button.addEventListener("click", () => {
           sendSupport(group.id, m.user_id, button, card);
         });
@@ -140,7 +153,6 @@ async function loadGroups() {
         `;
         row.appendChild(button);
         memberList.appendChild(row);
-
       });
 
       card.appendChild(memberList);
@@ -155,10 +167,8 @@ async function loadGroups() {
   }
 }
 
-// 스크롤 이벤트로 추가 로딩
 window.addEventListener("scroll", () => {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
     loadGroups();
   }
 });
-// =============그룹 리스트 출력 완 =============

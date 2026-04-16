@@ -1,16 +1,27 @@
-// /features/support/manage.js
+// ============ 페이지 로드 =================
+document.addEventListener("DOMContentLoaded", () => {
+  requireLogin();
+  loadGroupSettings();
+});
 
 const params = new URLSearchParams(window.location.search);
 const groupId = params.get("group_id");
 
 async function loadGroupSettings() {
   try {
-    const res = await fetch(`/api/v1/support/group/${groupId}/settings`);
+    const token = localStorage.getItem("gigi_token");
+    const res = await fetch(`/api/v1/support/group/${groupId}/settings`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     if (!res.ok) {
-      console.error("그룹 설정 불러오기 실패");
+      console.error("그룹 설정 불러오기 실패:", await res.text());
       return;
     }
     const data = await res.json();
+    console.log("group settings 응답:", data); // 응답 구조 확인
+
     const group = data.group;
     const members = data.members;
     const invite = data.invite;
@@ -25,8 +36,8 @@ async function loadGroupSettings() {
       const row = document.createElement("div");
       row.className = "member-row";
       row.innerHTML = `
-        <span>${m.nickname}님</span>
-        <span class="meta-text">${m.role}</span>
+        <span>${m.nickname || "익명"}님</span>
+        <span class="meta-text">${m.role || "멤버"}</span>
       `;
       memberList.appendChild(row);
     });
@@ -36,7 +47,10 @@ async function loadGroupSettings() {
     leaveBtn.addEventListener("click", async () => {
       if (!confirm("정말 탈퇴하시겠습니까?")) return;
       const leaveRes = await fetch(`/api/v1/support/group/${groupId}/leave`, {
-        method: "POST"
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
       });
       if (leaveRes.ok) {
         showToast("모임에서 탈퇴했습니다.");
@@ -49,6 +63,3 @@ async function loadGroupSettings() {
     console.error("manage.js 오류:", err);
   }
 }
-
-// 첫 로딩
-loadGroupSettings();

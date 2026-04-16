@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 모임 가입하기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/support/support.css">
+</head>
+<body data-section="support">
+
+  <main>
+    <div class="container auth-shell">
+      <section class="card auth-card">
+        <div class="page-header">
+          <div class="section-eyebrow">Join Group</div>
+          <h1 class="section-title">모임 가입하기</h1>
+          <p class="section-copy">초대 코드를 입력하면 모임 정보를 확인하고 가입할 수 있습니다.</p>
+        </div>
+        <label class="input-label" for="invite-code">초대 코드</label>
+        <input id="invite-code" class="input-field" type="text" placeholder="예: GIGI-2026">
+        
+        <!-- 그룹 정보 표시 영역 -->
+        <div id="group-summary" class="summary-box" style="margin-top:1rem;"></div>
+        
+        <!-- 가입 버튼 -->
+        <button id="join-group-btn" class="btn btn-primary btn-full" disabled>모임 가입하기</button>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/support/join.js"></script>
+</body>
+</html>

@@ -7,6 +7,7 @@ class GroupSummary(BaseModel):
     name: str
     group_type: str
     members: List[str]   # 닉네임 리스트
+    already_joined: bool
 
 # 그룹 생성 요청
 class GroupCreate(BaseModel):
@@ -22,6 +23,7 @@ class GroupCreateResponse(BaseModel):
     id: int   # create_group_service 반환값과 일치
 
 class MemberInfo(BaseModel):
+    user_id: int
     nickname: Optional[str]
     complete_rate: Optional[float]
     supported_today: bool

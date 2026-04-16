@@ -12,21 +12,23 @@ router = APIRouter()
 
 # ================= 공용 부분 ===================
 def get_current_user_id(current_user: User = Depends(get_current_user)) -> int:
-    # return UserResponse.model_validate(current_user).id
-    return 1
+    return UserResponse.model_validate(current_user).id
+    # print("current_user:", current_user)
+    # return 1
 
-# ============== 12 지지 ========================
+# ============== 12-ex1 모임 가입하기 ========================
 
 # 코드 입력시 모임 정보 가져오기
 @router.get("/group/summary/{invite_code}", response_model=schemas.GroupSummary)
 def group_summary(
     invite_code: str,
     db: Session = Depends(get_db),
+    current_user_id : int = Depends(get_current_user_id),
     limit: int = 10,
     offset: int = 0
 ):
     try:
-        return service.group_summary_service(db, invite_code, limit, offset)
+        return service.group_summary_service(db, invite_code, current_user_id, limit, offset)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -42,6 +44,8 @@ def join_group_by_invite(
         return service.invited_group_service(db, invite_code, current_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+# ============== 12 지지 ========================
 
 # 모임 읽어오기 (모임명, 모임종류, 경험치, 스트릭, 맴버별(닉네임, 달성율))
 @router.get("/groups", response_model=schemas.GroupsResponse)
@@ -145,3 +149,11 @@ def join_group_by_post(
         return service.join_by_post_service(db, post_id, current_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# ================= 알림 =========================
+@router.get("/notifications/unread-count")
+def unread_count(
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id)
+):
+    return service.unread_notifications_service(db, current_user_id)
