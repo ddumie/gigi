@@ -57,6 +57,7 @@ async function saveHabit() {
       });
       showToast('습관이 수정되었습니다.');
     } else {
+      const isFirstHabit = habits.length === 0;   // 추가 직전 시점 기준
       await apiPost('/habits/', {
         title,
         category,
@@ -64,6 +65,11 @@ async function saveHabit() {
         repeat_type: repeatType,
       });
       showToast('습관이 추가되었습니다.');
+
+      // 첫 습관 등록이면 → 오늘 탭에서 첫 진입 모달을 띄우도록 플래그 저장
+      if (isFirstHabit) {
+        localStorage.setItem('gigi_show_first_habit_modal', 'true');
+      }
     }
     closeModal();
     await loadHabits();
