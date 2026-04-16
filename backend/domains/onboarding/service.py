@@ -10,6 +10,7 @@ from backend.domains.onboarding.schemas import AIHabitItem
 from backend.config import settings
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
+from backend.domains.onboarding import crud
 
 logger = logging.getLogger(__name__)
 
@@ -91,3 +92,15 @@ def save_selected_habits(db: Session, user_id: int, selected: list[AIHabitItem])
         db.rollback()
         logger.error(f"습관 저장 중 오류 발생: {e}", exc_info=True)
         raise ValueError("습관 저장 중 오류가 발생했습니다.")
+
+#  AI호출 성공해야 카운트증가로 넘어가서 AI성공=둘다성공, AI실패=둘다실패(카운트증가 실패로 에러처리됨)
+def recommend_habits_and_count(db, user_id, age_group, health_interests):
+    """AI 습관추천 + 추천 횟수(카운트) 증가를 하나로 처리 : AI호출 성공시에만 카운트 증가"""
+    habits = get_ai_recommendations(age_group, health_interests)  # AI 호출
+    try:
+        updated_pref = crud.incre_recommend_count(db, user_id)  # 카운트 증가
+    except ValueError:  # 카운트 증가 실패하면 ValueError로 라우터에서 502에러
+        raise ValueError("추천 횟수 업데이트 중 오류가 발생했습니다.")
+    if updated_pref is None:
+        raise ValueError("선호도 정보를 찾을 수 없습니다.")
+    return habits, updated_pref
