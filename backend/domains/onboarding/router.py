@@ -32,34 +32,19 @@ def save_preferences(request: PreferenceRequest, db: Session = Depends(get_db), 
     return {"message": "선호도가 저장되었습니다."}
 
 
-# AI습관 추천
+# AI습관 추천(선호도 조회, 횟수체크)
 @router.post("/ai-recommend", response_model=AIRecommendResponse)
 def recommend_habits(db: Session = Depends(get_db), current_user = Depends(get_current_user_dep)):
-    """AI습관 추천(재추천 3회 제한)"""
-    # 추천흐름 3단계
-    # 1단계: DB에서 선호도 조회
-    try:
-        pref = crud.get_preferences(db, current_user.id)
-    except Exception:
-        raise HTTPException(status_code=500, detail="서버 오류가 발생했습니다.")
+    """AI습관 추천 (처음 온보딩 설정 시 하루 3회 제한)"""
+    pref = crud.get_preferences(db, current_user.id)
     if pref is None:
         raise HTTPException(status_code=404, detail="먼저 선호도를 저장해주세요.")
     if pref.recommend_count >= 3:
         raise HTTPException(status_code=400, detail="오늘 추천 횟수를 모두 사용했습니다. 내일 다시 시도해주세요.")
-
-    # 2단계: Gemini AI 호출 - 습관추천받기
     try:
-        habits = service.get_ai_recommendations(pref.age_group, pref.health_interests)
+        habits, updated_pref = service.recommend_habits_and_count(db, current_user.id, pref.age_group, pref.health_interests)
     except ValueError:
         raise HTTPException(status_code=502, detail="맞춤 습관 추천 중 오류가 발생했습니다.")
-
-    # 3단계: DB에 카운트 증가
-    try:
-        updated_pref = crud.incre_recommend_count(db, current_user.id)
-    except ValueError:
-        raise HTTPException(status_code=500, detail="재추천 횟수 업데이트 중 오류가 발생했습니다.")
-    if updated_pref is None:
-        raise HTTPException(status_code=404, detail="선호도 정보를 찾을 수 없습니다.")
     return AIRecommendResponse(habits=habits, can_retry=(updated_pref.recommend_count < 3))
 
 
