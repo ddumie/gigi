@@ -1,7 +1,7 @@
 # TODO: 비즈니스 로직 작성 (담당: 이영진)
 # service.py
 from backend.domains.neighbor.crud import (
-   create_post, create_group_search_post,
+   create_post, create_group_search,
    list_group_search,
    delete_group_search,
    list_my_group_search,
@@ -19,7 +19,7 @@ from backend.domains.neighbor.schemas import GroupSearchCreate, PostAuthorRespon
 from fastapi import HTTPException
 from backend.domains.neighbor.models import FeedPost, PostSupport
 
-def create_group_search(post: GroupSearchCreate, user_id: int, db: Session):
+def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: Session):
     # 비즈니스 규칙: 제목이 비어있으면 거절
     if not post.title or not post.title.strip():
         raise HTTPException(status_code=400, detail="제목을 입력해주세요.")
@@ -28,7 +28,7 @@ def create_group_search(post: GroupSearchCreate, user_id: int, db: Session):
     db_post = create_post(author_id=user_id, post_type="group_search", db=db)
 
     # crud 2: 자식 GroupSearchPost 생성
-    create_group_search_post(post_id=db_post.id, post=post, db=db)
+    create_group_search(post_id=db_post.id, post=post, db=db)
 
     return {"id": db_post.id, "message": "등록 완료"}
 
@@ -67,13 +67,18 @@ def list_my_feed_logic(user_id: int, db: Session):
     return result
 
 def create_feed_post_logic(habit_id: int, content: str, user_id: int, db: Session) -> dict:
-    habit = get_habit(habit_id=habit_id, db=db)
+    habit = get_habit(habit_id=habit_id, user_id=user_id, db=db)
     if not habit:
         raise HTTPException(status_code=404, detail="습관을 찾을 수 없습니다.")
     return create_feed_post(category=habit.category, content=content, user_id=user_id, db=db)
 
 def list_feed_logic(db: Session, category: str | None = None) -> list[FeedPost]:
-    return list_feed(category=category, db=db)
+    result = []
+    rows = list_feed(category=category, db=db)
+    for feed, user in rows:
+        feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
+        result.append(feed)
+    return result
 
 def delete_feed_logic(post_id: int, user_id: int, db: Session):
     post = delete_feed(post_id=post_id, user_id=user_id, db=db)
