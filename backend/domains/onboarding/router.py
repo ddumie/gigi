@@ -35,7 +35,7 @@ def save_preferences(request: PreferenceRequest, db: Session = Depends(get_db), 
 # AI습관 추천
 @router.post("/ai-recommend", response_model=AIRecommendResponse)
 def recommend_habits(db: Session = Depends(get_db), current_user = Depends(get_current_user_dep)):
-    """AI습관 추천(재추천 1회 제한)"""
+    """AI습관 추천(재추천 3회 제한)"""
     # 추천흐름 3단계
     # 1단계: DB에서 선호도 조회
     try:
@@ -44,8 +44,8 @@ def recommend_habits(db: Session = Depends(get_db), current_user = Depends(get_c
         raise HTTPException(status_code=500, detail="서버 오류가 발생했습니다.")
     if pref is None:
         raise HTTPException(status_code=404, detail="먼저 선호도를 저장해주세요.")
-    if pref.recommend_count >= 2:
-        raise HTTPException(status_code=400, detail="재추천은 1회만 가능합니다. 더 이상 추천받을 수 없습니다.")
+    if pref.recommend_count >= 3:
+        raise HTTPException(status_code=400, detail="오늘 추천 횟수를 모두 사용했습니다. 내일 다시 시도해주세요.")
 
     # 2단계: Gemini AI 호출(Gemini가 습관추천에 성공하면 카운트 +1, 실패하면 에러반환(카운트 증가X))
     try:
@@ -60,7 +60,7 @@ def recommend_habits(db: Session = Depends(get_db), current_user = Depends(get_c
         raise HTTPException(status_code=500, detail="재추천 횟수 업데이트 중 오류가 발생했습니다.")
     if updated_pref is None:
         raise HTTPException(status_code=404, detail="선호도 정보를 찾을 수 없습니다.")
-    return AIRecommendResponse(habits=habits, can_retry=(updated_pref.recommend_count < 2))
+    return AIRecommendResponse(habits=habits, can_retry=(updated_pref.recommend_count < 3))
 
 
 # 사용자가 선택한 습관 등록

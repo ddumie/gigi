@@ -11,19 +11,21 @@ from backend.domains.auth.models import User
 # 현재 로그인 사용자 기준이 아니라 author_id와 동일한 user.id를 1로 고정하였기 때문에,
 # 추후 수정해야 함.
 # 글쓰기 post
-def create_group_search(post: GroupSearchCreate, user_id: int, db: Session = Depends(get_db)):
+def create_post(author_id: int, post_type: str, db: Session) -> Post:
     # 1. 부모 Post 먼저 생성
     db_post = Post(
-        author_id=user_id,  # auth가 아직 없어서 임시 테스트 값으로 1을 넣음. 실제론 현재 로그인 유저 id current_user.id로 교체
-        post_type="group_search"
+        author_id=author_id,  # auth가 아직 없어서 임시 테스트 값으로 1을 넣음. 실제론 현재 로그인 유저 id current_user.id로 교체
+        post_type=post_type
     )
     db.add(db_post)
     db.commit()  # ← post.id 확보
     db.refresh(db_post)
+    return db_post # ← 결과를 반환만 함, 판단은 안 함
 
+def create_group_search_post(post_id: int, post: GroupSearchCreate, db: Session) -> GroupSearchPost:
    # 2. 자식 GroupSearchPost 생성
     db_group_search = GroupSearchPost(
-        post_id=db_post.id,
+        post_id=post_id,
         title=post.title,
         description=post.description,
         group_type=post.group_type,
@@ -32,11 +34,11 @@ def create_group_search(post: GroupSearchCreate, user_id: int, db: Session = Dep
     )
     db.add(db_group_search)
     db.commit()
-    db.refresh(db_post)
-    return {"id": db_post.id, "message": "등록 완료"}
+    db.refresh(db_group_search)
+    return db_group_search
 
 # 글쓰기 내용 읽어오기
-def list_group_search(db: Session = Depends(get_db)):
+def list_group_search(db: Session):
     rows = (
         db.query(GroupSearchPost, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
@@ -45,25 +47,17 @@ def list_group_search(db: Session = Depends(get_db)):
         .order_by(Post.created_at.desc())
         .all()
     )
-    result = []
-    for group_search, user in rows:
-        group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
-        result.append(group_search)
-    return result
+    return rows
 
 # 글 삭제 기능(docs용)
 def delete_group_search(post_id: int, user_id: int, db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first() # 나중에 author_id를 current_user.id 로 교체
-    if not post:
-        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
-    post.is_active = False
-    db.commit()
-    return {"message": "삭제 완료"}
+    return post
 
 # my posts 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
 def list_my_group_search(user_id: int, db: Session = Depends(get_db)): 
     posts = (
-        db.query(GroupSearchPost)
+        db.query(GroupSearchPost, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
         .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
         .order_by(Post.created_at.desc())
@@ -75,7 +69,7 @@ def list_my_group_search(user_id: int, db: Session = Depends(get_db)):
 #my posts 페이지에서 내가 쓴 습관도 보여주기
 def list_my_feed(user_id: int, db: Session = Depends(get_db)): 
     posts = (
-        db.query(FeedPost)
+        db.query(FeedPost, User)
         .join(Post, FeedPost.post_id == Post.id)
         .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
         .order_by(Post.created_at.desc())
@@ -146,7 +140,6 @@ def get_feed_detail(post_id: int, db: Session):
 
 # 댓글 목록 조회
 def get_feed_comments(post_id: int, db: Session):
-    from backend.domains.neighbor.models import Comment
     rows = (
         db.query(Comment, User)
         .join(User, Comment.author_id == User.id)
@@ -168,7 +161,6 @@ def get_feed_comments(post_id: int, db: Session):
 
 # 댓글 작성
 def create_feed_comment(post_id: int, content: str, user_id: int, db: Session):
-    from backend.domains.neighbor.models import Comment
     post = db.query(Post).filter(Post.id == post_id, Post.is_active == True).first()
     if not post:
         raise HTTPException(status_code=404, detail="피드를 찾을 수 없습니다.")
