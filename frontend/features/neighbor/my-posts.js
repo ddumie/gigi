@@ -1,5 +1,6 @@
 // my-posts 용 자바스크립트
 (async () => {
+  requireLogin();
   const [groupRes, feedRes] = await Promise.all([
     fetch('/api/v1/neighbor/group-search/my'),
     fetch('/api/v1/neighbor/feed/my')

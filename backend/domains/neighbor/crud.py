@@ -38,7 +38,7 @@ def create_group_search_post(post_id: int, post: GroupSearchCreate, db: Session)
     return db_group_search
 
 # 글쓰기 내용 읽어오기
-def list_group_search(db: Session):
+def list_group_search(db: Session) -> list[tuple[GroupSearchPost, User]]:
     rows = (
         db.query(GroupSearchPost, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
@@ -50,39 +50,44 @@ def list_group_search(db: Session):
     return rows
 
 # 글 삭제 기능(docs용)
-def delete_group_search(post_id: int, user_id: int, db: Session = Depends(get_db)):
+def delete_group_search(post_id: int, user_id: int, db: Session = Depends(get_db)) -> Post | None:
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first() # 나중에 author_id를 current_user.id 로 교체
     return post
 
 # my posts 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
-def list_my_group_search(user_id: int, db: Session = Depends(get_db)): 
+def list_my_group_search(user_id: int, db: Session = Depends(get_db)) -> list[tuple[GroupSearchPost, User]]: 
     posts = (
         db.query(GroupSearchPost, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
+        .join(User, Post.author_id == User.id)
         .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
         .order_by(Post.created_at.desc())
         .all()
-
     )
     return posts
+    
 
 #my posts 페이지에서 내가 쓴 습관도 보여주기
-def list_my_feed(user_id: int, db: Session = Depends(get_db)): 
+def list_my_feed(user_id: int, db: Session = Depends(get_db)) -> list[tuple[FeedPost, User]]: 
     posts = (
         db.query(FeedPost, User)
         .join(Post, FeedPost.post_id == Post.id)
+        .join(User, Post.author_id == User.id)
         .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
         .order_by(Post.created_at.desc())
         .all()
 
     )
-    return posts
-# 피드 등록 ( 방법 2 - 프론트에서 habit_id + content 보냄) 추후 방법 1(습관 완료와 피드 등록이 항상 같이 일어나야 하려면 수정 필요)
-def create_feed_post(habit_id: int, content: str = "", user_id: int = None, db: Session = Depends(get_db)):
-    habit = db.query(Habit).filter(Habit.id == habit_id).first()
-    if not habit:
-        raise HTTPException(status_code=404, detail="습관을 찾을 수 없습니다.")
 
+    return posts
+
+
+# 습관 조회
+def get_habit(habit_id: int, db: Session) -> Habit | None:
+    return db.query(Habit).filter(Habit.id == habit_id).first()
+
+# 피드 등록 ( 방법 2 - 프론트에서 habit_id + content 보냄) 추후 방법 1(습관 완료와 피드 등록이 항상 같이 일어나야 하려면 수정 필요)
+def create_feed_post(category: str, content: str, user_id: int, db: Session) -> dict:
     db_post = Post(author_id=user_id, post_type="feed")
     db.add(db_post)
     db.commit()
@@ -90,7 +95,7 @@ def create_feed_post(habit_id: int, content: str = "", user_id: int = None, db: 
 
     db_feed = FeedPost(
         post_id=db_post.id,
-        category=habit.category,
+        category=category,
         content=content
     )
     db.add(db_feed)
@@ -99,7 +104,7 @@ def create_feed_post(habit_id: int, content: str = "", user_id: int = None, db: 
 
 
 # 피드 목록 조회 (category 파라미터로 필터)
-def list_feed(category: str = None, db: Session = Depends(get_db)): # category = ("운동", "복약", "식단", "수면", "기타")
+def list_feed(db: Session, category: str | None = None) -> list[FeedPost]: # category = ("운동", "복약", "식단", "수면", "기타")
     query = (
         db.query(FeedPost)
         .join(Post, FeedPost.post_id == Post.id)
@@ -108,22 +113,15 @@ def list_feed(category: str = None, db: Session = Depends(get_db)): # category =
     )
     if category:
         query = query.filter(FeedPost.category == category)
-
-    posts = query.all()
-    return posts
+    return query.all()
 
 # 피드 목록 지우기
-def delete_feed(post_id: int, user_id: int, db: Session = Depends(get_db)):
+def delete_feed(post_id: int, user_id: int, db: Session = Depends(get_db)) -> Post | None:
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first()  # 나중에 author_id를 current_user.id로 교체
-    if not post:
-        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
-    post.is_active = False
-    db.commit()
-    return {"message": "삭제 완료"}
-
+    return post
 
 # 피드 단건 조회
-def get_feed_detail(post_id: int, db: Session):
+def get_feed_detail(post_id: int, db: Session) -> tuple[FeedPost, Post, User] | None:
     row = (
         db.query(FeedPost, Post, User)
         .join(Post, FeedPost.post_id == Post.id)
@@ -131,15 +129,10 @@ def get_feed_detail(post_id: int, db: Session):
         .filter(FeedPost.post_id == post_id, Post.is_active == True)
         .first()
     )
-    if not row:
-        raise HTTPException(status_code=404, detail="피드를 찾을 수 없습니다.")
-    feed, post, user = row
-    feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
-    feed.created_at = post.created_at
-    return feed
+    return row
 
 # 댓글 목록 조회
-def get_feed_comments(post_id: int, db: Session):
+def get_feed_comments(post_id: int, db: Session) -> list[tuple[Comment, User]]:
     rows = (
         db.query(Comment, User)
         .join(User, Comment.author_id == User.id)
@@ -147,23 +140,13 @@ def get_feed_comments(post_id: int, db: Session):
         .order_by(Comment.created_at.asc())
         .all()
     )
-    result = []
-    for comment, user in rows:
-        result.append({
-            "id": comment.id,
-            "post_id": comment.post_id,
-            "author_id": comment.author_id,
-            "author_nickname": user.nickname,
-            "content": comment.content,
-            "created_at": comment.created_at,
-        })
-    return result
+    return rows
 
 # 댓글 작성
-def create_feed_comment(post_id: int, content: str, user_id: int, db: Session):
-    post = db.query(Post).filter(Post.id == post_id, Post.is_active == True).first()
-    if not post:
-        raise HTTPException(status_code=404, detail="피드를 찾을 수 없습니다.")
+def get_post(post_id: int, db: Session) -> Post | None:
+    return db.query(Post).filter(Post.id == post_id, Post.is_active == True).first()
+
+def create_feed_comment(post_id: int, content: str, user_id: int, db: Session) -> dict[str, int | str]:
     comment = Comment(post_id=post_id, author_id=user_id, content=content)
     db.add(comment)
     db.commit()
@@ -171,35 +154,21 @@ def create_feed_comment(post_id: int, content: str, user_id: int, db: Session):
     return {"id": comment.id, "message": "댓글 등록 완료"}
 
 # 댓글 삭제
-# crud.py
-def delete_feed_comment(comment_id: int, post_id: int, user_id: int, db: Session):
-    comment = db.query(Comment).filter(
+def delete_feed_comment(comment_id: int, post_id: int, user_id: int, db: Session) -> Comment | None:
+    return db.query(Comment).filter(
         Comment.id == comment_id,
         Comment.post_id == post_id,   # ← post 소속 확인까지
         Comment.author_id == user_id
     ).first()
-    if not comment:
-        raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
-    db.delete(comment)
-    db.commit()
-    return {"message": "댓글 삭제 완료"}
 
 # 지지하기 토글 (누르면 추가, 다시 누르면 취소)
-def toggle_support(post_id: int, user_id: int, db: Session):
-    existing = db.query(PostSupport).filter(
+def get_support(post_id: int, user_id: int, db: Session) -> PostSupport | None:
+    return db.query(PostSupport).filter(
         PostSupport.post_id == post_id,
         PostSupport.user_id == user_id
     ).first()
-    if existing:
-        db.delete(existing)
-        db.commit()
-        return {"supported": False}
-    else:
-        db.add(PostSupport(post_id=post_id, user_id=user_id))
-        db.commit()
-        return {"supported": True}
     
 # 지지 횟수 + 내가 눌렀는지 조회
-def get_support_info(post_id: int, db: Session):
+def get_support_info(post_id: int, db: Session) -> dict[str, int]:
     count = db.query(PostSupport).filter(PostSupport.post_id == post_id).count()
     return {"support_count": count}

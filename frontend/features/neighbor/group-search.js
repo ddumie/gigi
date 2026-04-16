@@ -1,5 +1,6 @@
 // group-search 용 자바스크립트
 (async () => {
+requireLogin();
 const res = await fetch('/api/v1/neighbor/group-search');
 if (!res.ok) return;
 const posts = await res.json();
