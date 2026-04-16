@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.domains.neighbor.service import (
-    create_group_search,
+    create_group_search_logic,
     list_group_search_logic,
     delete_group_search_logic,
     list_my_group_search_logic,
@@ -21,13 +21,7 @@ from backend.domains.neighbor.schemas import (
 )
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
-from backend.domains.neighbor.crud import (
-    
-    
-
-    
-    get_support_info
-)
+from backend.domains.neighbor.crud import get_support_info
 
 router = APIRouter()
 
@@ -38,7 +32,7 @@ router = APIRouter()
 # 글쓰기 post
 @router.post("/group-search")
 def post_group_search(post: GroupSearchCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return create_group_search(post=post, user_id=current_user.id, db=db)
+    return create_group_search_logic(post=post, user_id=current_user.id, db=db)
 
 # 글쓰기 내용 읽어오기
 @router.get("/group-search", response_model=list[GroupSearchResponse])
