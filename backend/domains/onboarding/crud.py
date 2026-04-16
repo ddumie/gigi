@@ -32,7 +32,7 @@ def save_preferences(db: Session, user_id: int, age_group: str | None, health_in
 
 
 def incre_recommend_count(db: Session, user_id: int):
-    """AI 재추천 횟수 증가 (+1), 날짜 바뀌면 자동 초기화 (하루 3회 제한)"""
+    """AI 재추천 횟수 증가 (+1), 날짜가 바뀌면 자동 초기화 (하루 3회 제한)"""
     try:
         db_pref = get_preferences(db, user_id)
         if db_pref is None:

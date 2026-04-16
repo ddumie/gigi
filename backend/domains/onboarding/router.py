@@ -51,7 +51,7 @@ def recommend_habits(db: Session = Depends(get_db), current_user = Depends(get_c
     try:
         habits = service.get_ai_recommendations(pref.age_group, pref.health_interests)
     except ValueError:
-        raise HTTPException(status_code=502, detail="AI추천 중 오류가 발생했습니다.")
+        raise HTTPException(status_code=502, detail="맞춤 습관 추천 중 오류가 발생했습니다.")
 
     # 3단계: DB에 카운트 증가
     try:
