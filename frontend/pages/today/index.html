@@ -67,15 +67,21 @@
         <div id="mini-calendar" class="mini-calendar"></div>
       </section>
 
-      <!-- 첫 로그인 모달 -->
-      <section id="first-login-modal" class="card first-login-modal">
-        <strong>첫 로그인이에요</strong>
-        <p class="meta-text" style="margin-top:0.5rem;">모임을 만들거나 나중에 지지 탭에서 다시 시작할 수 있어요.</p>
-        <div class="page-actions" style="margin-top:1rem;">
-          <a href="/pages/support/create.html" class="btn btn-primary">모임 만들기</a>
-          <button id="dismiss-first-login-modal" class="btn btn-outline" type="button">나중에 할게요</button>
-        </div>
-      </section>
+      <!-- 첫 진입 모달 (화면 8: 습관 등록 후 모임 유도) -->
+      <div id="first-login-overlay" class="first-login-overlay">
+        <section id="first-login-modal" class="card first-login-modal-card">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem;">🎉</div>
+          <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">습관이 등록됐어요!</div>
+          <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1.2rem;line-height:1.7;">
+            함께하면 더 오래 지속돼요.<br>가족이나 친구를 초대해 모임을 만들어볼까요?
+          </div>
+          <div style="background:var(--color-success-light);border-radius:var(--r-md);padding:0.75rem;margin-bottom:1rem;font-size:0.8rem;color:#0D6B4F;">
+            모임을 만들면 서로의 습관을 응원하고,<br>함께할수록 칭호와 레벨이 올라가요 🌱
+          </div>
+          <a href="/pages/support/create.html" class="btn btn-primary btn-full" style="margin-bottom:0.4rem;">모임 만들기</a>
+          <button id="dismiss-first-login-modal" class="btn btn-outline btn-full btn-sm" type="button">나중에 할게요</button>
+        </section>
+      </div>
     </div>
   </main>
   <script src="/shared/lib/api.js"></script>
