@@ -2,6 +2,7 @@ from datetime import date, datetime
 from pydantic import BaseModel, Field, field_validator
 
 from backend.domains.habits.models import HABIT_CATEGORIES, HABIT_REPEAT_TYPES
+from backend.domains.onboarding.schemas import AIHabitItem
 
 
 # ── Habit 요청 ──
@@ -87,3 +88,21 @@ class HabitCheckResponse(BaseModel):
     created_at:   datetime
 
     model_config = {"from_attributes": True}
+ 
+
+# ── AI 추천 요청 / 응답 ──
+
+
+class HabitAIRecommendRequest(BaseModel):
+    """AI 습관 추천 요청(온보딩 완료 후 추가 추천용)"""
+    health_interests: list[str] = Field(..., description="관심사 카테고리 목록")
+
+
+class HabitAIRecommendResponse(BaseModel):
+    """AI 습관 추천 결과 응답"""
+    habits: list[AIHabitItem]
+
+
+class HabitAISelectRequest(BaseModel):
+    """AI 추천 습관 선택 후 등록 요청"""
+    selected_habits: list[AIHabitItem]
