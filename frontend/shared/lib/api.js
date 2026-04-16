@@ -37,7 +37,9 @@ async function api(method, path, body = null) {
   const response = await fetch(API_BASE + path, options);
 
   // 401 → 토큰 만료/미인증 → 로그인 페이지로 이동
-  if (response.status === 401) {
+  // 단, 로그인/회원가입 요청은 예외 (각 페이지에서 에러 메시지 표시)
+  const isAuthRequest = path.startsWith('/auth/login') || path.startsWith('/auth/register');
+  if (response.status === 401 && !isAuthRequest) {
     removeToken();
     localStorage.removeItem('gigi_user');
     window.location.href = PAGES.login;
