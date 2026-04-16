@@ -89,17 +89,17 @@ def group_settings_service(db: Session, group_id: int, user_id: int):
     group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates = crud.get_group(db, group_id, user_id)
     if not group:
         raise ValueError("모임을 찾을 수 없습니다.")
-    if not groupprofile:
-        raise ValueError("모임 설정을 찾을 수 없습니다.")
+    # if not groupprofile:
+    #     raise ValueError("모임 설정을 찾을 수 없습니다.")
     if not invite:
         raise ValueError("초대코드를 찾을 수 없습니다.")
     if not members:
         raise ValueError("해당 그룹에 맴버가 없습니다.")
     return {
         "group": {
-            "id": groupprofile.group_id,
-            "name": groupprofile.name,
-            "group_type": groupprofile.group_type,
+            "id": (groupprofile.group_id if groupprofile else group.id),
+            "name": (groupprofile.name if groupprofile else group.name),
+            "group_type": (groupprofile.group_type if groupprofile else group.group_type),
             "habit": habit_info["habit_title"] if habit_info else None,
             "frequency": habit_info["frequency"] if habit_info else None
         },
