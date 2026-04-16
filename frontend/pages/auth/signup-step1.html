@@ -22,11 +22,15 @@
         </div>
         <label class="input-label" for="signup-email">이메일</label>
         <input id="signup-email" class="input-field" type="email" placeholder="gigi@example.com">
+        <div id="email-error" class="input-error hidden"></div>
         <label class="input-label" for="signup-password">비밀번호</label>
-        <input id="signup-password" class="input-field" type="password" placeholder="6자 이상 입력하세요">
-        <div class="auth-summary">실시간 유효성 검사는 각 도메인 구현 시 연결하고, 지금은 새 구조의 진입 화면만 고정합니다.</div>
+        <input id="signup-password" class="input-field" type="password" placeholder="6자 이상 18자 이하">
+        <div id="password-error" class="input-error hidden"></div>
+        <label class="input-label" for="signup-password-confirm">비밀번호 확인</label>
+        <input id="signup-password-confirm" class="input-field" type="password" placeholder="비밀번호를 다시 입력하세요">
+        <div id="password-confirm-error" class="input-error hidden"></div>
         <div class="page-actions">
-          <a href="/pages/auth/signup-step2.html" class="btn btn-primary btn-full">다음으로</a>
+          <button id="step1-next" class="btn btn-primary btn-full">다음으로</button>
         </div>
       </section>
     </div>
