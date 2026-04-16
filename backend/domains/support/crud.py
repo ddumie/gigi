@@ -5,6 +5,7 @@ from . import models, schemas
 from backend.domains.neighbor.models import GroupSearchPost, FeedPost
 from backend.domains.auth.models import User
 from backend.domains.habits.models import Habit, HabitCheck
+from backend.domains.habits.crud import create_group_habit
 import secrets, string
 
 # 메모
@@ -65,8 +66,13 @@ def create_group(db: Session, group: schemas.GroupCreate, user_id: int):
 
 # 모임 읽어오기
 def get_group(db: Session, group_id: int, user_id: int, limit: int = 10, offset: int = 0):
-    groupprofile = db.query(models.GroupProfile).filter(models.GroupProfile.group_id == group_id, models.GroupProfile.user_id == user_id).first()
+    groupprofile = db.query(models.GroupProfile).filter(
+        models.GroupProfile.group_id == group_id,
+        models.GroupProfile.user_id == user_id
+    ).first()
+
     invite = db.query(models.InviteCode).filter(models.InviteCode.group_id == group_id).first()
+
     members = (
         db.query(models.GroupMember)
         .filter(models.GroupMember.group_id == group_id)
@@ -90,15 +96,17 @@ def get_group(db: Session, group_id: int, user_id: int, limit: int = 10, offset:
     member_top_exp = {}
     member_nicknames = {}
     for m in members:
-        top_support = (
+        top_support_row = (
             db.query(models.Group.total_support_count)
             .join(models.GroupMember, models.Group.id == models.GroupMember.group_id)
             .filter(models.GroupMember.user_id == m.user_id)
             .order_by(desc(models.Group.total_support_count))
-            .scalar()
+            .first()
         )
-        if top_support:
-            member_top_exp[m.user_id] = top_support
+        if top_support_row is not None:
+            # 튜플이면 [0], 객체면 속성 접근
+            member_top_exp[m.user_id] = getattr(top_support_row, "total_support_count", top_support_row[0])
+
         user = db.query(User).filter(User.id == m.user_id).one_or_none()
         if user:
             member_nicknames[m.user_id] = user.nickname
@@ -114,12 +122,11 @@ def get_group(db: Session, group_id: int, user_id: int, limit: int = 10, offset:
             .filter(Habit.user_id == m.user_id, HabitCheck.checked_date == target_date)
             .count()
         )
-        if habit_count == 0:
-            member_complete_rate = 0
-        else:
-            member_complete_rate = checked_count / habit_count * 100
+        member_complete_rate = (checked_count / habit_count * 100) if habit_count > 0 else 0
         complete_rates[m.user_id] = member_complete_rate
+
     return group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates
+
 
 # 초대코드로 그룹 ID 조회
 def get_group_id_by_code(db: Session, invite_code: str):
@@ -170,16 +177,14 @@ def add_group_member(db: Session, group_id: int, user_id: int):
         post_category = db.query(FeedPost.category).filter(FeedPost.post_id == group.post_id).scalar()
 
         if post_info and post_category:
-            new_habit = Habit(
+            new_habit = create_group_habit(
+                db = db,
                 user_id = user_id,
                 group_id = group_id,
                 title = post_info.habit_title,
                 category = post_category,
                 repeat_type = post_info.frequency
             )
-            db.add(new_habit)
-            db.commit()
-            db.refresh(new_habit)
 
     return new_member
 
@@ -245,6 +250,7 @@ def create_support(db: Session, group_id: int, from_user_id: int, to_user_id: in
             group.max_streak = group.support_streak
         
         group.total_support_count += 1
+        db.refresh(group)
     
     db.commit()
     db.refresh(support)
@@ -295,12 +301,14 @@ def get_group_summary(db: Session, invite_code: str, limit: int = 10, offset: in
         .limit(limit)
         .all())
     nicknames = []
+    member_ids = []
     for m in members:
         user = db.query(User).filter(User.id == m.user_id).first()
         if user:
             nicknames.append(user.nickname)
+            member_ids.append(m.user_id)
 
-    return group, nicknames
+    return group, nicknames, member_ids
     
 # uid로 그룹 id 목록 가져오기
 def get_group_ids_by_uid(db: Session, user_id: int, limit: int = 3, offset: int = 0):
@@ -335,3 +343,10 @@ def check_group_support(db: Session, group_id: int, from_user_id: int):
 # 특정 유저 조회
 def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
+
+# 안 읽은 알림 가져오기
+def get_unread_notification_count(db: Session, user_id: int):
+    return db.query(models.Notification).filter(
+        models.Notification.user_id == user_id,
+        models.Notification.is_read == False
+    )
