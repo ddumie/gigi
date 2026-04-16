@@ -169,24 +169,22 @@ function renderGroupSummary() {
 }
 
 
-// ── 첫 로그인 모달 ──
+// ── 첫 진입 모달 (첫 습관 등록 직후 1회 표시) ──
 
 function initFirstLoginModal() {
-  const overlay = document.getElementById('first-login-overlay');
-  const dismiss = document.getElementById('dismiss-first-login-modal');
-  const user    = getCurrentUser();
+  const overlay    = document.getElementById('first-login-overlay');
+  const dismiss    = document.getElementById('dismiss-first-login-modal');
+  const shouldShow = localStorage.getItem('gigi_show_first_habit_modal') === 'true';
 
-  if (overlay && user && user.is_first_login) {
+  if (overlay && shouldShow) {
     overlay.classList.add('show');
+    // 한 번만 표시 → 플래그 즉시 제거
+    localStorage.removeItem('gigi_show_first_habit_modal');
   }
 
   if (dismiss) {
     dismiss.addEventListener('click', () => {
       overlay.classList.remove('show');
-      if (user) {
-        user.is_first_login = false;
-        setCurrentUser(user);
-      }
     });
   }
 }
