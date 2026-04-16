@@ -13,6 +13,7 @@ class Group(Base):
     group_type = Column(String, nullable=False)     # "family", "friend", "health_challenge", "neighbors"    
     total_support_count = Column(Integer, nullable=False, default=0)        # 경험치로 이용
     support_streak = Column(Integer, nullable=False, default=0)
+    max_streak = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 # 모임 명, 모임 유형은 사용자별 별도 저장

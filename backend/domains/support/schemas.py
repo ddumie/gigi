@@ -1,12 +1,12 @@
 from pydantic import BaseModel
-from datetime import datetime
 from typing import Optional, List
 
 # 그룹 정보 요청 (초대코드)
 class GroupSummary(BaseModel):
+    id: int
     name: str
     group_type: str
-    members: dict   # {"nickname": str}
+    members: List[str]   # 닉네임 리스트
 
 # 그룹 생성 요청
 class GroupCreate(BaseModel):
@@ -19,7 +19,7 @@ class InviteResponse(BaseModel):
     user_id: int
 
 class GroupCreateResponse(BaseModel):
-    group: dict  # {"id": int}
+    id: int   # create_group_service 반환값과 일치
 
 class MemberInfo(BaseModel):
     nickname: Optional[str]
@@ -32,6 +32,7 @@ class GroupInfo(BaseModel):
     group_type: str
     exp: int
     streak: int
+    max_streak: int
     habit: Optional[str]
     frequency: Optional[str]
 
@@ -66,8 +67,9 @@ class LeaveResponse(BaseModel):
     user_id: int
 
 class UpdateGroupResponse(BaseModel):
-    message: str
-    group: GroupCreateResponse
+    id: int
+    name: str
+    group_type: str
 
 class SupportResponse(BaseModel):
     message: str
