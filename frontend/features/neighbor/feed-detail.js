@@ -1,4 +1,5 @@
 // feed-detail.js
+requireLogin()
 const params = new URLSearchParams(location.search);
 const postId = params.get('post_id');
 
