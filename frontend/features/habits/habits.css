@@ -23,3 +23,28 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+
+/* ── 첫 진입 모달 오버레이 (첫 습관 등록 직후) ── */
+
+.first-habit-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(0, 0, 0, 0.45);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.first-habit-overlay.show {
+  display: flex;
+}
+
+.first-habit-modal-card {
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  padding: 1.5rem;
+}

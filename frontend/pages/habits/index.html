@@ -47,6 +47,22 @@
       <!-- 습관 추가 버튼 -->
       <button id="btn-add-habit" class="btn btn-primary btn-full" style="margin-top:1rem;">+ 습관 추가</button>
 
+      <!-- 첫 진입 모달 (화면 8: 첫 습관 등록 직후 모임 유도) -->
+      <div id="first-habit-overlay" class="first-habit-overlay">
+        <section class="card first-habit-modal-card">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem;">🎉</div>
+          <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">습관이 등록됐어요!</div>
+          <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1.2rem;line-height:1.7;">
+            함께하면 더 오래 지속돼요.<br>가족이나 친구를 초대해 모임을 만들어볼까요?
+          </div>
+          <div style="background:var(--color-success-light);border-radius:var(--r-md);padding:0.75rem;margin-bottom:1rem;font-size:0.8rem;color:#0D6B4F;">
+            모임을 만들면 서로의 습관을 응원하고,<br>함께할수록 칭호와 레벨이 올라가요 🌱
+          </div>
+          <a href="/pages/support/create.html" class="btn btn-primary btn-full" style="margin-bottom:0.4rem;">모임 만들기</a>
+          <button id="dismiss-first-habit-modal" class="btn btn-outline btn-full btn-sm" type="button">나중에 할게요</button>
+        </section>
+      </div>
+
       <!-- 습관 추가/수정 모달 -->
       <div id="habit-modal" class="modal" style="display:none;">
         <div class="modal-content card">
