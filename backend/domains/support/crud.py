@@ -182,7 +182,7 @@ async def get_group_4_settings(db: AsyncSession, group_id: int, user_id: int, li
         )
         top_support_row = result.scalars().first()
         if top_support_row is not None:
-            member_top_exp[m.user_id] = getattr(top_support_row, "total_support_count", top_support_row[0])
+            member_top_exp[m.user_id] = top_support_row
 
         result = await db.execute(select(User).filter(User.id == m.user_id))
         user = result.scalars().first()
