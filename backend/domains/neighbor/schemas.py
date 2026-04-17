@@ -2,20 +2,22 @@ from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 
-# 게시글 중 습관 피드 작성 내용
-class FeedPostResponse(BaseModel):
-    post_id: int # id 대신 post_id로
-    category: Optional[str] = None
-    content: str | None = None
-
-    class Config:
-        from_attributes = True
-    
 
 # 게시글 내 작성자 정보
 class PostAuthorResponse(BaseModel):
     id: int
     nickname : Optional[str] = None
+
+
+# 게시글 중 습관 피드 작성 내용
+class FeedPostResponse(BaseModel):
+    post_id: int # id 대신 post_id로
+    category: Optional[str] = None
+    content: str | None = None
+    author: Optional[PostAuthorResponse] = None
+
+    class Config:
+        from_attributes = True
 
 # 게시글 내용
 class GroupSearchCreate(BaseModel):
