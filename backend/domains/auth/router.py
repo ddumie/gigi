@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -8,8 +8,6 @@ from backend.domains.auth.models import User
 from backend.domains.auth.schemas import (
     RegisterRequest,
     LoginRequest,
-    EmailCheckRequest,
-    NicknameCheckRequest,
     CheckResponse,
     TokenResponse,
     UserResponse,
@@ -90,18 +88,18 @@ def get_me(current_user: User = Depends(get_current_user)):
 # 중복 확인
 # ──────────────────────────────────────────
 
-@router.post("/check/email", response_model=CheckResponse)
-def check_email(data: EmailCheckRequest, db: Session = Depends(get_db)):
+@router.get("/check/email", response_model=CheckResponse)
+def check_email(email: str = Query(...), db: Session = Depends(get_db)):
     """이메일 중복 확인"""
-    available = service.check_email(db, data.email)
+    available = service.check_email(db, email)
     message = "사용 가능한 이메일입니다" if available else "이미 사용 중인 이메일입니다"
     return CheckResponse(available=available, message=message)
 
 
-@router.post("/check/nickname", response_model=CheckResponse)
-def check_nickname(data: NicknameCheckRequest, db: Session = Depends(get_db)):
+@router.get("/check/nickname", response_model=CheckResponse)
+def check_nickname(nickname: str = Query(...), db: Session = Depends(get_db)):
     """닉네임 중복 확인"""
-    available = service.check_nickname(db, data.nickname)
+    available = service.check_nickname(db, nickname)
     message = "사용 가능한 닉네임입니다" if available else "이미 사용 중인 닉네임입니다"
     return CheckResponse(available=available, message=message)
 
