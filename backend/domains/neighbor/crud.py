@@ -36,7 +36,7 @@ def create_group_search(post_id: int, post: GroupSearchCreate, db: Session) -> G
     return db_group_search
 
 # 글쓰기 내용 읽어오기
-def list_group_search(db: Session) -> list[tuple[GroupSearchPost, User]]:
+def get_group_search(db: Session) -> list[tuple[GroupSearchPost, User]]:
     rows = (
         db.query(GroupSearchPost, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
@@ -53,7 +53,7 @@ def delete_group_search(post_id: int, user_id: int, db: Session) -> Post | None:
     return post
 
 # my posts 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
-def list_my_group_search(user_id: int, db: Session) -> list[tuple[GroupSearchPost, User]]: 
+def get_my_group_search(user_id: int, db: Session) -> list[tuple[GroupSearchPost, User]]: 
     posts = (
         db.query(GroupSearchPost, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
@@ -66,7 +66,7 @@ def list_my_group_search(user_id: int, db: Session) -> list[tuple[GroupSearchPos
     
 
 #my posts 페이지에서 내가 쓴 습관도 보여주기
-def list_my_feed(user_id: int, db: Session) -> list[tuple[FeedPost, User]]: 
+def get_my_habits(user_id: int, db: Session) -> list[tuple[FeedPost, User]]: 
     posts = (
         db.query(FeedPost, User)
         .join(Post, FeedPost.post_id == Post.id)
@@ -85,7 +85,7 @@ def get_habit(habit_id: int, user_id: int, db: Session) -> Habit | None:
     return db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == user_id).first()
 
 # 피드 등록 ( 방법 2 - 프론트에서 habit_id + content 보냄) 추후 방법 1(습관 완료와 피드 등록이 항상 같이 일어나야 하려면 수정 필요)
-def create_feed_post(category: str, content: str, user_id: int, db: Session) -> dict:
+def create_habit_feed(category: str, content: str, user_id: int, db: Session) -> dict:
     db_post = Post(author_id=user_id, post_type="feed")
     db.add(db_post)
     db.commit()
@@ -102,7 +102,7 @@ def create_feed_post(category: str, content: str, user_id: int, db: Session) -> 
 
 
 # 피드 목록 조회 (category 파라미터로 필터)
-def list_feed(db: Session, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
+def get_habit_feed(db: Session, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
     query = (
         db.query(FeedPost, User)
         .join(Post, FeedPost.post_id == Post.id)
@@ -115,7 +115,7 @@ def list_feed(db: Session, category: str | None = None) -> list[FeedPost, User]:
     return query.all()
 
 # 피드 목록 지우기
-def delete_feed(post_id: int, user_id: int, db: Session) -> Post | None:
+def delete_habit_feed(post_id: int, user_id: int, db: Session) -> Post | None:
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first()  # 나중에 author_id를 current_user.id로 교체
     return post
 
