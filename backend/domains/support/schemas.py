@@ -72,6 +72,7 @@ class UpdateGroupResponse(BaseModel):
     name: str
     group_type: str
 
+
 class GroupSupportResponse(BaseModel):
     exp: int
     streak: int
@@ -82,7 +83,7 @@ class SupportResponse(BaseModel):
     message: str
     support_id: int
     notification_id: int
-    
+
 class JoinByPostResponse(BaseModel):
     message: str
     group_id: int

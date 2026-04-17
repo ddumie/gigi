@@ -85,7 +85,7 @@ def get_habit(habit_id: int, user_id: int, db: Session) -> Habit | None:
     return db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == user_id).first()
 
 # 피드 등록 ( 방법 2 - 프론트에서 habit_id + content 보냄) 추후 방법 1(습관 완료와 피드 등록이 항상 같이 일어나야 하려면 수정 필요)
-def create_habit_feed(category: str, content: str, user_id: int, db: Session) -> dict:
+def create_habit_feed(habit_id: int, category: str, content: str, user_id: int, db: Session) -> dict:
     db_post = Post(author_id=user_id, post_type="feed")
     db.add(db_post)
     db.commit()
@@ -93,6 +93,7 @@ def create_habit_feed(category: str, content: str, user_id: int, db: Session) ->
 
     db_feed = FeedPost(
         post_id=db_post.id,
+        habit_id=habit_id,
         category=category,
         content=content
     )
@@ -104,9 +105,10 @@ def create_habit_feed(category: str, content: str, user_id: int, db: Session) ->
 # 피드 목록 조회 (category 파라미터로 필터)
 def get_habit_feed(db: Session, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
     query = (
-        db.query(FeedPost, User)
+        db.query(FeedPost, User, Habit)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
+        .outerjoin(Habit, FeedPost.habit_id == Habit.id)
         .filter(Post.is_active == True)
         .order_by(Post.created_at.desc())
     )
@@ -122,9 +124,10 @@ def delete_habit_feed(post_id: int, user_id: int, db: Session) -> Post | None:
 # 피드 단건 조회
 def get_feed_detail(post_id: int, db: Session) -> tuple[FeedPost, Post, User] | None:
     row = (
-        db.query(FeedPost, Post, User)
+        db.query(FeedPost, Post, User, Habit)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
+        .outerjoin(Habit, FeedPost.habit_id == Habit.id)
         .filter(FeedPost.post_id == post_id, Post.is_active == True)
         .first()
     )
