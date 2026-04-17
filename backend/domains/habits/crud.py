@@ -1,8 +1,6 @@
 from datetime import date, timedelta
-
 from sqlalchemy import select, func, and_
-from sqlalchemy.orm import Session
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.habits.models import Habit, HabitCheck
 from backend.domains.habits.schemas import HabitCreate, HabitUpdate
 
@@ -10,34 +8,36 @@ from backend.domains.habits.schemas import HabitCreate, HabitUpdate
 # ── Habit ──
 
 
-def get_habit(db: Session, habit_id: int, user_id: int) -> Habit | None:
-    return db.execute(
+async def get_habit(db: AsyncSession, habit_id: int, user_id: int) -> Habit | None:
+    result = await db.execute(
         select(Habit).where(
             Habit.id == habit_id,
             Habit.user_id == user_id,
             Habit.is_active == True,
         )
-    ).scalar_one_or_none()
+    )
+    return result.scalar_one_or_none()
 
 
-def get_habits(db: Session, user_id: int, category: str | None = None) -> list[Habit]:
+async def get_habits(db: AsyncSession, user_id: int, category: str | None = None) -> list[Habit]:
     stmt = select(Habit).where(Habit.user_id == user_id, Habit.is_active == True)
     if category:
         stmt = stmt.where(Habit.category == category)
     stmt = stmt.order_by(Habit.created_at.asc())
-    return list(db.execute(stmt).scalars().all())
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
 
 
-def create_habit(db: Session, user_id: int, habit_in: HabitCreate) -> Habit:
+async def create_habit(db: AsyncSession, user_id: int, habit_in: HabitCreate) -> Habit:
     habit = Habit(user_id=user_id, **habit_in.model_dump())
     db.add(habit)
-    db.commit()
-    db.refresh(habit)
+    await db.commit()
+    await db.refresh(habit)
     return habit
 
 
-def create_group_habit(
-    db: Session,
+async def create_group_habit(
+    db: AsyncSession,
     user_id: int,
     group_id: int,
     title: str,
@@ -53,102 +53,102 @@ def create_group_habit(
         repeat_type = repeat_type,
     )
     db.add(habit)
-    db.commit()
-    db.refresh(habit)
+    await db.commit()
+    await db.refresh(habit)
     return habit
 
 
-def update_habit(db: Session, habit: Habit, habit_in: HabitUpdate) -> Habit:
+async def update_habit(db: AsyncSession, habit: Habit, habit_in: HabitUpdate) -> Habit:
     for field, value in habit_in.model_dump(exclude_unset=True).items():
         setattr(habit, field, value)
-    db.commit()
-    db.refresh(habit)
+    await db.commit()
+    await db.refresh(habit)
     return habit
 
 
-def deactivate_habit(db: Session, habit: Habit) -> Habit:
+async def deactivate_habit(db: AsyncSession, habit: Habit) -> Habit:
     """소프트 삭제 — is_active=False로 변경한다."""
     habit.is_active = False
-    db.commit()
+    await db.commit()
     return habit
 
 
 # ── HabitCheck ──
 
 
-def get_check(db: Session, habit_id: int, checked_date: date) -> HabitCheck | None:
-    return db.execute(
+async def get_check(db: AsyncSession, habit_id: int, checked_date: date) -> HabitCheck | None:
+    result = await db.execute(
         select(HabitCheck).where(
             HabitCheck.habit_id == habit_id,
             HabitCheck.checked_date == checked_date,
         )
-    ).scalar_one_or_none()
+    )
+    return result.scalar_one_or_none()
 
 
-def get_checks_in_range(
-    db: Session, habit_id: int, start: date, end: date
+async def get_checks_in_range(
+    db: AsyncSession, habit_id: int, start: date, end: date
 ) -> list[HabitCheck]:
-    return list(
-        db.execute(
-            select(HabitCheck).where(
-                HabitCheck.habit_id == habit_id,
-                HabitCheck.checked_date >= start,
-                HabitCheck.checked_date <= end,
-            )
-        ).scalars().all()
+    result = await db.execute(
+        select(HabitCheck).where(
+            HabitCheck.habit_id == habit_id,
+            HabitCheck.checked_date >= start,
+            HabitCheck.checked_date <= end,
+        )
     )
+    return list(result.scalars().all())
 
 
-def get_today_checks_for_user(db: Session, user_id: int, today: date) -> list[HabitCheck]:
+async def get_today_checks_for_user(db: AsyncSession, user_id: int, today: date) -> list[HabitCheck]:
     """오늘 탭에서 사용 — 해당 유저의 오늘 체크 전체 조회."""
-    return list(
-        db.execute(
-            select(HabitCheck)
-            .join(Habit, Habit.id == HabitCheck.habit_id)
-            .where(
-                Habit.user_id == user_id,
-                Habit.is_active == True,
-                HabitCheck.checked_date == today,
-            )
-        ).scalars().all()
+    result = await db.execute(
+        select(HabitCheck)
+        .join(Habit, Habit.id == HabitCheck.habit_id)
+        .where(
+            Habit.user_id == user_id,
+            Habit.is_active == True,
+            HabitCheck.checked_date == today,
+        )
     )
+    return list(result.scalars().all())
 
 
-def check_habit(db: Session, habit_id: int, checked_date: date) -> HabitCheck:
+async def check_habit(db: AsyncSession, habit_id: int, checked_date: date) -> HabitCheck:
     """체크 ON — 이미 체크된 경우 기존 레코드를 반환한다."""
-    existing = get_check(db, habit_id, checked_date)
+    existing = await get_check(db, habit_id, checked_date)
     if existing:
         return existing
     check = HabitCheck(habit_id = habit_id, checked_date = checked_date)
     db.add(check)
-    db.commit()
-    db.refresh(check)
+    await db.commit()
+    await db.refresh(check)
     return check
 
 
-def uncheck_habit(db: Session, habit_id: int, checked_date: date) -> bool:
+async def uncheck_habit(db: AsyncSession, habit_id: int, checked_date: date) -> bool:
     """체크 OFF — 체크 레코드가 없으면 False 반환."""
-    existing = get_check(db, habit_id, checked_date)
+    existing = await get_check(db, habit_id, checked_date)
     if not existing:
         return False
-    db.delete(existing)
-    db.commit()
+    await db.delete(existing)
+    await db.commit()
     return True
 
 
 # ── 통계 (오늘 탭 전달용) ──
 
 
-def count_checked_today(db: Session, user_id: int, today: date) -> tuple[int, int]:
+async def count_checked_today(db: AsyncSession, user_id: int, today: date) -> tuple[int, int]:
     """(오늘 체크 수, 오늘 전체 활성 습관 수) 반환."""
-    total = db.execute(
+    result = await db.execute(
         select(func.count(Habit.id)).where(
             Habit.user_id == user_id,
             Habit.is_active == True,
         )
-    ).scalar_one()
+    )
+    total = result.scalar_one()
 
-    checked = db.execute(
+    result = await db.execute(
         select(func.count(HabitCheck.id))
         .join(Habit, Habit.id == HabitCheck.habit_id)
         .where(
@@ -156,15 +156,16 @@ def count_checked_today(db: Session, user_id: int, today: date) -> tuple[int, in
             Habit.is_active == True,
             HabitCheck.checked_date == today,
         )
-    ).scalar_one()
+    )
+    checked = result.scalar_one()
 
     return checked, total
 
 
-def get_weekly_checked_dates(db: Session, user_id: int, today: date) -> list[date]:
+async def get_weekly_checked_dates(db: AsyncSession, user_id: int, today: date) -> list[date]:
     """최근 7일간 체크된 날짜 목록 반환 (미니 달력용)."""
     start = today - timedelta(days=6)
-    rows = db.execute(
+    result = await db.execute(
         select(HabitCheck.checked_date)
         .join(Habit, Habit.id == HabitCheck.habit_id)
         .where(
@@ -174,5 +175,5 @@ def get_weekly_checked_dates(db: Session, user_id: int, today: date) -> list[dat
             HabitCheck.checked_date <= today,
         )
         .distinct()
-    ).scalars().all()
-    return list(rows)
+    )
+    return list(result.scalars().all())
