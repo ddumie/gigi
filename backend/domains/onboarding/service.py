@@ -5,18 +5,20 @@ import json
 import logging
 from google import genai
 from pydantic import ValidationError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding.schemas import AIHabitItem
 from backend.config import settings
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
 from backend.domains.onboarding import crud
-from sqlalchemy import select
+
 
 logger = logging.getLogger(__name__)
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
+# 사용가능한 Gemini 모델 목록 확인용입니다.
 # try:
 #     for model in client.models.list():
 #         print(f"가용한 모델명: {model.name}")
