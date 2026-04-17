@@ -20,11 +20,15 @@
           <h1 class="section-title">닉네임을 정해요</h1>
           <p class="section-copy">이메일 앞부분을 추천 닉네임으로 미리 보여줍니다.</p>
         </div>
+        <label class="input-label" for="signup-name">이름</label>
+        <input id="signup-name" class="input-field" type="text" placeholder="실명을 입력하세요">
+        <div id="name-error" class="input-error hidden"></div>
         <div id="nickname-preview" class="auth-summary">추천 닉네임을 불러오는 중입니다.</div>
         <label class="input-label" for="signup-nickname">닉네임</label>
-        <input id="signup-nickname" class="input-field" type="text" placeholder="닉네임을 입력하세요">
+        <input id="signup-nickname" class="input-field" type="text" placeholder="닉네임을 입력하세요 (12자 이하)">
+        <div id="nickname-error" class="input-error hidden"></div>
         <div class="page-actions">
-          <a href="/pages/auth/signup-done.html" class="btn btn-primary btn-full">가입 완료</a>
+          <button id="step2-submit" class="btn btn-primary btn-full">가입 완료</button>
         </div>
       </section>
     </div>

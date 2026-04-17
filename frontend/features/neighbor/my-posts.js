@@ -1,12 +1,11 @@
 // my-posts 용 자바스크립트
 (async () => {
-  const [groupRes, feedRes] = await Promise.all([
-    fetch('/api/v1/neighbor/group-search/my'),
-    fetch('/api/v1/neighbor/feed/my')
+  requireLogin();
+  const [groupPosts, feedPosts] = await Promise.all([
+    apiGet('/neighbor/group-search/my'),
+    apiGet('/neighbor/feed/my')
   ]);
 
-  const groupPosts = await groupRes.json();
-  const feedPosts = await feedRes.json();
   // group-search 글 렌더링
   const list_gs = document.getElementById('my-posts-list-gs');
   groupPosts.forEach(p => {

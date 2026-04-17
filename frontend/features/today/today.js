@@ -65,9 +65,14 @@ function renderChecklist(habits, stats) {
 
   if (habits.length === 0) {
     $checklist.innerHTML = `
-      <div style="text-align:center;padding:1.5rem 0;">
+      <div style="text-align:center;padding:2rem 1rem;">
         <div style="font-size:1.5rem;margin-bottom:0.5rem;">🌱</div>
-        <p class="meta-text">등록된 습관이 없어요. 습관 탭에서 추가해보세요!</p>
+        <div style="font-size:0.9rem;font-weight:500;margin-bottom:0.4rem;">첫 습관을 추가해보세요</div>
+        <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1.2rem;line-height:1.7;">
+          건강한 습관 하나가<br>건강한 하루를 만들어요
+        </div>
+        <a href="${PAGES.onboard1}" class="btn btn-ai btn-full" style="margin-bottom:0.4rem;">AI 습관 추천받기</a>
+        <a href="${PAGES.habits}" class="btn btn-outline btn-full btn-sm">직접 습관 추가하기</a>
       </div>`;
     return;
   }
@@ -106,6 +111,13 @@ async function toggleCheck(habitId) {
 // ── 나의 현황 통계 ──
 
 function renderStats(stats) {
+  if (stats.total_count === 0) {
+    $statRate.textContent   = '—';
+    $statWeekly.textContent = '—';
+    $statStreak.textContent = '—';
+    return;
+  }
+
   $statRate.textContent   = stats.completion_rate + '%';
   $statWeekly.textContent = stats.weekly_average + '%';
   $statStreak.textContent = stats.streak_days > 0
@@ -153,28 +165,26 @@ function renderCalendar(checkedDates) {
 
 function renderGroupSummary() {
   // TODO: support 도메인 API 연동 후 모임 멤버 달성률 표시
-  $groupSum.textContent = '모임 정보는 지지 탭에서 확인할 수 있어요';
+  $groupSum.textContent = '아직 속한 모임이 없어요';
 }
 
 
-// ── 첫 로그인 모달 ──
+// ── 첫 진입 모달 (첫 습관 등록 직후 1회 표시) ──
 
 function initFirstLoginModal() {
-  const modal   = document.getElementById('first-login-modal');
-  const dismiss = document.getElementById('dismiss-first-login-modal');
-  const user    = getCurrentUser();
+  const overlay    = document.getElementById('first-login-overlay');
+  const dismiss    = document.getElementById('dismiss-first-login-modal');
+  const shouldShow = localStorage.getItem('gigi_show_first_habit_modal') === 'true';
 
-  if (modal && user && user.is_first_login) {
-    modal.classList.add('show');
+  if (overlay && shouldShow) {
+    overlay.classList.add('show');
+    // 한 번만 표시 → 플래그 즉시 제거
+    localStorage.removeItem('gigi_show_first_habit_modal');
   }
 
   if (dismiss) {
     dismiss.addEventListener('click', () => {
-      modal.classList.remove('show');
-      if (user) {
-        user.is_first_login = false;
-        setCurrentUser(user);
-      }
+      overlay.classList.remove('show');
     });
   }
 }

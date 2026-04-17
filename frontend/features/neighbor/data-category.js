@@ -23,6 +23,10 @@ async function renderFeed(posts) {
     const title = document.createElement('strong');
     title.textContent = `${p.category ?? '기타'} 완료`;
 
+    const author = document.createElement('p');
+    author.className = 'meta-text';
+    author.textContent = p.author?.nickname ?? '알 수 없음'; // 습관 피드 글쓴이 닉네임만 공개
+
     const body = document.createElement('p');
     body.className = 'section-copy';
     body.style.marginTop = '0.5rem';
@@ -59,7 +63,7 @@ async function renderFeed(posts) {
     });
     
     actions.appendChild(commentBtn);
-    article.append(title, body, actions);
+    article.append(title, author, body, actions);
 
     // 지지하기 토글
   // 클릭 시 API 호출

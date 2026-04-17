@@ -57,6 +57,7 @@ async function saveHabit() {
       });
       showToast('습관이 수정되었습니다.');
     } else {
+      const isFirstHabit = habits.length === 0;   // 추가 직전 시점 기준
       await apiPost('/habits/', {
         title,
         category,
@@ -64,12 +65,34 @@ async function saveHabit() {
         repeat_type: repeatType,
       });
       showToast('습관이 추가되었습니다.');
+
+      // 첫 습관 등록이면 → 습관 탭(현재)과 오늘 탭에서 첫 진입 모달을 띄우도록 플래그 저장
+      if (isFirstHabit) {
+        localStorage.setItem('gigi_show_first_habit_modal', 'true');
+      }
     }
     closeModal();
     await loadHabits();
+
+    // 첫 습관 등록인 경우 현재 페이지(습관 탭)에서도 모달 즉시 표시
+    showFirstHabitModalIfFlagged();
   } catch (e) {
     showToast(e.message || '저장에 실패했습니다.');
   }
+}
+
+
+// ── 첫 진입 모달 (첫 습관 등록 직후 1회 표시) ──
+
+function showFirstHabitModalIfFlagged() {
+  if (localStorage.getItem('gigi_show_first_habit_modal') !== 'true') return;
+
+  const overlay = document.getElementById('first-habit-overlay');
+  if (!overlay) return;
+
+  overlay.classList.add('show');
+  // 한 번만 표시 → 플래그 즉시 제거 (오늘 탭에서 중복 표시 방지)
+  localStorage.removeItem('gigi_show_first_habit_modal');
 }
 
 async function deleteHabit(id) {
@@ -178,6 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
   $modal.addEventListener('click', (e) => {
     if (e.target === $modal) closeModal();
   });
+
+  // 첫 진입 모달 닫기 버튼
+  const dismissFirstModal = document.getElementById('dismiss-first-habit-modal');
+  if (dismissFirstModal) {
+    dismissFirstModal.addEventListener('click', () => {
+      document.getElementById('first-habit-overlay').classList.remove('show');
+    });
+  }
 
   // 초기 로드
   loadHabits();

@@ -10,6 +10,7 @@ from backend.domains.onboarding.schemas import AIHabitItem
 from backend.config import settings
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
+from backend.domains.onboarding import crud
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ def get_ai_recommendations(age_group: str | None, health_interests: list[str] | 
     각 습관은 title(습관 제목), category(카테고리), description(짧고 간단한 설명)을 포함해야 합니다.
     카테고리는 다음 중 하나여야 합니다: 운동, 복약, 식단, 수면, 기타
     매번 호출할 때마다 서로 다른 습관을 추천해주세요. 이전에 추천했을 가능성이 있는 습관은 피하고, 다양한 관점에서 새로운 습관을 제안해주세요.
+    description은 구체적인 시간, 횟수, 행동을 포함해서 짧고 명확하게 작성해주세요. 예: "매일 아침 7시, 10분 스트레칭으로 하루를 시작하세요."
     JSON 형식은 다음과 같아야 합니다:
     [
         {{
@@ -90,3 +92,15 @@ def save_selected_habits(db: Session, user_id: int, selected: list[AIHabitItem])
         db.rollback()
         logger.error(f"습관 저장 중 오류 발생: {e}", exc_info=True)
         raise ValueError("습관 저장 중 오류가 발생했습니다.")
+
+#  AI호출 성공해야 카운트증가로 넘어가서 AI성공=둘다성공, AI실패=둘다실패(카운트증가 실패로 에러처리됨)
+def recommend_habits_and_count(db, user_id, age_group, health_interests):
+    """AI 습관추천 + 추천 횟수(카운트) 증가를 하나로 처리 : AI호출 성공시에만 카운트 증가"""
+    habits = get_ai_recommendations(age_group, health_interests)  # AI 호출
+    try:
+        updated_pref = crud.incre_recommend_count(db, user_id)  # 카운트 증가
+    except ValueError:  # 카운트 증가 실패하면 ValueError로 라우터에서 502에러
+        raise ValueError("추천 횟수 업데이트 중 오류가 발생했습니다.")
+    if updated_pref is None:
+        raise ValueError("선호도 정보를 찾을 수 없습니다.")
+    return habits, updated_pref
