@@ -40,7 +40,6 @@ class GroupInfo(BaseModel):
 
 class GroupListItem(BaseModel):
     group: GroupInfo
-    invite: dict   # {"code": str}
     members: List[MemberInfo]
 
 class GroupsResponse(BaseModel):
@@ -74,9 +73,15 @@ class UpdateGroupResponse(BaseModel):
     group_type: str
 
 class SupportResponse(BaseModel):
+    group: GroupSupportResponse
     message: str
     support_id: int
     notification_id: int
+
+class GroupSupportResponse(BaseModel):
+    exp: int
+    streak: int
+    max_streak: int
 
 class JoinByPostResponse(BaseModel):
     message: str

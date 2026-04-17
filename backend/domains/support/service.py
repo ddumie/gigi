@@ -43,22 +43,44 @@ def groups_info_service(
     member_limit: int = 10,
     member_offset: int = 0
 ):
-    # 사용자가 가입한 모든 그룹 id 가져오기
     group_ids = crud.get_group_ids_by_uid(db, user_id, group_limit, group_offset)
     results = []
-    for gid_tuple in group_ids:
+
+    for idx, gid_tuple in enumerate(group_ids):
         gid = gid_tuple[0]
-        group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates = crud.get_group(db, gid, user_id, member_limit, member_offset)
+
+        # 첫 그룹 첫 조회: 내 기록 + 9명
+        if idx == 0 and group_offset == 0:
+            my_member = crud.get_me(db, gid, user_id)
+            members = crud.get_group_members(db, gid, 9, member_offset, user_id=user_id)
+            if my_member:
+                members = [my_member] + members
+        else:
+            if idx == 0:
+                members = crud.get_group_members(db, gid, member_limit, member_offset - 1, user_id=user_id)
+            else:                
+                members = crud.get_group_members(db, gid, member_limit, member_offset, user_id=user_id)
+
+        group, groupprofile, invite, habit_info = crud.get_group(db, gid, user_id)
         supports_today = crud.check_group_support(db, gid, user_id)
+
+        if not supports_today:
+            streak_value = group.support_streak or 0
+            if streak_value != 0:
+                supports_yesterday = crud.check_group_support_yesterday(db, gid, user_id)
+                if not supports_yesterday:
+                    crud.reset_group_streak(db, gid)
+
         supported_map = {s.to_user_id: True for s in supports_today}
+
+        # 닉네임/달성률은 crud에서 계산
+        member_nicknames, complete_rates = crud.get_members_info(db, members)
+
         if not group:
             raise ValueError("모임을 찾을 수 없습니다.")
-        # if not groupprofile:
-        #     raise ValueError("모임 설정을 찾을 수 없습니다.")
         if not invite:
             raise ValueError("초대코드를 찾을 수 없습니다.")
-        if not members:
-            raise ValueError("해당 그룹에 맴버가 없습니다.")
+
         results.append({
             "group": {
                 "id": (groupprofile.group_id if groupprofile else group.id),
@@ -70,7 +92,6 @@ def groups_info_service(
                 "habit": habit_info["habit_title"] if habit_info else None,
                 "frequency": habit_info["frequency"] if habit_info else None
             },
-            "invite": {"code": invite.code},
             "members": [
                 {
                     "user_id": m.user_id,
@@ -86,20 +107,20 @@ def groups_info_service(
 
 # 모임 관리
 def group_settings_service(db: Session, group_id: int, user_id: int):
-    group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates = crud.get_group(db, group_id, user_id)
+    group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames = crud.get_group_4_settings(db, group_id, user_id)
     if not group:
         raise ValueError("모임을 찾을 수 없습니다.")
-    if not groupprofile:
-        raise ValueError("모임 설정을 찾을 수 없습니다.")
+    # if not groupprofile:
+    #     raise ValueError("모임 설정을 찾을 수 없습니다.")
     if not invite:
         raise ValueError("초대코드를 찾을 수 없습니다.")
     if not members:
         raise ValueError("해당 그룹에 맴버가 없습니다.")
     return {
         "group": {
-            "id": groupprofile.group_id,
-            "name": groupprofile.name,
-            "group_type": groupprofile.group_type,
+            "id": (groupprofile.group_id if groupprofile else group.id),
+            "name": (groupprofile.name if groupprofile else group.name),
+            "group_type": (groupprofile.group_type if groupprofile else group.group_type),
             "habit": habit_info["habit_title"] if habit_info else None,
             "frequency": habit_info["frequency"] if habit_info else None
         },
@@ -188,7 +209,16 @@ def send_support_service(db: Session, group_id: int, from_user_id: int, to_user_
     content = f"{from_user.nickname}님이 지지를 보냈어요!"
     notification = crud.create_notification(db, to_user_id, "support", content)
 
+    group = crud.get_group_by_id(db, group_id)
+    if not group:
+        raise ValueError("그룹을 찾을 수 없습니다.")
+
     return {
+        "group": {
+            "exp": group.total_support_count,
+            "streak": group.support_streak,
+            "max_streak": group.max_streak,            
+        },
         "message": "지지를 보냈습니다.",
         "support_id": support.id,
         "notification_id": notification.id

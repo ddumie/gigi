@@ -65,7 +65,83 @@ def create_group(db: Session, group: schemas.GroupCreate, user_id: int):
     return db_group
 
 # 모임 읽어오기
-def get_group(db: Session, group_id: int, user_id: int, limit: int = 10, offset: int = 0):
+def get_group(db: Session, group_id: int, user_id: int):
+    groupprofile = db.query(models.GroupProfile).filter(
+        models.GroupProfile.group_id == group_id,
+        models.GroupProfile.user_id == user_id
+    ).first()
+
+    invite = db.query(models.InviteCode).filter(models.InviteCode.group_id == group_id).first()
+
+    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+
+    # 습관 조회 (Group의 post_id가 None이 아닌 경우만.)
+    habit_info = None
+    if group and group.post_id:
+        post_info = db.query(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id).first()
+        if post_info:
+            habit_info = {
+                "habit_title": post_info.habit_title,
+                "frequency": post_info.frequency
+            }
+
+    return group, groupprofile, invite, habit_info
+
+
+# 나만 호출하기
+def get_me(db: Session, group_id: int, user_id: int):
+    return db.query(models.GroupMember).filter(
+        models.GroupMember.group_id == group_id,
+        models.GroupMember.user_id == user_id
+    ).first()
+
+
+# 모임 멤버 별도 호출 (내 기록 제외)
+def get_group_members(db: Session, group_id: int, limit: int, offset: int, user_id: int):
+    return (
+        db.query(models.GroupMember)
+        .filter(models.GroupMember.group_id == group_id, models.GroupMember.user_id != user_id)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+# 특정 멤버 닉네임 조회
+def get_member_nickname(db: Session, user_id: int):
+    user = db.query(User).filter(User.id == user_id).one_or_none()
+    return user.nickname if user else None
+
+
+# 특정 멤버 달성률 계산
+def get_member_complete_rate(db: Session, user_id: int, target_date: date):
+    habit_count = db.query(Habit).filter(Habit.user_id == user_id).count()
+    checked_count = (
+        db.query(HabitCheck)
+        .join(Habit, HabitCheck.habit_id == Habit.id)
+        .filter(Habit.user_id == user_id, HabitCheck.checked_date == target_date)
+        .count()
+    )
+    return (checked_count / habit_count * 100) if habit_count > 0 else 0
+
+
+# 여러 멤버 닉네임/달성률 dict 생성
+def get_members_info(db: Session, members: list[models.GroupMember]):
+    member_nicknames = {}
+    complete_rates = {}
+    target_date = date.today()
+
+    for m in members:
+        nickname = get_member_nickname(db, m.user_id)
+        if nickname:
+            member_nicknames[m.user_id] = nickname
+
+        complete_rates[m.user_id] = get_member_complete_rate(db, m.user_id, target_date)
+
+    return member_nicknames, complete_rates
+
+
+# 설정용 모임 읽어오기
+def get_group_4_settings(db: Session, group_id: int, user_id: int, limit: int = 10, offset: int = 0):
     groupprofile = db.query(models.GroupProfile).filter(
         models.GroupProfile.group_id == group_id,
         models.GroupProfile.user_id == user_id
@@ -111,21 +187,7 @@ def get_group(db: Session, group_id: int, user_id: int, limit: int = 10, offset:
         if user:
             member_nicknames[m.user_id] = user.nickname
 
-    # 각 멤버별 달성율 체크용
-    complete_rates = {}
-    for m in members:
-        habit_count = db.query(Habit).filter(Habit.user_id == m.user_id).count()
-        target_date = date.today()
-        checked_count = (
-            db.query(HabitCheck)
-            .join(Habit, HabitCheck.habit_id == Habit.id)
-            .filter(Habit.user_id == m.user_id, HabitCheck.checked_date == target_date)
-            .count()
-        )
-        member_complete_rate = (checked_count / habit_count * 100) if habit_count > 0 else 0
-        complete_rates[m.user_id] = member_complete_rate
-
-    return group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames, complete_rates
+    return group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames
 
 
 # 초대코드로 그룹 ID 조회
@@ -250,10 +312,11 @@ def create_support(db: Session, group_id: int, from_user_id: int, to_user_id: in
             group.max_streak = group.support_streak
         
         group.total_support_count += 1
-        db.refresh(group)
+        
     
     db.commit()
     db.refresh(support)
+    db.refresh(group)
     return support
 
 # 오늘 이미 지지했는지 확인
@@ -340,6 +403,26 @@ def check_group_support(db: Session, group_id: int, from_user_id: int):
         models.Support.created_at >= today
     ).all()
 
+# 전일 그룹 지지 리스트 반환
+def check_group_support_yesterday(db: Session, group_id: int, from_user_id: int):
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    return db.query(models.Support).filter(
+        models.Support.group_id == group_id,
+        models.Support.from_user_id == from_user_id,
+        models.Support.created_at >= yesterday,
+        models.Support.created_at < today
+    ).all()
+
+# 스트릭 초기화
+def reset_group_streak(db: Session, group_id: int):
+    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    if group:
+        group.support_streak = 0
+        db.commit()
+        db.refresh(group)
+    return group
+
 # 특정 유저 조회
 def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
@@ -349,4 +432,4 @@ def get_unread_notification_count(db: Session, user_id: int):
     return db.query(models.Notification).filter(
         models.Notification.user_id == user_id,
         models.Notification.is_read == False
-    )
+    ).count()

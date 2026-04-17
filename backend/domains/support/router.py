@@ -1,20 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from . import schemas, service
 from backend.database import get_db
-from backend.domains.auth.schemas import UserResponse
 from backend.domains.auth.router import get_current_user
-from backend.domains.auth.models import User
 
 router = APIRouter()
 
-# TODO 로그인 기능 구현 끝나면 get_current_user_id 바꾸기
-
-# ================= 공용 부분 ===================
-def get_current_user_id(current_user: User = Depends(get_current_user)) -> int:
-    return UserResponse.model_validate(current_user).id
-    # print("current_user:", current_user)
-    # return 1
+# TODO : 지지하기 후에 갱신 로직 넣기
 
 # ============== 12-ex1 모임 가입하기 ========================
 
@@ -23,12 +15,12 @@ def get_current_user_id(current_user: User = Depends(get_current_user)) -> int:
 def group_summary(
     invite_code: str,
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id),
-    limit: int = 10,
-    offset: int = 0
+    current_user : int = Depends(get_current_user),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, e=0)
 ):
     try:
-        return service.group_summary_service(db, invite_code, current_user_id, limit, offset)
+        return service.group_summary_service(db, invite_code, current_user.id, limit, offset)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -37,11 +29,10 @@ def group_summary(
 def join_group_by_invite(
     invite_code: str,
     db : Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id)
-):
+    current_user : int = Depends(get_current_user)):
     
     try:
-        return service.invited_group_service(db, invite_code, current_user_id)
+        return service.invited_group_service(db, invite_code, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -51,15 +42,15 @@ def join_group_by_invite(
 @router.get("/groups", response_model=schemas.GroupsResponse)
 def my_groups(
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id),
-    group_limit: int = 3,
-    group_offset: int = 0,
-    member_limit: int = 10,
-    member_offset: int = 0
+    current_user : int = Depends(get_current_user),
+    group_limit: int = Query(3, ge=0),
+    group_offset: int = Query(0, ge=0),
+    member_limit: int = Query(10, ge=0, le=100),
+    member_offset: int = Query(0, ge=0)
 ):
     
     try:
-        return service.groups_info_service(db, current_user_id, group_limit, group_offset, member_limit, member_offset)
+        return service.groups_info_service(db, current_user.id, group_limit, group_offset, member_limit, member_offset)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -69,11 +60,11 @@ def send_support(
     group_id: int,
     to_user_id: int,
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id)
+    current_user : int = Depends(get_current_user)
 ):
     
     try:
-        return service.send_support_service(db, group_id, current_user_id, to_user_id)
+        return service.send_support_service(db, group_id, current_user.id, to_user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
@@ -84,10 +75,10 @@ def send_support(
 def create_group(
     group: schemas.GroupCreate,
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id)
+    current_user : int = Depends(get_current_user)
 ):
     
-    return service.create_group_service(db, group, user_id = current_user_id)
+    return service.create_group_service(db, group, user_id = current_user.id)
 
 
 # =============== 12-2 모임 관리 ====================
@@ -97,11 +88,11 @@ def update_group_profile(
     group_id: int,
     group: schemas.GroupCreate,
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id)
+    current_user : int = Depends(get_current_user)
 ):
     
     try:
-        return service.update_group_profile_service(db, group_id, current_user_id, group)
+        return service.update_group_profile_service(db, group_id, current_user.id, group)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -110,11 +101,11 @@ def update_group_profile(
 def group_settings(
     group_id: int,
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id)
+    current_user : int = Depends(get_current_user)
 ):
     
     try:
-        return service.group_settings_service(db, group_id, current_user_id)
+        return service.group_settings_service(db, group_id, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -124,16 +115,14 @@ def group_settings(
 def leave_group(
     group_id: int,
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id)
+    current_user : int = Depends(get_current_user)
 ):
     
     try:
-        return service.leave_group_service(db, group_id, current_user_id)
+        return service.leave_group_service(db, group_id, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-
-
 
 # ================13-1 모임 구해요=================
 
@@ -142,11 +131,11 @@ def leave_group(
 def join_group_by_post(
     post_id: int,
     db: Session = Depends(get_db),
-    current_user_id : int = Depends(get_current_user_id)
+    current_user : int = Depends(get_current_user)
 ):
     
     try:
-        return service.join_by_post_service(db, post_id, current_user_id)
+        return service.join_by_post_service(db, post_id, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -154,6 +143,6 @@ def join_group_by_post(
 @router.get("/notifications/unread-count")
 def unread_count(
     db: Session = Depends(get_db),
-    current_user_id: int = Depends(get_current_user_id)
+    current_user: int = Depends(get_current_user)
 ):
-    return service.unread_notifications_service(db, current_user_id)
+    return service.unread_notifications_service(db, current_user.id)

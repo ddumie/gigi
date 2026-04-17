@@ -10,6 +10,23 @@ let groupOffset = 0;
 const groupLimit = 3;
 let loading = false;
 
+// JWT에서 현재 사용자 ID 추출
+function getCurrentUserId() {
+  const token = localStorage.getItem("gigi_token");
+  if (!token) return null;
+
+  try {
+    const payloadBase64 = token.split(".")[1];
+    const payloadJson = atob(payloadBase64);
+    const payload = JSON.parse(payloadJson);
+
+    return parseInt(payload.sub, 10);
+  } catch (err) {
+    console.error("토큰 파싱 실패:", err);
+    return null;
+  }
+}
+
 async function sendSupport(groupId, toUserId, button, card) {
   try {
     const token = localStorage.getItem("gigi_token");
@@ -24,27 +41,19 @@ async function sendSupport(groupId, toUserId, button, card) {
       showToast(err.detail || "지지 실패");
       return;
     }
-    await res.json();
+    
+    // 그룹 정보 갱신
+    const groupData = await res.json();
+    const groupInfo = groupData.group;
+
+    card.querySelector("[data-stat='exp']").textContent = `경험치 · ${groupInfo.exp}회`;
+    card.querySelector("[data-stat='streak']").textContent = `연속 지지 스트릭 · ${groupInfo.streak}일`;
+    card.querySelector("[data-stat='max-streak']").textContent = `최고 기록 ${groupInfo.max_streak}일`;    
 
     button.disabled = true;
     button.textContent = "오늘 지지 완료";
     showToast("오늘의 지지를 보냈어요.");
 
-    // 그룹 정보 다시 불러오기
-    const groupRes = await fetch(`/api/v1/support/group/${groupId}/settings`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    if (groupRes.ok) {
-      const groupData = await groupRes.json();
-      // console.log("group settings 응답:", groupData); // 응답 구조 확인용 로그
-      const groupInfo = groupData.group;
-
-      card.querySelector("[data-stat='exp']").textContent = `경험치 · ${groupInfo.exp}회`;
-      card.querySelector("[data-stat='streak']").textContent = `연속 지지 스트릭 · ${groupInfo.streak}일`;
-      card.querySelector("[data-stat='max-streak']").textContent = `최고 기록 ${groupInfo.max_streak}일`;
-    }
   } catch (error) {
     console.error("지지하기 요청 실패:", error);
   }
@@ -82,7 +91,7 @@ async function loadGroups() {
       return;
     }
 
-    // 그룹 있을 때 기존 카드 렌더링
+    // 그룹 있을 때 카드 렌더링
     data.groups.forEach(item => {
       const group = item.group;
       const members = item.members;
@@ -122,38 +131,54 @@ async function loadGroups() {
 
       const memberList = document.createElement("div");
       memberList.className = "member-list";
-      members.forEach(m => {
-        const nickname = m.nickname || "익명";
-        const firstChar = nickname.charAt(0);
-        const rate = m.complete_rate || 0;
-        const barColor = rate >= 100 ? "green" : "blue";
 
-        const row = document.createElement("div");
-        row.className = "member-row";
+      const currentUserId = getCurrentUserId();
 
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "btn btn-outline btn-sm";
-        button.dataset.supportButton = true;
-        button.textContent = m.supported_today ? "오늘 지지 완료" : "지지하기";
-        button.disabled = m.supported_today;
+      if (!members || members.length === 0) {
+        // 멤버가 없을 때 안내 문구 표시
+        const emptyRow = document.createElement("div");
+        emptyRow.className = "member-row empty";
+        emptyRow.textContent = "이 그룹엔 나밖에 없어요";
+        memberList.appendChild(emptyRow);
+      } else {
+        members.forEach(m => {
+          const nickname = m.nickname || "익명";
+          const firstChar = nickname.charAt(0);
+          const rate = m.complete_rate || 0;
+          const barColor = rate >= 100 ? "green" : "blue";
 
-        button.addEventListener("click", () => {
-          sendSupport(group.id, m.user_id, button, card);
-        });
+          const row = document.createElement("div");
+          row.className = "member-row";
 
-        row.innerHTML = `
-          <div class="member-avatar">${firstChar}</div>
-          <div class="member-info">
-            <div class="member-name">${nickname}님</div>
-            <div class="member-progress">
-              <div class="progress-bar ${barColor}" style="width:${rate}%;"></div>
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "btn btn-outline btn-sm";
+
+          // 내 기록일 경우 버튼 숨김
+          if (m.user_id === currentUserId) {
+            button.style.display = "none";
+          } else {
+            button.dataset.supportButton = true;
+            button.textContent = m.supported_today ? "오늘 지지 완료" : "지지하기";
+            button.disabled = m.supported_today;
+            button.addEventListener("click", () => {
+              sendSupport(group.id, m.user_id, button, card);
+            });
+          }
+
+          row.innerHTML = `
+            <div class="member-avatar">${firstChar}</div>
+            <div class="member-info">
+              <div class="member-name">${nickname}님</div>
+              <div class="member-progress">
+                <div class="progress-bar ${barColor}" style="width:${rate}%;"></div>
+              </div>
             </div>
-          </div>
-        `;
-        row.appendChild(button);
-        memberList.appendChild(row);
-      });
+          `;
+          row.appendChild(button);
+          memberList.appendChild(row);
+        });
+      }
 
       card.appendChild(memberList);
       groupList.appendChild(card);
