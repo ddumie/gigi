@@ -17,7 +17,7 @@ def group_summary(
     db: Session = Depends(get_db),
     current_user : int = Depends(get_current_user),
     limit: int = Query(10, ge=1, le=100),
-    offset: int = Query(ge=0)
+    offset: int = Query(0, e=0)
 ):
     try:
         return service.group_summary_service(db, invite_code, current_user.id, limit, offset)
@@ -44,9 +44,9 @@ def my_groups(
     db: Session = Depends(get_db),
     current_user : int = Depends(get_current_user),
     group_limit: int = Query(3, ge=0),
-    group_offset: int = Query(ge=0),
+    group_offset: int = Query(0, ge=0),
     member_limit: int = Query(10, ge=0, le=100),
-    member_offset: int = Query(ge=0)
+    member_offset: int = Query(0, ge=0)
 ):
     
     try:
