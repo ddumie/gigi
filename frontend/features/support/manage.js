@@ -40,6 +40,17 @@ async function loadGroupSettings() {
       });
     });
 
+    // 함께하는 습관 표시 (habit, frequency가 있을 때만)
+    if (group.habit && group.frequency) {
+      const habitBox = document.createElement("div");
+      habitBox.style.marginTop = "0.75rem";
+      habitBox.innerHTML = `
+        <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">함께하는 습관</div>
+        <input id="group-habit" class="inp habit-field" value="${group.habit} · ${group.frequency}" disabled>
+      `;
+      document.querySelector(".group-info-box").appendChild(habitBox);
+    }
+
     // 저장 버튼 이벤트 (모임 정보 수정)
     document.getElementById("save-group-btn").addEventListener("click", async () => {
       const newName = document.getElementById("group-name").value.trim();

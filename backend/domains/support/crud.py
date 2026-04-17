@@ -111,14 +111,14 @@ async def get_member_nickname(db: AsyncSession, user_id: int):
 
 # 멤버 달성률
 async def get_member_complete_rate(db: AsyncSession, user_id: int, target_date: date):
-    result = await db.execute(select(func.count()).select_from(Habit).filter(Habit.user_id == user_id))
+    result = await db.execute(select(func.count()).select_from(Habit).filter(Habit.user_id == user_id, Habit.is_active == True))
     habit_count = result.scalar()
 
     result = await db.execute(
         select(func.count())
         .select_from(HabitCheck)
         .join(Habit, HabitCheck.habit_id == Habit.id)
-        .filter(Habit.user_id == user_id, HabitCheck.checked_date == target_date)
+        .filter(Habit.user_id == user_id, Habit.is_active == True, HabitCheck.checked_date == target_date)
     )
     checked_count = result.scalar()
 
