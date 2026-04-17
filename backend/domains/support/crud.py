@@ -234,10 +234,10 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
     result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
     group = result.scalars().first()
     if group and group.post_id:
-        info_result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id))
-        post_info = info_result.scalars().first()
-        category_result = await db.execute(select(FeedPost.category).filter(FeedPost.post_id == group.post_id))
-        post_category = category_result.scalar()
+        result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id))
+        post_info = result.scalars().first()
+        result = await db.execute(select(FeedPost.category).filter(FeedPost.post_id == group.post_id))
+        post_category = result.scalar()
 
         if post_info and post_category:
             # 비동기 함수인지 확인 후 처리
