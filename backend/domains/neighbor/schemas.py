@@ -39,8 +39,12 @@ class GroupSearchResponse(BaseModel):
 
     class Config:
         from_attributes = True  # ORM 객체 → Pydantic 자동 변환
-# =====================================================================================
-# 게시글 목록 / 상세 응답
+
+class HabitFeedCreate(BaseModel):
+    habit_id: int
+    content: str = ""
+
+# 게시글 목록 / 상세 응답 (안 쓰는 스키마)
 class PostListResponse(BaseModel):
     id : int
     title : str 
@@ -56,12 +60,12 @@ class PostListResponse(BaseModel):
     updated_at : Optional[datetime] = None
     is_finished : bool
 
-# 댓글 작성 요청
+# 댓글 작성 요청 (안 쓰는 스키마)
 class CommentCreate(BaseModel):
     content : str
     parent_id : int
 
-# 댓글 응답
+# 댓글 응답(안쓰는 스키마)
 class CommentResponse(BaseModel):
     id : int
     content : str
@@ -70,7 +74,7 @@ class CommentResponse(BaseModel):
     post_id : int 
     parent_id : int 
     created_at : datetime
-# ============================================================================
+
 # 피드 상세 응답
 class FeedDetailResponse(BaseModel):
     post_id: int
@@ -99,8 +103,8 @@ class NeighborCommentResponse(BaseModel):
 
     class Config:
         from_attributes = True
-# ============================================================================
-# 좋아요
+
+# 좋아요 (안 쓰는 스키마)
 class support(BaseModel):
     id : int
     user_id : int

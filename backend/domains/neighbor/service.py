@@ -2,13 +2,13 @@
 # service.py
 from backend.domains.neighbor.crud import (
    create_post, create_group_search,
-   list_group_search,
+   get_group_search,
    delete_group_search,
-   list_my_group_search,
-   list_my_feed,
-   get_habit, create_feed_post,
-   list_feed,
-   delete_feed,
+   get_my_group_search,
+   get_my_habits,
+   get_habit, create_habit_feed,
+   get_habit_feed,
+   delete_habit_feed,
    get_feed_detail, get_feed_comments, get_post, create_feed_comment,
    delete_feed_comment,
    get_support,
@@ -32,9 +32,9 @@ def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: Session
 
     return {"id": db_post.id, "message": "등록 완료"}
 
-def list_group_search_logic(db: Session):
+def get_group_search_logic(db: Session):
     result = []
-    rows = list_group_search(db=db)
+    rows = get_group_search(db=db)
     for group_search, user in rows:
         group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         result.append(group_search)
@@ -49,39 +49,39 @@ def delete_group_search_logic(post_id: int, user_id: int, db: Session):
     db.commit()
     return {"message": "삭제 완료"}
 
-def list_my_group_search_logic(user_id: int, db: Session):
+def get_my_group_search_logic(user_id: int, db: Session):
     result = []
-    posts = list_my_group_search(user_id=user_id, db=db)
+    posts = get_my_group_search(user_id=user_id, db=db)
     for group_search, user in posts:
         group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         result.append(group_search)
 
     return result
 
-def list_my_feed_logic(user_id: int, db: Session):
+def get_my_habits_logic(user_id: int, db: Session):
     result = []
-    posts = list_my_feed(user_id=user_id, db=db)
+    posts = get_my_habits(user_id=user_id, db=db)
     for habits_feed, user in posts:
         habits_feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         result.append(habits_feed)
     return result
 
-def create_feed_post_logic(habit_id: int, content: str, user_id: int, db: Session) -> dict:
+def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db: Session) -> dict:
     habit = get_habit(habit_id=habit_id, user_id=user_id, db=db)
     if not habit:
         raise HTTPException(status_code=404, detail="습관을 찾을 수 없습니다.")
-    return create_feed_post(category=habit.category, content=content, user_id=user_id, db=db)
+    return create_habit_feed(category=habit.category, content=content, user_id=user_id, db=db)
 
-def list_feed_logic(db: Session, category: str | None = None) -> list[FeedPost]:
+def get_habit_feed_logic(db: Session, category: str | None = None) -> list[FeedPost]:
     result = []
-    rows = list_feed(category=category, db=db)
+    rows = get_habit_feed(category=category, db=db)
     for feed, user in rows:
         feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         result.append(feed)
     return result
 
-def delete_feed_logic(post_id: int, user_id: int, db: Session):
-    post = delete_feed(post_id=post_id, user_id=user_id, db=db)
+def delete_habit_feed_logic(post_id: int, user_id: int, db: Session):
+    post = delete_habit_feed(post_id=post_id, user_id=user_id, db=db)
     if not post:
         raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     post.is_active = False
