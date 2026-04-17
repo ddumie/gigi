@@ -111,14 +111,14 @@ async def get_member_nickname(db: AsyncSession, user_id: int):
 
 # 멤버 달성률
 async def get_member_complete_rate(db: AsyncSession, user_id: int, target_date: date):
-    result = await db.execute(select(func.count()).select_from(Habit).filter(Habit.user_id == user_id))
+    result = await db.execute(select(func.count()).select_from(Habit).filter(Habit.user_id == user_id, Habit.is_active == True))
     habit_count = result.scalar()
 
     result = await db.execute(
         select(func.count())
         .select_from(HabitCheck)
         .join(Habit, HabitCheck.habit_id == Habit.id)
-        .filter(Habit.user_id == user_id, HabitCheck.checked_date == target_date)
+        .filter(Habit.user_id == user_id, Habit.is_active == True, HabitCheck.checked_date == target_date)
     )
     checked_count = result.scalar()
 
@@ -182,7 +182,7 @@ async def get_group_4_settings(db: AsyncSession, group_id: int, user_id: int, li
         )
         top_support_row = result.scalars().first()
         if top_support_row is not None:
-            member_top_exp[m.user_id] = getattr(top_support_row, "total_support_count", top_support_row[0])
+            member_top_exp[m.user_id] = top_support_row
 
         result = await db.execute(select(User).filter(User.id == m.user_id))
         user = result.scalars().first()
@@ -234,10 +234,10 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
     result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
     group = result.scalars().first()
     if group and group.post_id:
-        info_result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id))
-        post_info = info_result.scalars().first()
-        category_result = await db.execute(select(FeedPost.category).filter(FeedPost.post_id == group.post_id))
-        post_category = category_result.scalar()
+        result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id))
+        post_info = result.scalars().first()
+        result = await db.execute(select(FeedPost.category).filter(FeedPost.post_id == group.post_id))
+        post_category = result.scalar()
 
         if post_info and post_category:
             # 비동기 함수인지 확인 후 처리

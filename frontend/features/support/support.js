@@ -98,6 +98,8 @@ async function loadGroups() {
 
       const card = document.createElement("article");
       card.className = "card group-card";
+
+      // 기본 헤더
       card.innerHTML = `
         <div class="group-card-header">
           <div class="group-title"><strong>${group.name}</strong></div>
@@ -107,27 +109,40 @@ async function loadGroups() {
               class="btn btn-outline btn-sm">모임 관리</a>
           </div>
         </div>
-        <div class="group-stats">
-          <div class="stat-box">
-            <div class="stat-row">
-              <span class="stat-icon">🌳</span>
-              <div>
-                <div class="stat-main" data-stat="exp">경험치 · ${group.exp}회</div>
-                <div class="stat-sub">다음 레벨까지는 추후 계산</div>
-              </div>
+      `;
+
+      // 📌 함께하는 습관 표시 (habit + frequency 있을 때만)
+      if (group.habit && group.frequency) {
+        const habitBox = document.createElement("div");
+        habitBox.className = "habit-box";
+        habitBox.textContent = `📌 함께하는 습관: ${group.habit} · ${group.frequency}`;
+        card.appendChild(habitBox);
+      }
+
+      // 그룹 통계
+      const stats = document.createElement("div");
+      stats.className = "group-stats";
+      stats.innerHTML = `
+        <div class="stat-box">
+          <div class="stat-row">
+            <span class="stat-icon">🌳</span>
+            <div>
+              <div class="stat-main" data-stat="exp">경험치 · ${group.exp}회</div>
+              <div class="stat-sub">다음 레벨까지는 추후 계산</div>
             </div>
           </div>
-          <div class="stat-box">
-            <div class="stat-row">
-              <span class="stat-icon">🔥</span>
-              <div>
-                <div class="stat-main" data-stat="streak">연속 지지 스트릭 · ${group.streak}일</div>
-                <div class="stat-sub" data-stat="max-streak">최고 기록 ${group.max_streak}일</div>
-              </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-row">
+            <span class="stat-icon">🔥</span>
+            <div>
+              <div class="stat-main" data-stat="streak">연속 지지 스트릭 · ${group.streak}일</div>
+              <div class="stat-sub" data-stat="max-streak">최고 기록 ${group.max_streak}일</div>
             </div>
           </div>
         </div>
       `;
+      card.appendChild(stats);
 
       const memberList = document.createElement("div");
       memberList.className = "member-list";
