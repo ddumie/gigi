@@ -1,5 +1,6 @@
 // 글쓴 후 글 등록하기 버튼처리
-document.getElementById('submit-btn').addEventListener('click', async () => {
+document.getElementById('group-search-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 const body = {
     group_type: document.getElementById('group_type').value,
     title: document.getElementById('title').value,
@@ -11,7 +12,7 @@ const body = {
 const res = await fetch('/api/v1/neighbor/group-search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        'Authorization': `Bearer ${getToken()}`
      },
     body: JSON.stringify(body),
 });
