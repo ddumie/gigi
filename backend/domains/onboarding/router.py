@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding import crud, service
 from backend.domains.onboarding.schemas import PreferenceRequest, AIRecommendResponse, SelectRequest
 from backend.domains.auth.service import get_current_user
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.database import get_async_db
 
 router = APIRouter()

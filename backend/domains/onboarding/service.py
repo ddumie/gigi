@@ -5,18 +5,20 @@ import json
 import logging
 from google import genai
 from pydantic import ValidationError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding.schemas import AIHabitItem
 from backend.config import settings
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
 from backend.domains.onboarding import crud
-from sqlalchemy import select
+
 
 logger = logging.getLogger(__name__)
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
+# 사용가능한 Gemini 모델 목록 확인용입니다.
 # try:
 #     for model in client.models.list():
 #         print(f"가용한 모델명: {model.name}")
@@ -35,6 +37,9 @@ async def get_ai_recommendations(age_group: str | None, health_interests: list[s
     각 습관은 title(습관 제목), category(카테고리), description(짧고 간단한 설명)을 포함해야 합니다.
     카테고리는 다음 중 하나여야 합니다: 운동, 복약, 식단, 수면, 기타
     매번 호출할 때마다 서로 다른 습관을 추천해주세요. 이전에 추천했을 가능성이 있는 습관은 피하고, 다양한 관점에서 새로운 습관을 제안해주세요.
+    반드시 다음 조건을 지켜주세요:
+    - 별도 비용 없이 지금 당장 실천할 수 있는 습관을 추천하세요.
+    - 추천하는 행동은 구체적이고 작은 단위로 제안하세요. (예: "악기 배우기"처럼 막연한 것 대신 "유튜브로 5분 기타 영상 따라하기"처럼 구체적으로)
     description은 구체적인 시간, 횟수, 행동을 포함해서 짧고 명확하게 작성해주세요. 예: "매일 아침 7시, 10분 스트레칭으로 하루를 시작하세요."
     JSON 형식은 다음과 같아야 합니다:
     [
