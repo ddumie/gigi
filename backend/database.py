@@ -1,6 +1,7 @@
 from importlib import import_module
 
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from backend.config import settings
@@ -14,12 +15,24 @@ MODEL_MODULES = (
     "backend.domains.neighbor.models",
 )
 
+# 동기 엔진 - 전체 비동기 변경 완료 시 삭제
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(
     bind=engine,
     autocommit=False,
     autoflush=False,
     expire_on_commit=False,
+)
+
+# 비동기 엔진
+async_database_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+async_engine = create_async_engine(async_database_url, echo=False)
+AsyncSessionLocal = async_sessionmaker(
+    bind=async_engine,
+    autocommit=False,
+    autoflush=False,
+    expire_on_commit=False,
+    class_=AsyncSession,
 )
 
 
@@ -33,10 +46,17 @@ def load_model_modules() -> None:
         import_module(module_path)
 
 
+# 전체 비동기 변경 완료 시 삭제
 def get_db():
-    """요청 단위 DB 세션."""
+    """요청 단위 동기 DB 세션."""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+async def get_async_db():
+    """요청 단위 비동기 DB 세션."""
+    async with AsyncSessionLocal() as db:
+        yield db

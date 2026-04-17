@@ -5,12 +5,13 @@ import json
 import logging
 from google import genai
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding.schemas import AIHabitItem
 from backend.config import settings
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
 from backend.domains.onboarding import crud
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ client = genai.Client(api_key=settings.GEMINI_API_KEY)
 #     print(f"모델 리스트 조회 실패: {e}")
 
 
-def get_ai_recommendations(age_group: str | None, health_interests: list[str] | None) -> list[AIHabitItem]:
+async def get_ai_recommendations(age_group: str | None, health_interests: list[str] | None) -> list[AIHabitItem]:
     """사용자가 설정한 나이대, 관심사 기반 Gemini AI 습관 추천"""
     interests_str = ", ".join(health_interests) if health_interests else "일반 건강 관리"
     prompt = f"""
@@ -70,7 +71,7 @@ def get_ai_recommendations(age_group: str | None, health_interests: list[str] | 
         raise ValueError("Gemini 응답에 실패했습니다.")
 
 
-def save_selected_habits(db: Session, user_id: int, selected: list[AIHabitItem]) -> None:
+async def save_selected_habits(db: AsyncSession, user_id: int, selected: list[AIHabitItem]) -> None:
     """AI 추천 습관 저장과 온보딩 완료처리"""
     try:
         for item in selected:
@@ -82,23 +83,24 @@ def save_selected_habits(db: Session, user_id: int, selected: list[AIHabitItem])
                 repeat_type="매일",
                 is_ai_recommended=True
             ))
-        user = db.query(User).filter(User.id == user_id).first()
+        result = await db.execute(select(User).filter(User.id == user_id))
+        user = result.scalars().first()
         if user:
             user.is_first_login = False  # 첫로그인이면 온보딩안한상태(True), 아니면 이미 사용유저(False)
         else:
             logger.warning(f"온보딩 완료처리 실패: 사용자 {user_id}를 찾을 수 없습니다.")
-        db.commit()
+        await db.commit()
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         logger.error(f"습관 저장 중 오류 발생: {e}", exc_info=True)
         raise ValueError("습관 저장 중 오류가 발생했습니다.")
 
 #  AI호출 성공해야 카운트증가로 넘어가서 AI성공=둘다성공, AI실패=둘다실패(카운트증가 실패로 에러처리됨)
-def recommend_habits_and_count(db, user_id, age_group, health_interests):
+async def recommend_habits_and_count(db, user_id, age_group, health_interests):
     """AI 습관추천 + 추천 횟수(카운트) 증가를 하나로 처리 : AI호출 성공시에만 카운트 증가"""
-    habits = get_ai_recommendations(age_group, health_interests)  # AI 호출
+    habits = await get_ai_recommendations(age_group, health_interests)  # AI 호출
     try:
-        updated_pref = crud.incre_recommend_count(db, user_id)  # 카운트 증가
+        updated_pref = await crud.incre_recommend_count(db, user_id)  # 카운트 증가
     except ValueError:  # 카운트 증가 실패하면 ValueError로 라우터에서 502에러
         raise ValueError("추천 횟수 업데이트 중 오류가 발생했습니다.")
     if updated_pref is None:
