@@ -63,7 +63,7 @@ if (step1Next) {
     step1Next.disabled = true;
     step1Next.textContent = '확인 중...';
     try {
-      const result = await apiPost('/auth/check/email', { email });
+      const result = await apiGet(`/auth/check/email?email=${encodeURIComponent(email)}`);
       if (!result.available) {
         showError('email-error', result.message || '이미 사용 중인 이메일입니다');
         step1Next.disabled = false;

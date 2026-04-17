@@ -1,9 +1,8 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
-from backend.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from backend.database import get_async_db
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
 from backend.domains.habits import service
@@ -24,44 +23,44 @@ router = APIRouter()
 
 
 @router.get("/", response_model=list[HabitResponse])
-def list_habits(
+async def list_habits(
     category:     str | None = Query(None, description="카테고리 필터"),
-    db:           Session    = Depends(get_db),
+    db:           AsyncSession    = Depends(get_async_db),
     current_user: User       = Depends(get_current_user),
 ):
-    return service.get_habits(db, current_user.id, category)
+    return await service.get_habits(db, current_user.id, category)
 
 
 @router.post("/", response_model=HabitResponse, status_code=status.HTTP_201_CREATED)
-def create_habit(
+async def create_habit(
     data:         HabitCreate,
-    db:           Session = Depends(get_db),
+    db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
-    return service.create_habit(db, current_user.id, data)
+    return await service.create_habit(db, current_user.id, data)
 
 
 @router.put("/{habit_id}", response_model=HabitResponse)
-def update_habit(
+async def update_habit(
     habit_id:     int,
     data:         HabitUpdate,
-    db:           Session = Depends(get_db),
+    db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
     try:
-        return service.update_habit(db, current_user.id, habit_id, data)
+        return await service.update_habit(db, current_user.id, habit_id, data)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.delete("/{habit_id}")
-def delete_habit(
+async def delete_habit(
     habit_id:     int,
-    db:           Session = Depends(get_db),
+    db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
     try:
-        service.deactivate_habit(db, current_user.id, habit_id)
+        await service.deactivate_habit(db, current_user.id, habit_id)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return {"message": "삭제되었습니다"}
@@ -72,27 +71,27 @@ def delete_habit(
     response_model=HabitCheckResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def check_habit(
+async def check_habit(
     habit_id:     int,
     body:         HabitCheckRequest,
-    db:           Session = Depends(get_db),
+    db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
     try:
-        return service.check_habit(db, current_user.id, habit_id, body.checked_date)
+        return await service.check_habit(db, current_user.id, habit_id, body.checked_date)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.delete("/{habit_id}/check")
-def uncheck_habit(
+async def uncheck_habit(
     habit_id:     int,
     checked_date: date    = Query(default_factory=date.today),
-    db:           Session = Depends(get_db),
+    db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
     try:
-        service.uncheck_habit(db, current_user.id, habit_id, checked_date)
+        await service.uncheck_habit(db, current_user.id, habit_id, checked_date)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return {"message": "체크가 해제되었습니다"}
@@ -100,13 +99,13 @@ def uncheck_habit(
 # 온보딩 이후에 다른 항목에 대해서 추천받고싶을 때
 # AI 추천 습관 받기
 @router.post("/ai-recommend", response_model=HabitAIRecommendResponse)
-def recommend_habits(
+async def recommend_habits(
     request: HabitAIRecommendRequest,
     current_user: User = Depends(get_current_user),
 ):
     """관심사 기반 AI 습관 추천 (온보딩 완료 후 추가 추천용)"""
     try:
-        habits = get_ai_recommendations(None, request.health_interests)
+        habits = await get_ai_recommendations(None, request.health_interests)
     except ValueError:
         raise HTTPException(status_code=502, detail="맞춤 습관 추천 중 오류가 발생했습니다.")
     return HabitAIRecommendResponse(habits=habits)
@@ -114,9 +113,9 @@ def recommend_habits(
 
 # AI 추천 습관 선택 후 등록
 @router.post("/ai-recommend/select", status_code=status.HTTP_201_CREATED)
-def select_habits(
+async def select_habits(
     request: HabitAISelectRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
     """AI가 추천한 습관을 선택해서 등록(추가등록)"""
@@ -132,8 +131,8 @@ def select_habits(
                 repeat_type="매일",
                 is_ai_recommended=True,
             ))
-        db.commit()
+        await db.commit()
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(status_code=500, detail="습관 저장 중 오류가 발생했습니다.")
     return {"message": "선택한 습관이 등록되었습니다."}

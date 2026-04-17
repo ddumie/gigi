@@ -1,8 +1,9 @@
 import logging
 from datetime import date
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding.models import UserPreference
-from sqlalchemy import select
+
 
 logger = logging.getLogger(__name__)
 
