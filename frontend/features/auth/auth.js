@@ -21,7 +21,7 @@ function clearAllErrors(...ids) {
 // ── 회원가입 1단계 ──
 const step1Next = document.getElementById('step1-next');
 if (step1Next) {
-  step1Next.addEventListener('click', () => {
+  step1Next.addEventListener('click', async () => {
     const email    = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
     const confirm  = document.getElementById('signup-password-confirm').value;
@@ -59,8 +59,26 @@ if (step1Next) {
 
     if (hasError) return;
 
-    localStorage.setItem('gigi_signup_email', email);
-    localStorage.setItem('gigi_signup_password', password);
+    // 이메일 중복 여부 비동기 확인
+    step1Next.disabled = true;
+    step1Next.textContent = '확인 중...';
+    try {
+      const result = await apiPost('/auth/check/email', { email });
+      if (!result.available) {
+        showError('email-error', result.message || '이미 사용 중인 이메일입니다');
+        step1Next.disabled = false;
+        step1Next.textContent = '다음으로';
+        return;
+      }
+    } catch (e) {
+      showError('email-error', e.message || '이메일 확인에 실패했습니다');
+      step1Next.disabled = false;
+      step1Next.textContent = '다음으로';
+      return;
+    }
+
+    sessionStorage.setItem('gigi_signup_email', email);
+    sessionStorage.setItem('gigi_signup_password', password);
     window.location.href = PAGES.signup2;
   });
 }
@@ -70,7 +88,7 @@ if (step1Next) {
 const step2Submit = document.getElementById('step2-submit');
 if (step2Submit) {
   // 닉네임 추천
-  const savedEmail = localStorage.getItem('gigi_signup_email') || '';
+  const savedEmail = sessionStorage.getItem('gigi_signup_email') || '';
   const suggested  = savedEmail.split('@')[0] || '';
   const nicknameInput = document.getElementById('signup-nickname');
   const preview       = document.getElementById('nickname-preview');
@@ -114,8 +132,8 @@ if (step2Submit) {
 
     if (hasError) return;
 
-    const email    = localStorage.getItem('gigi_signup_email') || '';
-    const password = localStorage.getItem('gigi_signup_password') || '';
+    const email    = sessionStorage.getItem('gigi_signup_email') || '';
+    const password = sessionStorage.getItem('gigi_signup_password') || '';
 
     if (!email || !password) {
       showToast('입력 정보가 없습니다. 처음부터 다시 시도해주세요.');
@@ -139,8 +157,8 @@ if (step2Submit) {
       setToken(data.access_token);
       setCurrentUser(data.user);
 
-      localStorage.removeItem('gigi_signup_email');
-      localStorage.removeItem('gigi_signup_password');
+      sessionStorage.removeItem('gigi_signup_email');
+      sessionStorage.removeItem('gigi_signup_password');
 
       window.location.href = PAGES.signupDone;
     } catch (e) {
