@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 나의 맞춤 습관 추천</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/onboarding/onboarding.css">
+</head>
+<body data-section="habits">
+  <main>
+    <div class="container auth-shell">
+
+      <!-- Step 1: 관심사 선택 -->
+      <section id="step-interests" class="card auth-card">
+        <div class="page-header">
+          <div class="section-eyebrow">나의 맞춤 습관 추천</div>
+          <h1 class="section-title">어떤 건강이 걱정되세요?</h1>
+          <p class="section-copy">관심 있는 항목을 선택하면 딱 맞는 습관을 추천해드려요!</p>
+        </div>
+        <div class="selection-grid">
+          <button class="chip" data-chip-select="interest">운동·체력</button>
+          <button class="chip" data-chip-select="interest">복약 관리</button>
+          <button class="chip" data-chip-select="interest">식단·영양</button>
+          <button class="chip" data-chip-select="interest">수면 개선</button>
+          <button class="chip" data-chip-select="interest">혈압·혈당</button>
+          <button class="chip" data-chip-select="interest">관절·근력</button>
+          <button class="chip" data-chip-select="interest">치매 예방</button>
+        </div>
+        <div class="page-actions">
+          <button id="btn-get-recommend" class="btn btn-ai btn-full">나의 맞춤 습관 추천받기</button>
+          <a href="/pages/habits/index.html" class="btn btn-outline btn-full">취소</a>
+        </div>
+      </section>
+
+      <!-- Step 2: AI 추천 결과 -->
+      <section id="step-result" class="card auth-card" style="display:none;">
+        <div class="page-header">
+          <div class="section-eyebrow">나의 맞춤 습관 추천</div>
+          <h1 class="section-title">딱 맞는 건강 습관을 찾았어요</h1>
+          <p class="section-copy">나에게 맞는 습관을 선택하고 등록해보세요!</p>
+        </div>
+        <div class="ai-box">
+          <span class="ai-dot"></span>
+          <span class="ai-label">맞춤형 추천 결과</span>
+          <p class="section-copy">관심사에 맞춰 습관 3가지를 골라봤어요.</p>
+        </div>
+        <div id="recommendation-list" class="recommendation-list"></div>
+        <div class="page-actions">
+          <button id="btn-select-habits" class="btn btn-primary btn-full">선택한 습관 등록하기</button>
+          <button id="btn-retry" class="btn btn-outline btn-full">다시 추천받기</button>
+          <a href="/pages/habits/index.html" class="btn btn-outline btn-full">취소</a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/habits/habit-ai.js"></script>
+</body>
+</html>
