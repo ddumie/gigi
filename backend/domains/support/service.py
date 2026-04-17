@@ -141,7 +141,7 @@ def join_by_post_service(db: Session, post_id: int, user_id: int):
     if not group_id:
         raise ValueError("해당 post_id에 연결 된 그룹을 찾을 수 없습니다.")
     new_member = join_group_service(db, group_id, user_id)
-    return {"group_id": new_member.group_id, "user_id": new_member.user_id}
+    return {"message": "모임에 참여했습니다.", "group_id": new_member.group_id, "user_id": new_member.user_id}
 
 # 가져온 그룹 id로 가입하기
 def join_group_service(db: Session, group_id: int, user_id: int):

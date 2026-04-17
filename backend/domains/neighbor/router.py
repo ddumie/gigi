@@ -16,7 +16,7 @@ from backend.domains.neighbor.service import (
 
 )
 from backend.domains.neighbor.schemas import (
-    GroupSearchCreate, GroupSearchResponse, FeedPostResponse,HabitFeedCreate,
+    GroupSearchCreate, GroupSearchResponse, FeedPostResponse, HabitFeedCreate,
     FeedDetailResponse, NeighborCommentCreate, NeighborCommentResponse,
     
 )

@@ -18,6 +18,9 @@ from sqlalchemy.orm import Session
 from backend.domains.neighbor.schemas import GroupSearchCreate, PostAuthorResponse
 from fastapi import HTTPException
 from backend.domains.neighbor.models import FeedPost, PostSupport
+from backend.domains.support.crud import create_group, add_group_member
+from backend.domains.support.schemas import GroupCreate as SupportGroupCreate
+
 
 def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: Session):
     # 비즈니스 규칙: 제목이 비어있으면 거절
@@ -29,7 +32,16 @@ def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: Session
 
     # crud 2: 자식 GroupSearchPost 생성
     create_group_search(post_id=db_post.id, post=post, db=db)
+    
+    # 그룹 생성 (name, group_type, max_streak 포함) 및 post_id 연결
+    group_setting = SupportGroupCreate(name=post.title, group_type=post.group_type)
+    db_group = create_group(db, group_setting, user_id)
+    db_group.post_id = db_post.id
+    db.commit()
+    db.refresh(db_group)
 
+    # 작성자를 그룹 멤버로 추가
+    add_group_member(db, db_group.id, user_id)
     return {"id": db_post.id, "message": "등록 완료"}
 
 def get_group_search_logic(db: Session):
@@ -70,13 +82,15 @@ def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db: Sessi
     habit = get_habit(habit_id=habit_id, user_id=user_id, db=db)
     if not habit:
         raise HTTPException(status_code=404, detail="습관을 찾을 수 없습니다.")
-    return create_habit_feed(category=habit.category, content=content, user_id=user_id, db=db)
+    return create_habit_feed(habit_id=habit_id, category=habit.category, content=content, user_id=user_id, db=db)
 
 def get_habit_feed_logic(db: Session, category: str | None = None) -> list[FeedPost]:
     result = []
     rows = get_habit_feed(category=category, db=db)
-    for feed, user in rows:
+    for feed, user, habit in rows:
         feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
+        feed.habit_title = habit.title if habit else None
+        feed.habit_description = habit.description if habit else None
         result.append(feed)
     return result
 
@@ -92,9 +106,11 @@ def get_feed_detail_logic(post_id: int, db: Session):
     row = get_feed_detail(post_id=post_id, db=db)
     if not row:
         raise HTTPException(status_code=404, detail="피드를 찾을 수 없습니다.")
-    feed, post, user = row
+    feed, post, user, habit = row
     feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
     feed.created_at = post.created_at
+    feed.habit_title = habit.title if habit else None           # 추가
+    feed.habit_description = habit.description if habit else None  # 추가
     return feed
 
 def get_feed_comments_logic(post_id: int, db: Session):

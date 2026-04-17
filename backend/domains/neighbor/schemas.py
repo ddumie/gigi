@@ -14,6 +14,8 @@ class FeedPostResponse(BaseModel):
     post_id: int # id 대신 post_id로
     category: Optional[str] = None
     content: str | None = None
+    habit_title: Optional[str] = None
+    habit_description: Optional[str] = None
     author: Optional[PostAuthorResponse] = None
 
     class Config:
@@ -44,6 +46,38 @@ class HabitFeedCreate(BaseModel):
     habit_id: int
     content: str = ""
 
+
+# 피드 상세 응답
+class FeedDetailResponse(BaseModel):
+    post_id: int
+    category: Optional[str] = None
+    content: Optional[str] = None
+    habit_title: Optional[str] = None
+    habit_description: Optional[str] = None
+    author: Optional[PostAuthorResponse] = None
+    created_at: Optional[datetime] = None
+    support_count: int = 0
+    is_supported: bool = False
+
+    class Config:
+        from_attributes = True
+
+# 이웃 댓글 작성 요청
+class NeighborCommentCreate(BaseModel):
+    content: str
+
+# 이웃 댓글 응답
+class NeighborCommentResponse(BaseModel):
+    id: int
+    post_id: int
+    author_id: int
+    author_nickname: Optional[str] = None
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+# =============================================================================
 # 게시글 목록 / 상세 응답 (안 쓰는 스키마)
 class PostListResponse(BaseModel):
     id : int
@@ -74,36 +108,6 @@ class CommentResponse(BaseModel):
     post_id : int 
     parent_id : int 
     created_at : datetime
-
-# 피드 상세 응답
-class FeedDetailResponse(BaseModel):
-    post_id: int
-    category: Optional[str] = None
-    content: Optional[str] = None
-    author: Optional[PostAuthorResponse] = None
-    created_at: Optional[datetime] = None
-    support_count: int = 0
-    is_supported: bool = False
-
-    class Config:
-        from_attributes = True
-
-# 이웃 댓글 작성 요청
-class NeighborCommentCreate(BaseModel):
-    content: str
-
-# 이웃 댓글 응답
-class NeighborCommentResponse(BaseModel):
-    id: int
-    post_id: int
-    author_id: int
-    author_nickname: Optional[str] = None
-    content: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
 # 좋아요 (안 쓰는 스키마)
 class support(BaseModel):
     id : int
