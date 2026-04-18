@@ -54,7 +54,7 @@ async def groups_info_service(
                 members = [my_member] + members
         else:
             if idx == 0:
-                members = await crud.get_group_members(db, gid, member_limit, member_offset - 1, user_id=user_id)
+                members = await crud.get_group_members(db, gid, member_limit, member_offset, user_id=user_id)
             else:                
                 members = await crud.get_group_members(db, gid, member_limit, member_offset, user_id=user_id)
 
@@ -133,7 +133,7 @@ async def join_by_post_service(db: AsyncSession, post_id: int, user_id: int):
     group_id = await crud.get_or_create_group_id_by_post(db, post_id, user_id)
     if not group_id:
         raise ValueError("해당 post_id에 연결 된 그룹을 찾을 수 없습니다.")
-    new_member = join_group_service(db, group_id, user_id)
+    new_member = await join_group_service(db, group_id, user_id)
     return {"message": "모임에 참여했습니다.", "group_id": new_member.group_id, "user_id": new_member.user_id}
 
 # 가져온 그룹 id로 가입하기
