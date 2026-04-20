@@ -9,6 +9,7 @@ const groupList = document.querySelector(".group-list");
 let groupOffset = 0;
 const groupLimit = 3;
 let loading = false;
+let hasMore = true;
 
 // JWT에서 현재 사용자 ID 추출
 function getCurrentUserId() {
@@ -60,7 +61,7 @@ async function sendSupport(groupId, toUserId, button, card) {
 }
 
 async function loadGroups() {
-  if (loading) return;
+  if (loading || !hasMore) return;
   loading = true;
   try {
     if (groupOffset === 0) {
@@ -80,14 +81,17 @@ async function loadGroups() {
 
     // 데이터 없으면 기본 카드 표시
     if (!data.groups || data.groups.length === 0) {
-      const card = document.createElement("article");
-      card.className = "card group-card";
-      card.innerHTML = `
-        <div class="group-card-header">
-          <div class="group-title"><strong>가입한 그룹이 없어요</strong></div>
-        </div>
-      `;
-      groupList.appendChild(card);
+      hasMore = false;
+      if (groupOffset === 0) {
+        const card = document.createElement("article");
+        card.className = "card group-card";
+        card.innerHTML = `
+          <div class="group-card-header">
+            <div class="group-title"><strong>가입한 그룹이 없어요</strong></div>
+          </div>
+        `;
+        groupList.appendChild(card);
+      }
       return;
     }
 
@@ -200,6 +204,11 @@ async function loadGroups() {
     });
 
     groupOffset += groupLimit;
+
+    // 마지막 페이지 확인
+    if (data.groups.length < groupLimit) {
+      hasMore = false;
+    }    
   } catch (err) {
     console.error("그룹 불러오기 실패:", err);
   } finally {
