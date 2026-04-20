@@ -3,13 +3,16 @@
 from backend.domains.neighbor.crud import (
    create_post, create_group_search,
    get_group_search,
+   update_group_search,
    delete_group_search,
    get_my_group_search,
    get_my_habits,
    get_habit, create_habit_feed,
    get_habit_feed,
+   update_habit_feed,
    delete_habit_feed,
    get_feed_detail, get_feed_comments, get_post, create_feed_comment,
+   update_feed_comment,
    delete_feed_comment,
    get_support,
 
@@ -18,8 +21,7 @@ from sqlalchemy.orm import Session
 from backend.domains.neighbor.schemas import GroupSearchCreate, PostAuthorResponse
 from fastapi import HTTPException
 from backend.domains.neighbor.models import FeedPost, PostSupport
-from backend.domains.support.crud import create_group, add_group_member
-from backend.domains.support.schemas import GroupCreate as SupportGroupCreate
+
 
 
 def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: Session):
@@ -32,16 +34,7 @@ def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: Session
 
     # crud 2: 자식 GroupSearchPost 생성
     create_group_search(post_id=db_post.id, post=post, db=db)
-    
-    # 그룹 생성 (name, group_type, max_streak 포함) 및 post_id 연결
-    group_setting = SupportGroupCreate(name=post.title, group_type=post.group_type)
-    db_group = create_group(db, group_setting, user_id)
-    db_group.post_id = db_post.id
-    db.commit()
-    db.refresh(db_group)
 
-    # 작성자를 그룹 멤버로 추가
-    add_group_member(db, db_group.id, user_id)
     return {"id": db_post.id, "message": "등록 완료"}
 
 def get_group_search_logic(db: Session):
@@ -52,6 +45,12 @@ def get_group_search_logic(db: Session):
         result.append(group_search)
     
     return result
+
+def update_group_search_logic(post_id: int, user_id: int, post: GroupSearchCreate, db: Session):
+    result = update_group_search(post_id=post_id, user_id=user_id, post=post, db=db)
+    if not result:
+        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
+    return {"message": "수정 완료"}
 
 def delete_group_search_logic(post_id: int, user_id: int, db: Session):
     post = delete_group_search(post_id, user_id, db)
@@ -94,6 +93,12 @@ def get_habit_feed_logic(db: Session, category: str | None = None) -> list[FeedP
         result.append(feed)
     return result
 
+def update_habit_feed_logic(post_id: int, user_id: int, content: str, db: Session):
+    result = update_habit_feed(post_id=post_id, user_id=user_id, content=content, db=db)
+    if not result:
+        raise HTTPException(status_code=404, detail="피드를 찾을 수 없습니다.")
+    return {"message": "수정 완료"}
+
 def delete_habit_feed_logic(post_id: int, user_id: int, db: Session):
     post = delete_habit_feed(post_id=post_id, user_id=user_id, db=db)
     if not post:
@@ -132,6 +137,12 @@ def create_feed_comment_logic(post_id: int, content: str, user_id: int, db: Sess
     if not post:
         raise HTTPException(status_code=404, detail="피드를 찾을 수 없습니다.")
     return create_feed_comment(post_id=post_id, content=content, user_id=user_id, db=db)
+
+def update_feed_comment_logic(comment_id: int, post_id: int, user_id: int, content: str, db: Session):
+    comment = update_feed_comment(comment_id=comment_id, post_id=post_id, user_id=user_id, content=content, db=db)
+    if not comment:
+        raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
+    return {"message": "댓글 수정 완료"}
 
 def delete_feed_comment_logic(comment_id: int, post_id: int, user_id: int, db: Session):
     comment = delete_feed_comment(comment_id=comment_id, post_id=post_id, user_id=user_id, db=db)

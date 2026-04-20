@@ -4,19 +4,23 @@ from backend.database import get_db
 from backend.domains.neighbor.service import (
     create_group_search_logic,
     get_group_search_logic,
+    update_group_search_logic,
     delete_group_search_logic,
     get_my_group_search_logic,
     get_my_habits_logic,
     create_habit_feed_logic,
     get_habit_feed_logic,
+    update_habit_feed_logic,
     delete_habit_feed_logic,
     get_feed_detail_logic,get_feed_comments_logic, create_feed_comment_logic,
+    update_feed_comment_logic,
     delete_feed_comment_logic,
     toggle_support_logic,
 
 )
 from backend.domains.neighbor.schemas import (
-    GroupSearchCreate, GroupSearchResponse, FeedPostResponse, HabitFeedCreate,
+    GroupSearchCreate, GroupSearchResponse, 
+    FeedPostResponse, HabitFeedCreate, HabitFeedUpdate,
     FeedDetailResponse, NeighborCommentCreate, NeighborCommentResponse,
     
 )
@@ -39,6 +43,10 @@ def create_group_search_final(post: GroupSearchCreate, db: Session = Depends(get
 @router.get("/group-search", response_model=list[GroupSearchResponse])
 def get_group_search_final(db: Session = Depends(get_db)):
     return get_group_search_logic(db=db)
+
+@router.put("/group-search/{post_id}")
+def update_group_search_final(post_id: int, post: GroupSearchCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return update_group_search_logic(post_id=post_id, user_id=current_user.id, post=post, db=db)
 
 # 글 삭제 기능(docs용)
 @router.delete("/group-search/{post_id}")
@@ -68,6 +76,10 @@ def create_habit_feed_final(body: HabitFeedCreate, db: Session = Depends(get_db)
 def get_habit_feed_final(category: str = None, db: Session = Depends(get_db)): # category = ("운동", "복약", "식단", "수면", "기타")
     return get_habit_feed_logic(db=db, category=category)
 
+# 습관 피드 수정
+@router.put("/feed/{post_id}")
+def update_habit_feed_final(post_id: int, body: HabitFeedUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return update_habit_feed_logic(post_id=post_id, user_id=current_user.id, content=body.content, db=db)
 
 # 피드 목록 지우기
 @router.delete("/feed/{post_id}")
@@ -94,6 +106,17 @@ def create_feed_comment_final(
     current_user: User = Depends(get_current_user)
 ):
     return create_feed_comment_logic(post_id=post_id, content=body.content, user_id=current_user.id, db=db)
+
+# 댓글 수정
+@router.put("/feed/{post_id}/comments/{comment_id}")
+def update_feed_comment_final(
+    post_id: int,
+    comment_id: int,
+    body: NeighborCommentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return update_feed_comment_logic(comment_id=comment_id, post_id=post_id, user_id=current_user.id, content=body.content, db=db)
 
 # 댓글 삭제
 @router.delete("/feed/{post_id}/comments/{comment_id}")
