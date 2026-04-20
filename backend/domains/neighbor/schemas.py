@@ -8,19 +8,6 @@ class PostAuthorResponse(BaseModel):
     id: int
     nickname : Optional[str] = None
 
-
-# 게시글 중 습관 피드 작성 내용
-class FeedPostResponse(BaseModel):
-    post_id: int # id 대신 post_id로
-    category: Optional[str] = None
-    content: str | None = None
-    habit_title: Optional[str] = None
-    habit_description: Optional[str] = None
-    author: Optional[PostAuthorResponse] = None
-
-    class Config:
-        from_attributes = True
-
 # 게시글 내용
 class GroupSearchCreate(BaseModel):
     title: str
@@ -42,9 +29,26 @@ class GroupSearchResponse(BaseModel):
     class Config:
         from_attributes = True  # ORM 객체 → Pydantic 자동 변환
 
+
+# 게시글 중 습관 피드 작성 내용
+class FeedPostResponse(BaseModel):
+    post_id: int # id 대신 post_id로
+    category: Optional[str] = None
+    content: str | None = None
+    habit_title: Optional[str] = None
+    habit_description: Optional[str] = None
+    author: Optional[PostAuthorResponse] = None
+
+    class Config:
+        from_attributes = True
+# 습관 피드 생성
 class HabitFeedCreate(BaseModel):
     habit_id: int
     content: str = ""
+
+# 습관피드 업데이트
+class HabitFeedUpdate(BaseModel):
+    content: str
 
 
 # 피드 상세 응답

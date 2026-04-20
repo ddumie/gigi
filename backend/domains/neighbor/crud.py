@@ -47,6 +47,23 @@ def get_group_search(db: Session) -> list[tuple[GroupSearchPost, User]]:
     )
     return rows
 
+#
+def update_group_search(post_id: int, user_id: int, post: GroupSearchCreate, db: Session) -> GroupSearchPost | None:
+    db_post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first()
+    if not db_post:
+        return None
+    db_group_search = db.query(GroupSearchPost).filter(GroupSearchPost.post_id == post_id).first()
+    if not db_group_search:
+        return None
+    db_group_search.title = post.title
+    db_group_search.description = post.description
+    db_group_search.group_type = post.group_type
+    db_group_search.habit_title = post.habit_title
+    db_group_search.frequency = post.frequency
+    db.commit()
+    db.refresh(db_group_search)
+    return db_group_search
+
 # 글 삭제 기능(docs용)
 def delete_group_search(post_id: int, user_id: int, db: Session) -> Post | None:
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first() # 나중에 author_id를 current_user.id 로 교체
@@ -116,6 +133,19 @@ def get_habit_feed(db: Session, category: str | None = None) -> list[FeedPost, U
         query = query.filter(FeedPost.category == category)
     return query.all()
 
+# 습관피드 업데이트
+def update_habit_feed(post_id: int, user_id: int, content: str, db: Session) -> FeedPost | None:
+    db_post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first()
+    if not db_post:
+        return None
+    db_feed = db.query(FeedPost).filter(FeedPost.post_id == post_id).first()
+    if not db_feed:
+        return None
+    db_feed.content = content
+    db.commit()
+    db.refresh(db_feed)
+    return db_feed
+
 # 피드 목록 지우기
 def delete_habit_feed(post_id: int, user_id: int, db: Session) -> Post | None:
     post = db.query(Post).filter(Post.id == post_id, Post.author_id == user_id).first()  # 나중에 author_id를 current_user.id로 교체
@@ -154,6 +184,20 @@ def create_feed_comment(post_id: int, content: str, user_id: int, db: Session) -
     db.commit()
     db.refresh(comment)
     return {"id": comment.id, "message": "댓글 등록 완료"}
+
+# 댓글 수정
+def update_feed_comment(comment_id: int, post_id: int, user_id: int, content: str, db: Session) -> Comment | None:
+    comment = db.query(Comment).filter(
+        Comment.id == comment_id,
+        Comment.post_id == post_id,
+        Comment.author_id == user_id
+    ).first()
+    if not comment:
+        return None
+    comment.content = content
+    db.commit()
+    db.refresh(comment)
+    return comment
 
 # 댓글 삭제
 def delete_feed_comment(comment_id: int, post_id: int, user_id: int, db: Session) -> Comment | None:
