@@ -104,6 +104,8 @@ async def recommend_habits(
     current_user: User = Depends(get_current_user),
 ):
     """관심사 기반 AI 습관 추천 (온보딩 완료 후 추가 추천용)"""
+    if current_user.is_first_login:
+        raise HTTPException(status_code=403, detail="온보딩을 먼저 완료해주세요.")
     try:
         habits = await get_ai_recommendations(None, request.health_interests)
     except ValueError:
