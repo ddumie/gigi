@@ -43,6 +43,19 @@ def get_current_user(
         )
 
 
+def get_optional_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """토큰이 없으면 None 반환 (비로그인 허용 엔드포인트용)"""
+    if credentials is None:
+        return None
+    try:
+        return service.get_current_user(credentials.credentials, db)
+    except (ValueError, Exception):
+        return None
+
+
 # ──────────────────────────────────────────
 # 회원가입
 # ──────────────────────────────────────────

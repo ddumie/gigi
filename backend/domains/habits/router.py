@@ -89,10 +89,12 @@ async def check_habit(
 @router.delete("/{habit_id}/check")
 async def uncheck_habit(
     habit_id:     int,
-    checked_date: date    = Query(default_factory=date.today),
+    checked_date: date | None = Query(default=None),
     db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
+    if checked_date is None:
+        checked_date = date.today()
     try:
         await service.uncheck_habit(db, current_user.id, habit_id, checked_date)
     except ValueError as e:

@@ -1,9 +1,7 @@
 // group-search 용 자바스크립트
 (async () => {
 requireLogin();
-const res = await fetch('/api/v1/neighbor/group-search');
-if (!res.ok) return;
-const posts = await res.json();
+const posts = await apiGet('/neighbor/group-search');
 const list = document.getElementById('group-search-list');
 
   if (posts.length === 0) {
@@ -39,6 +37,15 @@ const list = document.getElementById('group-search-list');
     link.href = `/pages/neighbor/group-search-join.html?post_id=${p.post_id}&habit_title=${encodeURIComponent(p.habit_title)}&frequency=${encodeURIComponent(p.frequency)}`;
     link.className = 'btn btn-outline btn-sm';
     link.textContent = '함께하기';
+
+    const currentUser = getCurrentUser(); // common.js의 함수
+    if (currentUser && p.author?.id === currentUser.id) {
+      const editLink = document.createElement('a');
+      editLink.href = `/pages/neighbor/group-search-edit.html?post_id=${p.post_id}`;
+      editLink.className = 'btn btn-outline btn-sm';
+      editLink.textContent = '수정하기';
+      actions.appendChild(editLink);
+    }
 
     actions.appendChild(link);
     article.append(title, meta, desc, actions);
