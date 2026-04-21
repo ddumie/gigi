@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -18,6 +19,8 @@ from backend.domains.habits.schemas import (
 )
 from backend.domains.onboarding.service import get_ai_recommendations
 from backend.domains.habits.models import Habit
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -136,7 +139,8 @@ async def select_habits(
                 is_ai_recommended=True,
             ))
         await db.commit()
-    except Exception:
+    except Exception as e:
         await db.rollback()
+        logger.error(f"습관 저장 중 오류 발생: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="습관 저장 중 오류가 발생했습니다.")
     return {"message": "선택한 습관이 등록되었습니다."}
