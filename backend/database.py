@@ -15,7 +15,7 @@ MODEL_MODULES = (
     "backend.domains.neighbor.models",
 )
 
-# 동기 엔진 - 전체 비동기 변경 완료 시 삭제
+# 동기 엔진 - auth 도메인 비동기 전환 완료 시 삭제
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(
     bind=engine,
@@ -46,9 +46,9 @@ def load_model_modules() -> None:
         import_module(module_path)
 
 
-# 전체 비동기 변경 완료 시 삭제
+# auth 도메인 비동기 전환 완료 시 삭제
 def get_db():
-    """요청 단위 동기 DB 세션."""
+    """요청 단위 동기 DB 세션 (auth 전용)."""
     db = SessionLocal()
     try:
         yield db
