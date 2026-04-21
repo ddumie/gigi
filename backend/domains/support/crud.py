@@ -112,7 +112,7 @@ async def get_members_info(db: AsyncSession, members: list[models.GroupMember]):
         uid: (checked_counts.get(uid, 0) / habit_counts[uid]) * 100 if habit_counts.get(uid, 0) > 0 else 0
         for uid in user_ids
     }
-    
+
     return member_nicknames, complete_rates
 
 # 설정용 모임 읽어오기
@@ -341,22 +341,20 @@ async def get_group_summary(db: AsyncSession, invite_code: str, limit: int = 10,
     if not group:
         return None
 
+    nicknames = []
+    member_ids = []
+
     result = await db.execute(
-        select(models.GroupMember)
+        select(models.GroupMember, User.nickname)
+        .join(User, User.id == models.GroupMember.user_id)
         .where(models.GroupMember.group_id == invite.group_id)
         .offset(offset)
         .limit(limit)
     )
-    members = result.scalars().all()
-
-    nicknames = []
-    member_ids = []
-    for m in members:
-        result = await db.execute(select(User).where(User.id == m.user_id))
-        user = result.scalars().first()
-        if user:
-            nicknames.append(user.nickname)
-            member_ids.append(m.user_id)
+    rows = result.mappings().all()
+    members = [row["GroupMember"] for row in rows]
+    nicknames = [row["nickname"] for row in rows]
+    member_ids = [m.user_id for m in members]
 
     return group, nicknames, member_ids
 
