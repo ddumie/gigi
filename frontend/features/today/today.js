@@ -66,10 +66,11 @@ async function loadDashboard() {
     renderChecklist(currentHabits, currentStats);
     renderStats(currentStats);
     renderCalendar(currentStats.weekly_checked_dates);
-    renderGroupSummary();
   } catch (e) {
     $checklist.innerHTML = '<p class="meta-text">데이터를 불러오지 못했습니다.</p>';
   }
+
+  await loadGroupSummary();
 }
 
 
@@ -252,11 +253,86 @@ function renderCalendar(checkedDates) {
 }
 
 
-// ── 모임 요약 (support 연동 전 placeholder) ──
+// ── 모임 요약 ──
 
-function renderGroupSummary() {
-  // TODO: support 도메인 API 연동 후 모임 멤버 달성률 표시
-  $groupSum.textContent = '아직 속한 모임이 없어요';
+async function loadGroupSummary() {
+  try {
+    const data = await apiGet('/support/groups?group_limit=2&group_offset=0&member_limit=4&member_offset=0');
+    renderGroupSummary(data.groups || []);
+  } catch (e) {
+    $groupSum.innerHTML = '<p class="meta-text">모임 정보를 불러오지 못했어요.</p>';
+  }
+}
+
+function renderGroupSummary(groups) {
+  if (!Array.isArray(groups) || groups.length === 0) {
+    $groupSum.innerHTML = `
+      <div class="today-group-empty">
+        <strong>아직 속한 모임이 없어요</strong>
+        <p class="meta-text">지지 탭에서 모임을 만들거나 참여해보세요.</p>
+      </div>`;
+    return;
+  }
+
+  $groupSum.innerHTML = groups.map((item) => {
+    const group = item.group;
+    const members = item.members || [];
+    const groupName = escapeHtml(group.name);
+    const groupType = escapeHtml(group.group_type);
+    const habitText = group.habit && group.frequency
+      ? `${escapeHtml(group.habit)} · ${escapeHtml(group.frequency)}`
+      : '함께하는 습관 정보는 아직 없어요';
+
+    return `
+      <article class="today-group-card">
+        <div class="today-group-card-header">
+          <div>
+            <strong>${groupName}</strong>
+            <p class="meta-text">${habitText}</p>
+          </div>
+          <span class="badge badge-coral">${groupType}</span>
+        </div>
+        <div class="today-group-stats">
+          <span>경험치 ${group.exp}회</span>
+          <span>연속 ${group.streak}일</span>
+          <span>최고 ${group.max_streak}일</span>
+        </div>
+        <div class="today-group-members">
+          ${renderGroupMembers(members)}
+        </div>
+      </article>`;
+  }).join('');
+}
+
+function renderGroupMembers(members) {
+  if (!members.length) {
+    return '<p class="meta-text">아직 표시할 멤버가 없어요.</p>';
+  }
+
+  return members.map((member) => {
+    const nickname = escapeHtml(member.nickname || '익명');
+    const rate = clampRate(member.complete_rate);
+    const supportBadge = member.supported_today
+      ? '<span class="badge badge-green">오늘 지지 완료</span>'
+      : '';
+
+    return `
+      <div class="today-group-member">
+        <div class="today-group-member-head">
+          <strong>${nickname}</strong>
+          <span class="meta-text">${rate}% 달성</span>
+        </div>
+        <div class="progress today-group-progress">
+          <div class="progress-bar ${rate >= 100 ? 'green' : ''}" style="width:${rate}%;"></div>
+        </div>
+        ${supportBadge}
+      </div>`;
+  }).join('');
+}
+
+function clampRate(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
 }
 
 
