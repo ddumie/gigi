@@ -1,4 +1,5 @@
 from pydantic import BaseModel, field_validator, Field
+from backend.domains.habits.models import HABIT_CATEGORIES
 
 
 class PreferenceRequest(BaseModel):
@@ -17,9 +18,8 @@ class AIHabitItem(BaseModel):
     @classmethod
     def category_must_be_valid(cls, v):
         """카테고리 유효성 검사(유효한 습관 카테고리인지 검증)"""
-        habit_categories = ["운동", "복약", "식단", "수면", "기타"]
-        if v not in habit_categories:
-            raise ValueError(f"유효하지 않은 카테고리입니다. {habit_categories} 중 하나여야 합니다.")
+        if v not in HABIT_CATEGORIES:
+            raise ValueError(f"유효하지 않은 카테고리입니다. {HABIT_CATEGORIES} 중 하나여야 합니다.")
         return v
 
 
