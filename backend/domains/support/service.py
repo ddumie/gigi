@@ -220,6 +220,9 @@ async def unread_notifications_service(db: AsyncSession, user_id: int):
 async def get_habits_service(db: AsyncSession, user_id: int):
     habits = await crud.get_personal_habits(db, user_id)
     
+    if not habits:
+        raise ValueError("습관을 찾을 수 없습니다.")
+
     return {
         "habits": [
             {
