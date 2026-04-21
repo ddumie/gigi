@@ -1,9 +1,9 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_db
+from backend.database import get_async_db
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
 from backend.domains.habits.schemas import HabitCheckRequest
@@ -14,23 +14,23 @@ router = APIRouter()
 
 
 @router.get("/", response_model=TodayDashboardResponse)
-def get_today_dashboard(
-    db:           Session = Depends(get_db),
+async def get_today_dashboard(
+    db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
     today = date.today()
-    return service.get_today_dashboard(db, current_user.id, today)
+    return await service.get_today_dashboard(db, current_user.id, today)
 
 
 @router.post("/habits/{habit_id}/toggle")
-def toggle_habit_check(
+async def toggle_habit_check(
     habit_id:     int,
     body:         HabitCheckRequest,
-    db:           Session = Depends(get_db),
+    db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
     try:
-        return service.toggle_habit_check(
+        return await service.toggle_habit_check(
             db, current_user.id, habit_id, body.checked_date
         )
     except ValueError as e:

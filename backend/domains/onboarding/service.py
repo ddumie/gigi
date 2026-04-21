@@ -1,6 +1,7 @@
 # 제미나이 연동, 선택한 습관 등록
 # Gemini API 호출, 프롬프트 구성, 응답 파싱, 재추천 1회 제한 로직
 
+import asyncio
 import json
 import logging
 from google import genai
@@ -53,11 +54,17 @@ async def get_ai_recommendations(age_group: str | None, health_interests: list[s
     """
 
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
+        response = await asyncio.wait_for(
+            client.aio.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            ),
+            timeout=30.0
         )
         text = response.text.strip()
+    except asyncio.TimeoutError:
+        logger.error("Gemini API 호출 시간 초과 (30초)")
+        raise ValueError("Gemini API 응답 시간이 초과되었습니다.")
     except Exception as e:
         logger.error(f"Gemini API 호출 중 오류 발생: {e}", exc_info=True)
         raise ValueError("Gemini API 호출에 실패했습니다.")
@@ -101,7 +108,7 @@ async def save_selected_habits(db: AsyncSession, user_id: int, selected: list[AI
         raise ValueError("습관 저장 중 오류가 발생했습니다.")
 
 #  AI호출 성공해야 카운트증가로 넘어가서 AI성공=둘다성공, AI실패=둘다실패(카운트증가 실패로 에러처리됨)
-async def recommend_habits_and_count(db, user_id, age_group, health_interests):
+async def recommend_habits_and_count(db: AsyncSession, user_id: int, age_group: str | None, health_interests: list[str] | None):
     """AI 습관추천 + 추천 횟수(카운트) 증가를 하나로 처리 : AI호출 성공시에만 카운트 증가"""
     habits = await get_ai_recommendations(age_group, health_interests)  # AI 호출
     try:

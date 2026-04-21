@@ -1,6 +1,6 @@
 // 수정: 버튼 클릭 시에만 API 호출
-requireLogin();
 document.addEventListener('DOMContentLoaded', () => {
+    requireLogin();
     const post_id = new URLSearchParams(location.search).get('post_id');
     const joinBtn = document.getElementById('join-confirm-btn');
     if (!joinBtn || !post_id) return;

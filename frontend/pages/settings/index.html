@@ -39,7 +39,19 @@
         </section>
         <section class="card">
           <strong>계정 설정</strong>
-          <div class="settings-row"><span>비밀번호 변경</span><button type="button" class="btn btn-outline btn-sm">변경하기</button></div>
+          <div class="settings-row"><span>비밀번호 변경</span><button type="button" id="password-change-btn" class="btn btn-outline btn-sm">변경하기</button></div>
+          <div id="password-change-form" class="hidden">
+            <input id="current-password" class="input-field" type="password" placeholder="현재 비밀번호">
+            <div id="current-password-error" class="input-error hidden"></div>
+            <input id="new-password" class="input-field" type="password" placeholder="새 비밀번호 (6자 이상 18자 이하)">
+            <div id="new-password-error" class="input-error hidden"></div>
+            <input id="new-password-confirm" class="input-field" type="password" placeholder="새 비밀번호 확인">
+            <div id="new-password-confirm-error" class="input-error hidden"></div>
+            <div class="page-actions">
+              <button type="button" id="password-save-btn" class="btn btn-primary btn-sm">저장</button>
+              <button type="button" id="password-cancel-btn" class="btn btn-outline btn-sm">취소</button>
+            </div>
+          </div>
           <div class="settings-row"><span>로그아웃</span><button type="button" class="btn btn-outline btn-sm js-logout">로그아웃</button></div>
         </section>
       </div>
