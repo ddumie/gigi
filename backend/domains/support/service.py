@@ -41,51 +41,48 @@ async def groups_info_service(
     member_limit: int = 10,
     member_offset: int = 0
 ):
-    group_ids = await crud.get_group_ids_by_uid(db, user_id, group_limit, group_offset)
+    group_rows = await crud.get_group_ids_by_uid(db, user_id, group_limit, group_offset)
     results = []
 
-    for idx, gid_tuple in enumerate(group_ids):
-        gid = gid_tuple[0]
+    for idx, row in enumerate(group_rows):
+        gid = row["group_id"]
 
+        # 멤버 조회 (닉네임 포함)
+        members_rows = await crud.get_group_members(db, gid, member_limit, member_offset, exclude_user_id=user_id)
+        members = [row["GroupMember"] for row in members_rows]
+        member_nicknames = {row["GroupMember"].user_id: row["nickname"] for row in members_rows}
+
+        # 첫 번째 그룹이고 첫 페이지일 때 본인 멤버를 맨 앞에 추가
         if idx == 0 and group_offset == 0:
             my_member = await crud.get_me(db, gid, user_id)
-            members = await crud.get_group_members(db, gid, 9, member_offset, user_id=user_id)
             if my_member:
                 members = [my_member] + members
-        else:
-            if idx == 0:
-                members = await crud.get_group_members(db, gid, member_limit, member_offset, user_id=user_id)
-            else:                
-                members = await crud.get_group_members(db, gid, member_limit, member_offset, user_id=user_id)
+                user = await crud.get_user_by_id(db, user_id)
+                if user:
+                    member_nicknames[my_member.user_id] = user.nickname
 
-        group, groupprofile, invite, habit_info = await crud.get_group(db, gid, user_id)
+        # 달성률 계산
+        _, complete_rates = await crud.get_members_info(db, members)
+
+        # streak 갱신
         supports_today = await crud.check_group_support(db, gid, user_id)
-
-        if not supports_today:
-            streak_value = group.support_streak or 0
-            if streak_value != 0:
-                supports_yesterday = await crud.check_group_support_yesterday(db, gid, user_id)
-                if not supports_yesterday:
-                    await crud.reset_group_streak(db, gid)
+        if not supports_today and row["support_streak"]:
+            supports_yesterday = await crud.check_group_support_yesterday(db, gid, user_id)
+            if not supports_yesterday:
+                await crud.reset_group_streak(db, gid)
 
         supported_map = {s.to_user_id: True for s in supports_today}
-        member_nicknames, complete_rates = await crud.get_members_info(db, members)
-
-        if not group:
-            raise ValueError("모임을 찾을 수 없습니다.")
-        if not invite:
-            raise ValueError("초대코드를 찾을 수 없습니다.")
 
         results.append({
             "group": {
-                "id": (groupprofile.group_id if groupprofile else group.id),
-                "name": (groupprofile.name if groupprofile else group.name),
-                "group_type": (groupprofile.group_type if groupprofile else group.group_type),
-                "exp": group.total_support_count,
-                "streak": group.support_streak,
-                "max_streak": group.max_streak,
-                "habit": habit_info["habit_title"] if habit_info else None,
-                "frequency": habit_info["frequency"] if habit_info else None
+                "id": gid,
+                "name": row["name"],
+                "group_type": row["group_type"],
+                "exp": row["total_support_count"],
+                "streak": row["support_streak"],
+                "max_streak": row["max_streak"],
+                "habit": row["habit_title"],      # outerjoin 덕분에 없으면 None
+                "frequency": row["frequency"]     # 없으면 None
             },
             "members": [
                 {
