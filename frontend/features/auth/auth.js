@@ -229,6 +229,10 @@ if (loginBtn) {
 const inviteCodeInput = document.getElementById('invite-code');
 const inviteSignupBtn = document.getElementById('invite-signup-btn');
 if (inviteCodeInput && inviteSignupBtn) {
+  inviteCodeInput.addEventListener('input', () => {
+    inviteSignupBtn.disabled = inviteCodeInput.value.trim() === '';
+  });
+
   inviteCodeInput.addEventListener('blur', async () => {
     const code = inviteCodeInput.value.trim();
     const summaryBox = document.getElementById('group-summary');
