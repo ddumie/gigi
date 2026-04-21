@@ -65,6 +65,18 @@ async def send_support(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# 개별 인원 습관 및 달성 여부 호출
+@router.get("/habits/{user_id}", response_model=schemas.PersonalHabitResponse)
+async def get_habits(
+    user_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: int = Depends(get_current_user)
+):
+    try:
+        return await service.get_habits_service(db, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 # =============== 12-1 모임 만들기 ====================
 
 # 모임 생성

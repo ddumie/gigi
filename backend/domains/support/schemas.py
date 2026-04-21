@@ -88,3 +88,11 @@ class JoinByPostResponse(BaseModel):
     message: str
     group_id: int
     user_id: int
+
+class HabitsItem(BaseModel):
+    title: str
+    category: str
+    is_checked: bool
+
+class PersonalHabitResponse(BaseModel):
+    habits: List[HabitsItem]
