@@ -160,6 +160,16 @@ if (step2Submit) {
       sessionStorage.removeItem('gigi_signup_email');
       sessionStorage.removeItem('gigi_signup_password');
 
+      const inviteCode = sessionStorage.getItem('gigi_invite_code');
+      if (inviteCode) {
+        sessionStorage.removeItem('gigi_invite_code');
+        try {
+          await apiPost(`/support/group/invite/${inviteCode}`);
+        } catch (_) {
+          // 모임 가입 실패해도 회원가입은 완료
+        }
+      }
+
       window.location.href = PAGES.signupDone;
     } catch (e) {
       step2Submit.disabled = false;
@@ -173,6 +183,10 @@ if (step2Submit) {
 // ── 로그인 ──
 const loginBtn = document.getElementById('login-submit');
 if (loginBtn) {
+  document.getElementById('login-password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') loginBtn.click();
+  });
+
   loginBtn.addEventListener('click', async () => {
     const email    = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
@@ -207,5 +221,43 @@ if (loginBtn) {
       loginBtn.textContent = '로그인';
       showError('login-password-error', e.message || '로그인에 실패했습니다.');
     }
+  });
+}
+
+
+// ── 초대코드로 시작하기 ──
+const inviteCodeInput = document.getElementById('invite-code');
+const inviteSignupBtn = document.getElementById('invite-signup-btn');
+if (inviteCodeInput && inviteSignupBtn) {
+  inviteCodeInput.addEventListener('blur', async () => {
+    const code = inviteCodeInput.value.trim();
+    const summaryBox = document.getElementById('group-summary');
+    const errorEl    = document.getElementById('invite-code-error');
+
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
+    summaryBox.style.display = 'none';
+    inviteSignupBtn.disabled = true;
+
+    if (!code) return;
+
+    try {
+      const res = await apiGet(`/support/group/summary/${code}`);
+      document.getElementById('group-name').textContent    = res.name;
+      document.getElementById('group-members').textContent = `멤버: ${res.members.join(', ')}`;
+      summaryBox.style.display = 'block';
+      inviteSignupBtn.disabled = false;
+      inviteSignupBtn.dataset.inviteCode = code;
+    } catch (e) {
+      errorEl.textContent = '초대코드가 잘못되었거나 만료되었습니다.';
+      errorEl.classList.remove('hidden');
+    }
+  });
+
+  inviteSignupBtn.addEventListener('click', () => {
+    const code = inviteSignupBtn.dataset.inviteCode;
+    if (!code) return;
+    sessionStorage.setItem('gigi_invite_code', code);
+    window.location.href = '/pages/auth/signup-step1.html';
   });
 }

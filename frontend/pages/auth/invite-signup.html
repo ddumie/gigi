@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지지 GIGI - 초대코드로 시작하기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/styles/common.css">
+  <link rel="stylesheet" href="/shared/styles/layout.css">
+  <link rel="stylesheet" href="/shared/styles/components.css">
+  <link rel="stylesheet" href="/features/auth/auth.css">
+</head>
+<body data-section="auth">
+  <main>
+    <div class="container auth-shell">
+      <section class="card auth-card">
+        <div class="page-header">
+          <div class="section-eyebrow">Invite</div>
+          <h1 class="section-title">초대코드로 시작하기</h1>
+          <p class="section-copy">초대코드를 입력하면 모임 정보를 확인하고 회원가입 후 바로 가입할 수 있습니다.</p>
+        </div>
+        <label class="input-label" for="invite-code">초대코드</label>
+        <input id="invite-code" class="input-field" type="text" placeholder="예: GIGI-2026">
+        <div id="invite-code-error" class="input-error hidden"></div>
+        <div id="group-summary" style="display:none;margin-top:1rem;" class="card">
+          <strong id="group-name"></strong>
+          <p id="group-members" class="meta-text" style="margin-top:0.5rem;"></p>
+        </div>
+        <div class="page-actions" style="margin-top:1.5rem;">
+          <button id="invite-signup-btn" class="btn btn-primary btn-full" disabled>이 모임으로 회원가입하기</button>
+        </div>
+        <p style="text-align:center;margin-top:1rem;">
+          <a href="/pages/auth/login.html" class="meta-text">이미 계정이 있으신가요? 로그인</a>
+        </p>
+      </section>
+    </div>
+  </main>
+  <script src="/shared/lib/api.js"></script>
+  <script src="/shared/lib/common.js"></script>
+  <script src="/features/auth/auth.js"></script>
+</body>
+</html>
