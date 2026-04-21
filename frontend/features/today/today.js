@@ -15,6 +15,11 @@ const $statBadge  = document.getElementById('stat-badge');
 const $calendar   = document.getElementById('mini-calendar');
 const $groupSum   = document.getElementById('group-summary');
 
+let currentHabits = [];
+let currentStats = null;
+let openShareComposer = null;
+let togglingHabitId = null;
+
 
 // ── 초기화 ──
 
@@ -48,9 +53,19 @@ function initGreeting() {
 async function loadDashboard() {
   try {
     const data = await apiGet('/today/');
-    renderChecklist(data.habits, data.stats);
-    renderStats(data.stats);
-    renderCalendar(data.stats.weekly_checked_dates);
+    currentHabits = data.habits;
+    currentStats = data.stats;
+
+    const stillChecked = openShareComposer && currentHabits.some(
+      (habit) => habit.id === openShareComposer.habitId && habit.is_checked
+    );
+    if (!stillChecked) {
+      openShareComposer = null;
+    }
+
+    renderChecklist(currentHabits, currentStats);
+    renderStats(currentStats);
+    renderCalendar(currentStats.weekly_checked_dates);
     renderGroupSummary();
   } catch (e) {
     $checklist.innerHTML = '<p class="meta-text">데이터를 불러오지 못했습니다.</p>';
@@ -82,15 +97,23 @@ function renderChecklist(habits, stats) {
     const groupTag  = h.is_group ? '<span class="badge badge-green" style="margin-left:4px;">모임</span>' : '';
     const badgeText = checked ? '완료' : '미완료';
     const badgeCls  = checked ? 'badge-green' : 'badge-amber';
+    const isShareOpen = openShareComposer?.habitId === h.id && checked;
+    const habitTitle = escapeHtml(h.title);
+    const category = escapeHtml(h.category);
+    const repeatType = escapeHtml(h.repeat_type);
+    const timeText = h.time ? ' · ' + escapeHtml(h.time) : '';
 
     return `
-      <div class="checklist-item ${checked ? 'checked' : ''}" data-habit-id="${h.id}" onclick="toggleCheck(${h.id})">
-        <div class="check-box">${checked ? '✓' : ''}</div>
-        <div style="flex:1;">
-          <strong>${h.title}${groupTag}</strong>
-          <p class="meta-text">${h.category} · ${h.repeat_type}${h.time ? ' · ' + h.time : ''}</p>
+      <div class="today-habit-block" data-habit-id="${h.id}">
+        <div class="checklist-item ${checked ? 'checked' : ''}" onclick="toggleCheck(${h.id})">
+          <div class="check-box">${checked ? '✓' : ''}</div>
+          <div style="flex:1;">
+            <strong>${habitTitle}${groupTag}</strong>
+            <p class="meta-text">${category} · ${repeatType}${timeText}</p>
+          </div>
+          <span class="badge ${badgeCls}">${badgeText}</span>
         </div>
-        <span class="badge ${badgeCls}">${badgeText}</span>
+        ${isShareOpen ? renderShareComposer(h) : ''}
       </div>`;
   }).join('');
 }
@@ -99,12 +122,80 @@ function renderChecklist(habits, stats) {
 // ── 체크 토글 ──
 
 async function toggleCheck(habitId) {
+  if (togglingHabitId === habitId) return;
+  togglingHabitId = habitId;
+
   try {
-    await apiPost(`/today/habits/${habitId}/toggle`, {});
+    const result = await apiPost(`/today/habits/${habitId}/toggle`, {});
+    if (result?.is_checked) {
+      openShareComposer = { habitId, draft: '' };
+    } else if (openShareComposer?.habitId === habitId) {
+      openShareComposer = null;
+    }
     await loadDashboard();
   } catch (e) {
     showToast(e.message || '체크 변경에 실패했습니다.');
+  } finally {
+    togglingHabitId = null;
   }
+}
+
+function renderShareComposer(habit) {
+  const draft = openShareComposer?.habitId === habit.id ? openShareComposer.draft : '';
+
+  return `
+    <div class="share-composer card">
+      <strong class="share-composer-title">이웃에 공유</strong>
+      <p class="meta-text">한줄 코멘트를 남기거나 건너뛸 수 있어요.</p>
+      <textarea
+        class="share-composer-input"
+        rows="2"
+        placeholder="한줄 코멘트 (선택)"
+        oninput="updateShareDraft(${habit.id}, this.value)"
+      >${escapeHtml(draft)}</textarea>
+      <div class="share-composer-actions">
+        <button type="button" class="btn btn-primary btn-sm" onclick="submitNeighborShare(event, ${habit.id})">공유</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="skipNeighborShare(event, ${habit.id})">건너뛰기</button>
+      </div>
+    </div>`;
+}
+
+function updateShareDraft(habitId, value) {
+  if (openShareComposer?.habitId !== habitId) return;
+  openShareComposer = { ...openShareComposer, draft: value };
+}
+
+async function submitNeighborShare(event, habitId) {
+  event.stopPropagation();
+  if (openShareComposer?.habitId !== habitId) return;
+
+  try {
+    await apiPost('/neighbor/feed', {
+      habit_id: habitId,
+      content: openShareComposer.draft.trim(),
+    });
+    openShareComposer = null;
+    showToast('이웃에 공유되었습니다.');
+    await loadDashboard();
+  } catch (e) {
+    showToast(e.message || '공유에 실패했습니다.');
+  }
+}
+
+function skipNeighborShare(event, habitId) {
+  event.stopPropagation();
+  if (openShareComposer?.habitId !== habitId) return;
+  openShareComposer = null;
+  renderChecklist(currentHabits, currentStats);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 
