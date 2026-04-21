@@ -48,7 +48,9 @@ async function loadGroupSettings() {
         <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">함께하는 습관</div>
         <input id="group-habit" class="inp habit-field" value="${group.habit} · ${group.frequency}" disabled>
       `;
-      document.querySelector(".group-info-box").appendChild(habitBox);
+      const groupInfoBox = document.querySelector(".group-info-box");
+      const saveBtnBox = groupInfoBox.querySelector(".page-actions");
+      groupInfoBox.insertBefore(habitBox, saveBtnBox); // 저장 버튼 위에 삽입
     }
 
     // 저장 버튼 이벤트 (모임 정보 수정)
@@ -91,7 +93,7 @@ async function loadGroupSettings() {
       memberList.appendChild(row);
     });
 
-    // 탈퇴 버튼 이벤트 (별도)
+    // 탈퇴 버튼 이벤트
     const leaveBtn = document.querySelector(".page-actions .btn-outline");
     leaveBtn.addEventListener("click", async () => {
       if (!confirm("정말 탈퇴하시겠습니까?")) return;
