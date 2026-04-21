@@ -225,6 +225,9 @@ async function loadGroups() {
           `;
           row.appendChild(button);
           memberList.appendChild(row);
+          
+          // 드롭다운메뉴 호출
+          attachMemberClick(row, m.user_id);
         });
       }
 
@@ -243,6 +246,53 @@ async function loadGroups() {
   } finally {
     loading = false;
   }
+}
+
+function attachMemberClick(row, userId) {
+  row.addEventListener("click", async () => {
+    let dropdown = row.nextElementSibling;
+    if (dropdown && dropdown.classList.contains("habit-dropdown")) {
+      dropdown.classList.toggle("open");
+      if (!dropdown.classList.contains("open")) {
+        dropdown.remove();
+      }
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("gigi_token");
+      const res = await fetch(`/api/v1/support/habits/${userId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        showToast("습관 불러오기 실패");
+        return;
+      }
+      const data = await res.json();
+
+      dropdown = document.createElement("div");
+      dropdown.className = "habit-dropdown open";
+
+      if (!data.habits || data.habits.length === 0) {
+        dropdown.textContent = "습관이 없습니다.";
+      } else {
+        data.habits.forEach(habit => {
+          const item = document.createElement("div");
+          item.className = "habit-row";
+          item.innerHTML = `
+            <span class="habit-title">${habit.title}</span>
+            <span class="habit-category">${habit.category}</span>
+            <span class="chk-box ${habit.is_checked ? "done" : ""}"></span>
+          `;
+          dropdown.appendChild(item);
+        });
+      }
+
+      row.insertAdjacentElement("afterend", dropdown);
+    } catch (err) {
+      console.error("습관 불러오기 실패:", err);
+    }
+  });
 }
 
 window.addEventListener("scroll", () => {

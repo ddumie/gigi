@@ -218,3 +218,18 @@ async def unread_notifications_service(db: AsyncSession, user_id: int):
     # 안 읽은 알림 개수 가져오기
     count = await crud.get_unread_notification_count(db, user_id)
     return {"count": count}
+
+# 개별 인원 습관 달성 여부 호출
+async def get_habits_service(db: AsyncSession, user_id: int):
+    habits = await crud.get_personal_habits(db, user_id)
+    
+    return {
+        "habits": [
+            {
+                "title": h.title,
+                "category": h.category,
+                "is_checked": h.is_checked
+            }
+            for h in habits
+        ]
+    }

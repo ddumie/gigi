@@ -212,3 +212,48 @@ body[data-section="support"] .page-header {
   border-color: var(--color-primary);   /* 포커스 시 강조 */
   outline: none;
 }
+
+.chk-box {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-border);
+}
+.chk-box.done {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.habit-dropdown {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  background: #f9f9f9;
+  border-left: 2px solid var(--color-border);
+  margin-left: 2rem;
+  padding: 0 0.5rem;
+}
+
+.habit-dropdown.open {
+  max-height: 500px; /* 충분히 크게 설정 */
+  padding: 0.5rem;
+}
+
+.habit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+
+.habit-title {
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.habit-category {
+  font-size: 0.85rem;
+  color: #666;
+  margin-right: auto;
+}
