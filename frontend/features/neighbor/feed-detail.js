@@ -1,5 +1,16 @@
 // feed-detail.js
+// getCurrentUserId() 함수
 requireLogin()
+function getCurrentUserId() {
+  const token = localStorage.getItem('gigi_token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return parseInt(payload.sub, 10);
+  } catch { return null; }
+}
+
+
 const params = new URLSearchParams(location.search);
 const postId = params.get('post_id');
 
@@ -43,6 +54,7 @@ async function loadComments() {
     return;
   }
 
+  const currentUserId = getCurrentUserId();
   comments.forEach(c => {
     const card = document.createElement('div');
     card.className = 'feed-card';
@@ -55,6 +67,51 @@ async function loadComments() {
     content.textContent = c.content;
 
     card.append(nick, content);
+      // 내 댓글일 때만 수정 버튼 표시
+if (c.author_id === currentUserId) {
+  const editBtn = document.createElement('button');
+  editBtn.type = 'button';
+  editBtn.className = 'btn btn-outline btn-sm';
+  editBtn.textContent = '수정';
+  editBtn.style.marginTop = '0.5rem';
+
+  editBtn.addEventListener('click', () => {
+    document.getElementById('comment-input').value = c.content;
+    document.getElementById('comment-input').focus();
+
+    document.getElementById('comment-submit').style.display = 'none';
+    document.getElementById('comment-edit-submit').style.display = '';
+    document.getElementById('comment-edit-cancel').style.display = '';
+
+    // 이전에 등록된 이벤트 리스너를 교체하기 위해 복제
+    const oldSave = document.getElementById('comment-edit-submit');
+    const newSave = oldSave.cloneNode(true);
+    oldSave.replaceWith(newSave);
+
+    newSave.addEventListener('click', async () => {
+      const newContent = document.getElementById('comment-input').value.trim();
+      if (!newContent) return;
+      const res = await fetch(`/api/v1/neighbor/feed/${postId}/comments/${c.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('gigi_token')}`,
+        },
+        body: JSON.stringify({ content: newContent }),
+      });
+      if (res.ok) {
+        resetCommentInput();
+        await loadComments();
+      } else {
+        alert('수정에 실패했습니다.');
+      }
+    });
+  });
+
+  card.appendChild(editBtn);
+}
+
+
     list.appendChild(card);
   });
 }
@@ -68,6 +125,15 @@ async function loadSupport() {
   btn.classList.toggle('btn-primary', data.is_supported);
   btn.classList.toggle('btn-outline', !data.is_supported);
 }
+function resetCommentInput() {
+  document.getElementById('comment-input').value = '';
+  document.getElementById('comment-submit').style.display = '';
+  document.getElementById('comment-edit-submit').style.display = 'none';
+  document.getElementById('comment-edit-cancel').style.display = 'none';
+}
+document.getElementById('comment-edit-cancel').addEventListener('click', () => {
+  resetCommentInput();
+});
 
 document.getElementById('comment-submit').addEventListener('click', async () => {
   const content = document.getElementById('comment-input').value.trim();

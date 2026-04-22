@@ -56,7 +56,7 @@ async def delete_group_search_logic(post_id: int, user_id: int, db: AsyncSession
     post = await delete_group_search(post_id, user_id, db)
     if not post:
         raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
-    post.is_active = False
+    await db.delete(post)
     await db.commit()
     return {"message": "삭제 완료"}
 
@@ -86,8 +86,9 @@ async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db:
 async def get_habit_feed_logic(db: AsyncSession, category: str | None = None) -> list[FeedPost]:
     result = []
     rows = await get_habit_feed(category=category, db=db)
-    for feed, user, habit in rows:
+    for feed, post, user, habit in rows:
         feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
+        feed.created_at = post.created_at
         feed.habit_title = habit.title if habit else None
         feed.habit_description = habit.description if habit else None
         result.append(feed)
@@ -103,7 +104,7 @@ async def delete_habit_feed_logic(post_id: int, user_id: int, db: AsyncSession):
     post = await delete_habit_feed(post_id=post_id, user_id=user_id, db=db)
     if not post:
         raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
-    post.is_active = False
+    await db.delete(post)
     await db.commit()
     return {"message": "삭제 완료"}
 
