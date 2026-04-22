@@ -31,6 +31,15 @@
           <button class="chip" data-chip-select="interest">관절·근력</button>
           <button class="chip" data-chip-select="interest">치매 예방</button>
         </div>
+        <!-- 직접 입력 -->
+        <div style="margin-top:1rem;">
+          <p class="meta-text" style="margin-bottom:0.5rem;">직접 입력하기 (원하는 건강관리 입력 후 추가버튼을 눌러주세요.)</p>
+          <div style="display:flex;gap:0.5rem;">
+            <input id="custom-interest-input" class="input" type="text" placeholder="예: 스트레스 관리, 눈 건강" maxlength="20" style="flex:1;border-radius:999px;padding:0.3rem 0.8rem;font-size:0.9rem;">
+            <button id="btn-add-custom" class="btn btn-outline btn-sm">추가</button>
+          </div>
+          <div id="custom-tags" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
+        </div>
         <div class="page-actions">
           <button id="btn-get-recommend" class="btn btn-ai btn-full">나의 맞춤 습관 추천받기</button>
           <a href="/pages/habits/index.html" class="btn btn-outline btn-full">취소</a>

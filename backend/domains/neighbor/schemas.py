@@ -15,6 +15,7 @@ class GroupSearchCreate(BaseModel):
     group_type: str
     habit_title: str
     frequency: str
+    category: Optional[str] = None
 
 class GroupSearchResponse(BaseModel):
     id: int
@@ -24,7 +25,9 @@ class GroupSearchResponse(BaseModel):
     group_type: str
     habit_title: str
     frequency: str
+    category: Optional[str] = None
     author: PostAuthorResponse
+    member_count: int = 0
 
     class Config:
         from_attributes = True  # ORM 객체 → Pydantic 자동 변환
@@ -38,6 +41,7 @@ class FeedPostResponse(BaseModel):
     habit_title: Optional[str] = None
     habit_description: Optional[str] = None
     author: Optional[PostAuthorResponse] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

@@ -5,6 +5,7 @@ from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Com
 from backend.domains.neighbor.schemas import GroupSearchCreate
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
+from backend.domains.support.models import Group, GroupMember
 
 
 # 현재 로그인 사용자 기준이 아니라 author_id와 동일한 user.id를 1로 고정하였기 때문에,
@@ -30,6 +31,7 @@ async def create_group_search(post_id: int, post: GroupSearchCreate, db: AsyncSe
         group_type=post.group_type,
         habit_title=post.habit_title,
         frequency=post.frequency,
+        category=post.category
     )
     db.add(db_group_search)
     await db.commit()
@@ -39,10 +41,13 @@ async def create_group_search(post_id: int, post: GroupSearchCreate, db: AsyncSe
 # 글쓰기 내용 읽어오기
 async def get_group_search(db: AsyncSession) -> list[tuple[GroupSearchPost, User]]:
     result = await db.execute(
-        select(GroupSearchPost, User)
+        select(GroupSearchPost, User, func.count(GroupMember.id).label('member_count'))
         .join(Post, GroupSearchPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
+        .outerjoin(Group, Group.post_id == Post.id)
+        .outerjoin(GroupMember, GroupMember.group_id == Group.id)
         .filter(Post.is_active == True)
+        .group_by(GroupSearchPost.id, Post.id, User.id)
         .order_by(Post.created_at.desc())
     )
     return result.all()
@@ -62,6 +67,7 @@ async def update_group_search(post_id: int, user_id: int, post: GroupSearchCreat
     db_group_search.group_type = post.group_type
     db_group_search.habit_title = post.habit_title
     db_group_search.frequency = post.frequency
+    db_group_search.category = post.category
     await db.commit()
     await db.refresh(db_group_search)
     return db_group_search
@@ -123,7 +129,7 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
 # 피드 목록 조회 (category 파라미터로 필터)
 async def get_habit_feed(db: AsyncSession, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
     stmt = (
-        select(FeedPost, User, Habit)
+        select(FeedPost, Post, User, Habit)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .outerjoin(Habit, FeedPost.habit_id == Habit.id)
@@ -227,7 +233,14 @@ async def get_support(post_id: int, user_id: int, db: AsyncSession) -> PostSuppo
     return result.scalars().first()
     
 # 지지 횟수 + 내가 눌렀는지 조회
-async def get_support_info(post_id: int, db: AsyncSession) -> dict[str, int]:
-    result = await db.execute(select(func.count()).select_from(PostSupport).filter(PostSupport.post_id == post_id))
-    count = result.scalar()
-    return {"support_count": count}
+async def get_support_info(post_id: int, user_id: int, db: AsyncSession) -> dict[str, int]:
+    count_result = await db.execute(
+        select(func.count()).select_from(PostSupport).filter(PostSupport.post_id == post_id)
+        )
+    support_result = await db.execute(
+        select(PostSupport).filter(PostSupport.post_id == post_id, 
+                                   PostSupport.user_id == user_id)
+    )
+    return {"support_count": count_result.scalar(),
+            "is_supported": support_result.scalars().first() is not None,
+            }

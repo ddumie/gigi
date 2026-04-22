@@ -19,7 +19,6 @@ from backend.domains.habits.schemas import (
     HabitAISelectRequest,
 )
 from backend.domains.onboarding.service import get_ai_recommendations
-from backend.domains.habits.models import Habit
 
 logger = logging.getLogger(__name__)
 
@@ -149,18 +148,7 @@ async def select_habits(
         raise HTTPException(status_code=400, detail="습관을 하나 이상 선택해주세요.")
     is_first = not await has_any_habit(db, current_user.id)
     try:
-        for item in request.selected_habits:
-            db.add(Habit(
-                user_id=current_user.id,
-                title=item.title,
-                category=item.category,
-                description=item.description,
-                repeat_type="매일",
-                is_ai_recommended=True,
-            ))
-        await db.commit()
-    except Exception as e:
-        await db.rollback()
-        logger.error(f"습관 저장 중 오류 발생: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="습관 저장 중 오류가 발생했습니다.")
+        await service.save_ai_selected_habits(db, current_user.id, request.selected_habits)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
     return {"message": "선택한 습관이 등록되었습니다.", "is_first_habit": is_first}

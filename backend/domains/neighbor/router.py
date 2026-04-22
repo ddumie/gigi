@@ -142,5 +142,6 @@ async def support_toggle_final(
 async def feed_support_info(
     post_id: int,
     db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user)
 ):
-    return await get_support_info(post_id=post_id, db=db)
+    return await get_support_info(post_id=post_id, user_id=current_user.id, db=db)
