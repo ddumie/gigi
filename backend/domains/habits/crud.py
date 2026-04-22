@@ -74,6 +74,14 @@ async def update_habit(db: AsyncSession, habit: Habit, habit_in: HabitUpdate) ->
     return habit
 
 
+async def toggle_visibility(db: AsyncSession, habit: Habit) -> Habit:
+    """모임 내 습관 공개/숨기기를 토글한다."""
+    habit.is_hidden_from_group = not habit.is_hidden_from_group
+    await db.commit()
+    await db.refresh(habit)
+    return habit
+
+
 async def deactivate_habit(db: AsyncSession, habit: Habit) -> Habit:
     """소프트 삭제 — is_active=False로 변경한다."""
     habit.is_active = False

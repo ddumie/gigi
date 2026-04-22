@@ -68,6 +68,7 @@ class HabitResponse(BaseModel):
     description:      str
     is_ai_recommended: bool
     is_active:        bool
+    is_hidden_from_group: bool
     created_at:       datetime
     updated_at:       datetime | None
 

@@ -72,6 +72,22 @@ async def delete_habit(
     return {"message": "삭제되었습니다"}
 
 
+@router.patch("/{habit_id}/visibility")
+async def toggle_habit_visibility(
+    habit_id:     int,
+    db:           AsyncSession = Depends(get_async_db),
+    current_user: User    = Depends(get_current_user),
+):
+    """모임 내 습관 공개/숨기기를 토글한다."""
+    try:
+        habit = await service.get_habit_or_raise(db, current_user.id, habit_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    from backend.domains.habits.crud import toggle_visibility
+    updated = await toggle_visibility(db, habit)
+    return {"id": updated.id, "is_hidden_from_group": updated.is_hidden_from_group}
+
+
 @router.post(
     "/{habit_id}/check",
     response_model=HabitCheckResponse,

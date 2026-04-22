@@ -32,6 +32,8 @@ async def update_habit(
 
 async def deactivate_habit(db: AsyncSession, user_id: int, habit_id: int) -> Habit:
     habit = await get_habit_or_raise(db, user_id, habit_id)
+    if habit.group_id is not None:
+        raise ValueError("모임 습관은 개별 삭제할 수 없습니다. 모임 탈퇴 시 자동 삭제됩니다.")
     return await crud.deactivate_habit(db, habit)
 
 
