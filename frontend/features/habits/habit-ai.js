@@ -88,6 +88,11 @@ async function getRecommendations() {
     renderResult(currentHabits);
     showStep('result');
   } catch (err) {
+    if (err.message === '온보딩을 먼저 완료해주세요.') {
+      showToast('온보딩을 먼저 완료해주세요. 온보딩 페이지로 이동합니다.');
+      setTimeout(() => { window.location.href = PAGES.onboard1; }, 1500);
+      return;
+    }
     showToast(err.message);
     btn.disabled = false;
     btn.textContent = '맞춤 습관 추천받기';
