@@ -28,9 +28,14 @@ async def invited_group_service(db: AsyncSession, invite_code: str, user_id: int
 
 # 모임 생성
 async def create_group_service(db: AsyncSession, group: schemas.GroupCreate, user_id: int):
-    db_group = await crud.create_group(db, group, user_id)
-    await join_group_service(db, db_group.id, user_id)
-    return {"id": db_group.id}
+    try:
+        db_group = await crud.create_group(db, group, user_id)
+        if not db_group:
+            raise ValueError("그룹 생성에 실패 했습니다.")
+        await join_group_service(db, db_group.id, user_id)
+        return {"id": db_group.id}
+    except Exception as e:
+        raise e
 
 # 모임 목록 출력
 async def groups_info_service(
@@ -52,7 +57,7 @@ async def groups_info_service(
         members = [row["GroupMember"] for row in members_rows]
         member_nicknames = {row["GroupMember"].user_id: row["nickname"] for row in members_rows}
 
-        # 첫 번째 그룹이고 첫 페이지일 때 본인 멤버를 맨 앞에 추가
+        # 첫 번째 그룹이고 첫 페이지일 때 본인을 맨 앞에 추가
         if idx == 0 and group_offset == 0:
             my_member = await crud.get_me(db, gid, user_id)
             if my_member:
@@ -62,7 +67,7 @@ async def groups_info_service(
                     member_nicknames[my_member.user_id] = user.nickname
 
         # 달성률 계산
-        _, complete_rates = await crud.get_members_info(db, members)
+        complete_rates = await crud.get_members_info(db, members)
 
         # streak 갱신
         supports_today = await crud.check_group_support(db, gid, user_id)
@@ -81,8 +86,8 @@ async def groups_info_service(
                 "exp": row["total_support_count"],
                 "streak": row["support_streak"],
                 "max_streak": row["max_streak"],
-                "habit": row["habit_title"],      # outerjoin 덕분에 없으면 None
-                "frequency": row["frequency"]     # 없으면 None
+                "habit": row["habit_title"],      
+                "frequency": row["frequency"]     
             },
             "members": [
                 {

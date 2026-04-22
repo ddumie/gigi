@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import models, schemas
-from backend.domains.neighbor.models import GroupSearchPost, FeedPost
+from backend.domains.neighbor.models import GroupSearchPost
 from backend.domains.auth.models import User
 from backend.domains.habits.models import Habit, HabitCheck
 from backend.domains.habits.crud import create_group_habit
@@ -78,16 +78,12 @@ async def get_group_members(db: AsyncSession, group_id: int, limit: int, offset:
     )
     return result.mappings().all()
 
-# 여러 멤버 닉네임/달성률
+# 멤버 달성률
 async def get_members_info(db: AsyncSession, members: list[models.GroupMember]):
-    member_nicknames = {}
     complete_rates = {}
 
     target_date = date.today()
     user_ids = [m.user_id for m in members]
-
-    result = await db.execute(select(User.id, User.nickname).where(User.id.in_(user_ids)))
-    member_nicknames = {row.id: row.nickname for row in result.mappings().all()}
 
     habit_count_q = (
         select(Habit.user_id, func.count(Habit.id).label("habit_count"))
@@ -113,7 +109,7 @@ async def get_members_info(db: AsyncSession, members: list[models.GroupMember]):
         for uid in user_ids
     }
 
-    return member_nicknames, complete_rates
+    return complete_rates
 
 # 설정용 모임 읽어오기
 async def get_group_4_settings(db: AsyncSession, group_id: int, user_id: int, limit: int = 10, offset: int = 0):
@@ -202,32 +198,18 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
     if group and group.post_id:
         result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == group.post_id))
         post_info = result.scalars().first()
-        result = await db.execute(select(FeedPost.category).where(FeedPost.post_id == group.post_id))
+        result = await db.execute(select(GroupSearchPost.category).where(GroupSearchPost.post_id == group.post_id))
         post_category = result.scalar()
 
         if post_info and post_category:
-            # 비동기 함수인지 확인 후 처리
-            if callable(getattr(create_group_habit, "__await__", None)):
-                # 이미 async 함수라면 그냥 await
-                await create_group_habit(
-                    db=db,
-                    user_id=user_id,
-                    group_id=group_id,
-                    title=post_info.habit_title,
-                    category=post_category,
-                    repeat_type=post_info.frequency
-                )
-            else:
-                # 동기 함수라면 스레드에서 실행
-                await anyio.to_thread.run_sync(
-                    create_group_habit,
-                    db,
-                    user_id,
-                    group_id,
-                    post_info.habit_title,
-                    post_category,
-                    post_info.frequency
-                )
+            await create_group_habit(
+                db=db,
+                user_id=user_id,
+                group_id=group_id,
+                title=post_info.habit_title,
+                category=post_category,
+                repeat_type=post_info.frequency
+            )
     return new_member
 
 

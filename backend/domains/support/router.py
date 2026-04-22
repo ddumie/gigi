@@ -47,10 +47,8 @@ async def my_groups(
     member_limit: int = Query(10, ge=0, le=100),
     member_offset: int = Query(0, ge=0)
 ):
-    try:
-        return await service.groups_info_service(db, current_user.id, group_limit, group_offset, member_limit, member_offset)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    return await service.groups_info_service(db, current_user.id, group_limit, group_offset, member_limit, member_offset)
+
 
 # 지지하기
 @router.post("/group/{group_id}/support/{to_user_id}", response_model=schemas.SupportResponse)
@@ -86,7 +84,12 @@ async def create_group(
     db: AsyncSession = Depends(get_async_db),
     current_user: int = Depends(get_current_user)
 ):
-    return await service.create_group_service(db, group, user_id=current_user.id)
+    try:
+        return await service.create_group_service(db, group, user_id=current_user.id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="서버 내부 오류")
 
 # =============== 12-2 모임 관리 ====================
 
