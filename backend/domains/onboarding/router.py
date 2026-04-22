@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding import crud, service
 from backend.domains.onboarding.schemas import PreferenceRequest, AIRecommendResponse, SelectRequest
 from backend.domains.auth.router import get_current_user
+from backend.domains.habits.crud import has_any_habit
 from backend.database import get_async_db
 
 router = APIRouter()
@@ -43,8 +44,9 @@ async def select_habits(request: SelectRequest, db: AsyncSession = Depends(get_a
         raise HTTPException(status_code=400, detail="이미 온보딩이 완료된 사용자입니다.")
     if not request.selected_habits:
         raise HTTPException(status_code=400, detail="습관을 하나 이상 선택해주세요.")
+    is_first = not await has_any_habit(db, current_user.id)
     try:
         await service.save_selected_habits(db, current_user.id, request.selected_habits)
     except ValueError:
         raise HTTPException(status_code=500, detail="습관 저장 중 오류가 발생했습니다.")
-    return {"message": "선택한 습관이 등록되었습니다."}
+    return {"message": "선택한 습관이 등록되었습니다.", "is_first_habit": is_first}

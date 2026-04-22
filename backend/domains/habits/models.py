@@ -30,6 +30,7 @@ class Habit(Base):
     description = Column(String, default="")
     is_ai_recommended = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)            # 비활성화 시 False
+    is_hidden_from_group = Column(Boolean, default=False)  # 모임 내 습관 목록에서 숨김
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

@@ -7,6 +7,7 @@ from backend.database import get_async_db
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
 from backend.domains.habits import service
+from backend.domains.habits.crud import has_any_habit
 from backend.domains.habits.schemas import (
     HabitCreate,
     HabitUpdate,
@@ -34,13 +35,15 @@ async def list_habits(
     return await service.get_habits(db, current_user.id, category)
 
 
-@router.post("/", response_model=HabitResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_habit(
     data:         HabitCreate,
     db:           AsyncSession = Depends(get_async_db),
     current_user: User    = Depends(get_current_user),
 ):
-    return await service.create_habit(db, current_user.id, data)
+    is_first = not await has_any_habit(db, current_user.id)
+    habit = await service.create_habit(db, current_user.id, data)
+    return {**HabitResponse.model_validate(habit).model_dump(), "is_first_habit": is_first}
 
 
 @router.put("/{habit_id}", response_model=HabitResponse)
@@ -67,6 +70,22 @@ async def delete_habit(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return {"message": "삭제되었습니다"}
+
+
+@router.patch("/{habit_id}/visibility")
+async def toggle_habit_visibility(
+    habit_id:     int,
+    db:           AsyncSession = Depends(get_async_db),
+    current_user: User    = Depends(get_current_user),
+):
+    """모임 내 습관 공개/숨기기를 토글한다."""
+    try:
+        habit = await service.get_habit_or_raise(db, current_user.id, habit_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    from backend.domains.habits.crud import toggle_visibility
+    updated = await toggle_visibility(db, habit)
+    return {"id": updated.id, "is_hidden_from_group": updated.is_hidden_from_group}
 
 
 @router.post(
@@ -128,6 +147,7 @@ async def select_habits(
     """AI가 추천한 습관을 선택해서 등록(추가등록)"""
     if not request.selected_habits:
         raise HTTPException(status_code=400, detail="습관을 하나 이상 선택해주세요.")
+    is_first = not await has_any_habit(db, current_user.id)
     try:
         for item in request.selected_habits:
             db.add(Habit(
@@ -143,4 +163,4 @@ async def select_habits(
         await db.rollback()
         logger.error(f"습관 저장 중 오류 발생: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="습관 저장 중 오류가 발생했습니다.")
-    return {"message": "선택한 습관이 등록되었습니다."}
+    return {"message": "선택한 습관이 등록되었습니다.", "is_first_habit": is_first}

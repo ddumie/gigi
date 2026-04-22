@@ -171,7 +171,7 @@ async function submitNeighborShare(event, habitId) {
   if (openShareComposer?.habitId !== habitId) return;
 
   try {
-    await apiPost('/neighbor/feed', {
+    await apiPost('/today/share', {
       habit_id: habitId,
       content: openShareComposer.draft.trim(),
     });

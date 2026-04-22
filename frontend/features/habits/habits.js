@@ -57,8 +57,7 @@ async function saveHabit() {
       });
       showToast('습관이 수정되었습니다.');
     } else {
-      const isFirstHabit = habits.length === 0;   // 추가 직전 시점 기준
-      await apiPost('/habits/', {
+      const res = await apiPost('/habits/', {
         title,
         category,
         time,
@@ -66,8 +65,8 @@ async function saveHabit() {
       });
       showToast('습관이 추가되었습니다.');
 
-      // 첫 습관 등록이면 → 습관 탭(현재)과 오늘 탭에서 첫 진입 모달을 띄우도록 플래그 저장
-      if (isFirstHabit) {
+      // 서버가 판단한 첫 습관 여부 → 모달 플래그 저장
+      if (res && res.is_first_habit) {
         localStorage.setItem('gigi_show_first_habit_modal', 'true');
       }
     }
@@ -106,6 +105,16 @@ async function deleteHabit(id) {
   }
 }
 
+async function toggleVisibility(id) {
+  try {
+    const res = await apiPatch(`/habits/${id}/visibility`);
+    showToast(res.is_hidden_from_group ? '모임에서 숨김 처리되었습니다.' : '모임에 공개되었습니다.');
+    await loadHabits();
+  } catch (e) {
+    showToast(e.message || '변경에 실패했습니다.');
+  }
+}
+
 
 // ── 렌더링 ──
 
@@ -124,11 +133,15 @@ function render() {
 
   $list.innerHTML = habits.map(h => {
     const isGroup = h.group_id !== null;
+    const isHidden = h.is_hidden_from_group;
     const badges  = [];
 
     badges.push(`<span class="badge badge-blue">${h.repeat_type}</span>`);
     if (h.is_ai_recommended) badges.push('<span class="badge badge-amber">AI</span>');
     if (isGroup)             badges.push('<span class="badge badge-green">모임</span>');
+    if (isHidden)            badges.push('<span class="badge badge-gray">숨김</span>');
+
+    const visibilityBtn = `<button class="btn btn-outline btn-sm" onclick="toggleVisibility(${h.id})">${isHidden ? '공개' : '숨기기'}</button>`;
 
     return `
       <article class="card habit-row" data-id="${h.id}" ${isGroup ? 'style="border-color:var(--color-success);"' : ''}>
@@ -138,6 +151,7 @@ function render() {
         </div>
         <div style="display:flex;align-items:center;gap:0.25rem;">
           ${badges.join('')}
+          ${visibilityBtn}
           ${!isGroup ? `<button class="btn btn-outline btn-sm" onclick="openEditModal(${h.id})">수정</button>
           <button class="btn btn-outline btn-sm" onclick="deleteHabit(${h.id})">삭제</button>` : ''}
         </div>
