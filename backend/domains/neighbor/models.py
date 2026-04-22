@@ -45,6 +45,7 @@ class GroupSearchPost(Base):
     group_type = Column(String, nullable=False)   # family, friend, health_challenge, neighbors
     habit_title = Column(String, nullable=False)  # 함께할 습관
     frequency = Column(String, nullable=False)    # 매일, 주3회 등
+    category = Column(String, nullable=True)
 
     post = relationship("Post", back_populates="group_search")
 

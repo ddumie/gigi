@@ -30,6 +30,7 @@ async def create_group_search(post_id: int, post: GroupSearchCreate, db: AsyncSe
         group_type=post.group_type,
         habit_title=post.habit_title,
         frequency=post.frequency,
+        category=post.category
     )
     db.add(db_group_search)
     await db.commit()
@@ -62,6 +63,7 @@ async def update_group_search(post_id: int, user_id: int, post: GroupSearchCreat
     db_group_search.group_type = post.group_type
     db_group_search.habit_title = post.habit_title
     db_group_search.frequency = post.frequency
+    db_group_search.category = post.category
     await db.commit()
     await db.refresh(db_group_search)
     return db_group_search
@@ -123,7 +125,7 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
 # 피드 목록 조회 (category 파라미터로 필터)
 async def get_habit_feed(db: AsyncSession, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
     stmt = (
-        select(FeedPost, User, Habit)
+        select(FeedPost, Post, User, Habit)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .outerjoin(Habit, FeedPost.habit_id == Habit.id)

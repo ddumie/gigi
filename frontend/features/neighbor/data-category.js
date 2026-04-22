@@ -1,4 +1,11 @@
 // data-category.js
+function formatTimeAgo(date) {
+  const diff = Math.floor((Date.now() - date) / 1000 / 60);
+  if (diff < 1) return '방금 전';
+  if (diff < 60) return `${diff}분 전`;
+  if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
+  return `${Math.floor(diff / 1440)}일 전`;
+}
 
 let allPosts = [];  // 전체 피드 캐시
 
@@ -20,40 +27,94 @@ async function renderFeed(posts) {
     article.className = 'feed-card';
     article.dataset.category = p.category;
 
-    const title = document.createElement('strong');
-    title.textContent = `${p.category ?? '기타'} 완료`;
+    const nickname = p.author?.nickname ?? '알 수 없음';
+    const firstChar = nickname.charAt(0);
+    const timeAgo = p.created_at ? formatTimeAgo(new Date(p.created_at)) : '';
 
-    const author = document.createElement('p');
-    author.className = 'meta-text';
-    author.textContent = p.author?.nickname ?? '알 수 없음'; // 습관 피드 글쓴이 닉네임만 공개
+      // 1. 상단: 아바타 + 닉네임 + 시간 / 카테고리 뱃지
+    const header = document.createElement('div');
+    header.className = 'feed-card-header';
 
+    const memberRow = document.createElement('div');
+    memberRow.className = 'member-row';
+    memberRow.style.cssText = 'padding:0; background:none;';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'member-avatar';
+    avatar.textContent = firstChar;
+
+    const memberInfo = document.createElement('div');
+    memberInfo.className = 'member-info';
+
+    const memberName = document.createElement('div');
+    memberName.className = 'member-name';
+    memberName.textContent = nickname;
+
+    const memberTime = document.createElement('div');
+    memberTime.className = 'meta-text';
+    memberTime.textContent = timeAgo;
+
+    memberInfo.append(memberName, memberTime);
+    memberRow.append(avatar, memberInfo);
+
+    const categoryBadge = document.createElement('span');
+    categoryBadge.className = 'feed-category-badge';
+    categoryBadge.textContent = p.category ?? '기타';
+
+    header.append(memberRow, categoryBadge);
+    // 습관 피드 글쓴이 닉네임만 공개
+    // 2. 습관 제목 (음영 박스)
+    const titleBox = document.createElement('div');
+    titleBox.className = 'feed-title-box';
+
+    const titleIcon = document.createElement('span');
+    titleIcon.className = 'feed-title-icon';
+    titleIcon.textContent = '■';
+
+    const titleText = document.createElement('span');
+    titleText.textContent = p.habit_title ?? (p.category + ' 완료');
+
+    titleBox.append(titleIcon, titleText);
+
+    // 3. 본문
     const body = document.createElement('p');
     body.className = 'section-copy';
-    body.style.marginTop = '0.5rem';
     body.textContent = p.content ?? '';
-
+    // 하단: 지지 버튼 + 날짜
     const actions = document.createElement('div');
-    actions.className = 'page-actions';
-    actions.style.marginTop = '1rem';
+    actions.className = 'feed-card-footer';
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'btn btn-outline btn-sm support-toggle';
-    btn.textContent = '지지하기 ❤ 0';
+    btn.className = 'btn btn-outline btn-sm feed-support-toggle';
 
+    const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\. /g,'.').replace('.','') : '';
     // 초기 지지 상태 로드
     const res = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
     })
     const data = res.ok ? await res.json() : null;
     if (!data) continue;
-    btn.textContent = `지지하기 ❤ ${data.support_count}`;
+    let is_supported = false;
+    btn.textContent = `🔥 지지 ${data.support_count}`;
     if (data.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
    
+  btn.addEventListener('click', async () => {
+    const r = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+    });
+    if (r.status === 401) { alert('로그인이 필요합니다.'); location.href = '/pages/auth/login.html'; return; }
+    if (!r.ok) return;
+    const current = parseInt(btn.textContent.replace(/[^0-9]/g, '')) || 0;
+    is_supported = !is_supported;
+    btn.textContent = `🔥 지지 ${is_supported ? current + 1 : current - 1}`;
+    is_supported ? btn.classList.replace('btn-outline', 'btn-primary') : btn.classList.replace('btn-primary', 'btn-outline');
+  });
 
     // =================================================================================
 
-    actions.appendChild(btn);
+    
     const commentBtn = document.createElement('button');
     commentBtn.type = 'button';
     commentBtn.className = 'btn btn-outline btn-sm';
@@ -61,40 +122,16 @@ async function renderFeed(posts) {
     commentBtn.addEventListener('click', () => {
     location.href = `/pages/neighbor/feed-detail.html?post_id=${p.post_id}`;
     });
-    
-    actions.appendChild(commentBtn);
-    article.append(title, author, body, actions);
 
-    // 지지하기 토글
-  // 클릭 시 API 호출
-  btn.addEventListener('click', async () => {
-    const res = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    });
-    if (res.status === 401) {
-      alert('로그인이 필요합니다.');
-      location.href = '/pages/auth/login.html';
-      return;
-    }
-    if (!res.ok) return;
+    const dateEl = document.createElement('span');
+    dateEl.className = 'meta-text feed-date';
+    dateEl.textContent = dateStr;
 
-    const infoRes = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    })
-    const info = await infoRes.json();
-
-    btn.textContent = `지지하기 ❤ ${info.support_count}`;
-    if (info.is_supported) {
-      btn.classList.replace('btn-outline', 'btn-primary');
-    } else {
-      btn.classList.replace('btn-primary', 'btn-outline');
-    }
-  });
-
+    actions.append(btn, commentBtn, dateEl);
+    article.append(header, titleBox, body, actions);
     list.appendChild(article);
-  };
-}
+  }
+}    
 
 // 카테고리 필터 칩 연결
 function initCategoryFilter() {
