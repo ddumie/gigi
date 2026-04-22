@@ -216,6 +216,23 @@ async def unread_notifications_service(db: AsyncSession, user_id: int):
     count = await crud.get_unread_notification_count(db, user_id)
     return {"count": count}
 
+
+# 최근 알림 리스트 조회
+async def recent_notifications_service(db: AsyncSession, user_id: int, limit: int = 3):
+    items = await crud.get_recent_notifications(db, user_id, limit)
+    return {
+        "notifications": [
+            {
+                "id": n.id,
+                "type": n.type,
+                "content": n.content,
+                "is_read": n.is_read,
+                "created_at": n.created_at.isoformat() if n.created_at else "",
+            }
+            for n in items
+        ]
+    }
+
 # 개별 인원 습관 달성 여부 호출
 async def get_habits_service(db: AsyncSession, user_id: int):
     habits = await crud.get_personal_habits(db, user_id)
