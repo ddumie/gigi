@@ -274,7 +274,7 @@ function attachMemberClick(row, userId) {
       dropdown.className = "habit-dropdown open";
 
       if (!data.habits || data.habits.length === 0) {
-        dropdown.textContent = "습관이 없습니다.";
+        dropdown.textContent = "보여 줄 수 있는 습관이 없어요.";
       } else {
         data.habits.forEach(habit => {
           const item = document.createElement("div");

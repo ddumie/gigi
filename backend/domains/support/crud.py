@@ -443,6 +443,6 @@ async def get_personal_habits(db: AsyncSession, user_id: int):
             (HabitCheck.id.isnot(None).label("is_checked"))
         )
         .outerjoin(HabitCheck, (Habit.id == HabitCheck.habit_id) & (HabitCheck.checked_date == today))
-        .where(Habit.user_id == user_id , Habit.is_active == True)
+        .where(Habit.user_id == user_id , Habit.is_active == True, Habit.is_hidden_from_group == False)
     )
-    return result.all()
+    return result.mappings().all()

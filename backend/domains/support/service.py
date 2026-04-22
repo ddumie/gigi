@@ -224,16 +224,13 @@ async def unread_notifications_service(db: AsyncSession, user_id: int):
 # 개별 인원 습관 달성 여부 호출
 async def get_habits_service(db: AsyncSession, user_id: int):
     habits = await crud.get_personal_habits(db, user_id)
-    
-    if not habits:
-        raise ValueError("습관을 찾을 수 없습니다.")
 
     return {
         "habits": [
             {
-                "title": h.title,
-                "category": h.category,
-                "is_checked": h.is_checked
+                "title": h["title"],
+                "category": h["category"],
+                "is_checked": h["is_checked"]
             }
             for h in habits
         ]
