@@ -27,6 +27,7 @@ class GroupSearchResponse(BaseModel):
     frequency: str
     category: Optional[str] = None
     author: PostAuthorResponse
+    member_count: int = 0
 
     class Config:
         from_attributes = True  # ORM 객체 → Pydantic 자동 변환

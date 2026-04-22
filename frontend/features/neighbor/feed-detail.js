@@ -116,7 +116,9 @@ if (c.author_id === currentUserId) {
   });
 }
 async function loadSupport() {
-  const res = await fetch(`/api/v1/neighbor/feed/${postId}/support`);
+  const res = await fetch(`/api/v1/neighbor/feed/${postId}/support`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+  });
   if (!res.ok) return;
   const data = await res.json();
 
