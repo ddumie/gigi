@@ -8,6 +8,14 @@ from backend.domains.habits.schemas import HabitCreate, HabitUpdate
 # ── Habit ──
 
 
+async def has_any_habit(db: AsyncSession, user_id: int) -> bool:
+    """활성/비활성 포함, 해당 유저의 습관 레코드가 하나라도 있는지 확인한다."""
+    result = await db.execute(
+        select(func.count()).select_from(Habit).where(Habit.user_id == user_id)
+    )
+    return result.scalar() > 0
+
+
 async def get_habit(db: AsyncSession, habit_id: int, user_id: int) -> Habit | None:
     result = await db.execute(
         select(Habit).where(

@@ -87,8 +87,13 @@ async function selectHabits() {
   btn.textContent = '등록 중...';
 
   try {
-    await apiPost('/habits/ai-recommend/select', { selected_habits: selected });
+    const res = await apiPost('/habits/ai-recommend/select', { selected_habits: selected });
     showToast('습관이 등록되었습니다.');
+
+    // 서버가 판단한 첫 습관 여부 → 모달 플래그 저장 후 습관 탭에서 표시
+    if (res && res.is_first_habit) {
+      localStorage.setItem('gigi_show_first_habit_modal', 'true');
+    }
     window.location.href = PAGES.habits;
   } catch (err) {
     showToast(err.message);
