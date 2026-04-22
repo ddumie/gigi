@@ -233,6 +233,12 @@ async def recent_notifications_service(db: AsyncSession, user_id: int, limit: in
         ]
     }
 
+
+# 안 읽은 알림 전부 읽음 처리
+async def mark_notifications_read_service(db: AsyncSession, user_id: int):
+    updated = await crud.mark_all_notifications_read(db, user_id)
+    return {"updated": updated}
+
 # 개별 인원 습관 달성 여부 호출
 async def get_habits_service(db: AsyncSession, user_id: int):
     habits = await crud.get_personal_habits(db, user_id)

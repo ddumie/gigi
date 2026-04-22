@@ -157,3 +157,11 @@ async def recent_notifications(
     current_user: int = Depends(get_current_user)
 ):
     return await service.recent_notifications_service(db, current_user.id, limit)
+
+
+@router.post("/notifications/read")
+async def mark_notifications_read(
+    db: AsyncSession = Depends(get_async_db),
+    current_user: int = Depends(get_current_user)
+):
+    return await service.mark_notifications_read_service(db, current_user.id)

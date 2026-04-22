@@ -108,6 +108,12 @@ async function loadNotifications() {
         <span class="meta-text" style="font-size:0.75rem;white-space:nowrap;">${formatRelativeTime(n.created_at)}</span>
       </div>
     `).join('');
+
+    if (items.some(n => !n.is_read)) {
+      try {
+        await apiPost('/support/notifications/read');
+      } catch (_) {}
+    }
   } catch (e) {
     $notifSection.style.display = 'none';
   }
