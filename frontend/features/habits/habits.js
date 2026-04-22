@@ -57,8 +57,7 @@ async function saveHabit() {
       });
       showToast('습관이 수정되었습니다.');
     } else {
-      const isFirstHabit = habits.length === 0;   // 추가 직전 시점 기준
-      await apiPost('/habits/', {
+      const res = await apiPost('/habits/', {
         title,
         category,
         time,
@@ -66,8 +65,8 @@ async function saveHabit() {
       });
       showToast('습관이 추가되었습니다.');
 
-      // 첫 습관 등록이면 → 습관 탭(현재)과 오늘 탭에서 첫 진입 모달을 띄우도록 플래그 저장
-      if (isFirstHabit) {
+      // 서버가 판단한 첫 습관 여부 → 모달 플래그 저장
+      if (res && res.is_first_habit) {
         localStorage.setItem('gigi_show_first_habit_modal', 'true');
       }
     }
