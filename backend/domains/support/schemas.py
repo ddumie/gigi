@@ -96,3 +96,15 @@ class HabitsItem(BaseModel):
 
 class PersonalHabitResponse(BaseModel):
     habits: List[HabitsItem]
+
+
+class NotificationItem(BaseModel):
+    id: int
+    type: str
+    content: str
+    is_read: bool
+    created_at: str
+
+
+class NotificationListResponse(BaseModel):
+    notifications: List[NotificationItem]
