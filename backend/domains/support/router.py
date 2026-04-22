@@ -148,3 +148,12 @@ async def unread_count(
     current_user: int = Depends(get_current_user)
 ):
     return await service.unread_notifications_service(db, current_user.id)
+
+
+@router.get("/notifications/recent", response_model=schemas.NotificationListResponse)
+async def recent_notifications(
+    limit: int = 3,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: int = Depends(get_current_user)
+):
+    return await service.recent_notifications_service(db, current_user.id, limit)

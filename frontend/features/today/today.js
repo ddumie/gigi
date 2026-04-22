@@ -14,6 +14,8 @@ const $statStreak = document.getElementById('stat-streak');
 const $statBadge  = document.getElementById('stat-badge');
 const $calendar   = document.getElementById('mini-calendar');
 const $groupSum   = document.getElementById('group-summary');
+const $notifSection = document.getElementById('notification-section');
+const $notifList    = document.getElementById('notification-list');
 
 let currentHabits = [];
 let currentStats = null;
@@ -71,6 +73,44 @@ async function loadDashboard() {
   }
 
   await loadGroupSummary();
+  await loadNotifications();
+}
+
+
+// ── 받은 지지 알림 ──
+
+function formatRelativeTime(isoString) {
+  if (!isoString) return '';
+  const then = new Date(isoString);
+  const diffSec = Math.floor((Date.now() - then.getTime()) / 1000);
+  if (diffSec < 60) return '방금 전';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
+  return `${Math.floor(diffSec / 86400)}일 전`;
+}
+
+async function loadNotifications() {
+  if (!$notifSection || !$notifList) return;
+
+  try {
+    const data = await apiGet('/support/notifications/recent?limit=3');
+    const items = data.notifications || [];
+
+    if (items.length === 0) {
+      $notifSection.style.display = 'none';
+      return;
+    }
+
+    $notifSection.style.display = '';
+    $notifList.innerHTML = items.map(n => `
+      <div class="notification-item" style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;padding:0.5rem 0;border-top:1px solid var(--color-border, #eee);">
+        <span style="font-size:0.9rem;">${escapeHtml(n.content)}</span>
+        <span class="meta-text" style="font-size:0.75rem;white-space:nowrap;">${formatRelativeTime(n.created_at)}</span>
+      </div>
+    `).join('');
+  } catch (e) {
+    $notifSection.style.display = 'none';
+  }
 }
 
 
