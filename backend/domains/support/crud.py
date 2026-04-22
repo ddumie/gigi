@@ -17,7 +17,7 @@ async def create_unique_invitecode(db: AsyncSession, prefix="GIGI-", length=4, m
     for _ in range(max_attempts):
         code_suffix = generate_invitecode(length)
         code = f"{prefix}{code_suffix}"
-        result = await db.execute(select(models.InviteCode).filter(models.InviteCode.code == code))
+        result = await db.execute(select(models.InviteCode).where(models.InviteCode.code == code))
         existing = result.scalars().first()
         if not existing:
             return code
@@ -58,136 +58,102 @@ async def create_group(db: AsyncSession, group: schemas.GroupCreate, user_id: in
 
     return db_group
 
-# 모임 읽어오기
-async def get_group(db: AsyncSession, group_id: int, user_id: int):
-    result = await db.execute(
-        select(models.GroupProfile).filter(models.GroupProfile.group_id == group_id,
-                                           models.GroupProfile.user_id == user_id)
-    )
-    groupprofile = result.scalars().first()
-
-    result = await db.execute(select(models.InviteCode).filter(models.InviteCode.group_id == group_id))
-    invite = result.scalars().first()
-
-    result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
-    group = result.scalars().first()
-
-    habit_info = None
-    if group and group.post_id:
-        result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id))
-        post_info = result.scalars().first()
-        if post_info:
-            habit_info = {
-                "habit_title": post_info.habit_title,
-                "frequency": post_info.frequency
-            }
-
-    return group, groupprofile, invite, habit_info
-
 # 나만 호출하기
 async def get_me(db: AsyncSession, group_id: int, user_id: int):
     result = await db.execute(
-        select(models.GroupMember).filter(models.GroupMember.group_id == group_id,
+        select(models.GroupMember).where(models.GroupMember.group_id == group_id,
                                           models.GroupMember.user_id == user_id)
     )
     return result.scalars().first()
 
 # 모임 멤버 호출
-async def get_group_members(db: AsyncSession, group_id: int, limit: int, offset: int, user_id: int):
+async def get_group_members(db: AsyncSession, group_id: int, limit: int, offset: int, exclude_user_id: int):
     result = await db.execute(
-        select(models.GroupMember)
-        .filter(models.GroupMember.group_id == group_id,
-                models.GroupMember.user_id != user_id)
+        select(models.GroupMember, User.nickname)
+        .join(User, User.id == models.GroupMember.user_id)
+        .where(models.GroupMember.group_id == group_id,
+                models.GroupMember.user_id != exclude_user_id)
         .offset(offset)
         .limit(limit)
     )
-    return result.scalars().all()
-
-# 멤버 닉네임
-async def get_member_nickname(db: AsyncSession, user_id: int):
-    result = await db.execute(select(User).filter(User.id == user_id))
-    user = result.scalars().first()
-    return user.nickname if user else None
-
-# 멤버 달성률
-async def get_member_complete_rate(db: AsyncSession, user_id: int, target_date: date):
-    result = await db.execute(select(func.count()).select_from(Habit).filter(Habit.user_id == user_id, Habit.is_active == True))
-    habit_count = result.scalar()
-
-    result = await db.execute(
-        select(func.count())
-        .select_from(HabitCheck)
-        .join(Habit, HabitCheck.habit_id == Habit.id)
-        .filter(Habit.user_id == user_id, Habit.is_active == True, HabitCheck.checked_date == target_date)
-    )
-    checked_count = result.scalar()
-
-    return (checked_count / habit_count * 100) if habit_count > 0 else 0
+    return result.mappings().all()
 
 # 여러 멤버 닉네임/달성률
 async def get_members_info(db: AsyncSession, members: list[models.GroupMember]):
     member_nicknames = {}
     complete_rates = {}
+
     target_date = date.today()
+    user_ids = [m.user_id for m in members]
 
-    for m in members:
-        nickname = await get_member_nickname(db, m.user_id)
-        if nickname:
-            member_nicknames[m.user_id] = nickname
+    result = await db.execute(select(User.id, User.nickname).where(User.id.in_(user_ids)))
+    member_nicknames = {row.id: row.nickname for row in result.mappings().all()}
 
-        complete_rates[m.user_id] = await get_member_complete_rate(db, m.user_id, target_date)
+    habit_count_q = (
+        select(Habit.user_id, func.count(Habit.id).label("habit_count"))
+        .where(Habit.user_id.in_(user_ids), Habit.is_active == True)
+        .group_by(Habit.user_id)
+    )
+    checked_count_q = (
+        select(Habit.user_id, func.count(HabitCheck.id).label("checked_count"))
+        .join(Habit, HabitCheck.habit_id == Habit.id)
+        .where(
+            Habit.user_id.in_(user_ids),
+            Habit.is_active == True,
+            HabitCheck.checked_date == target_date
+        )
+        .group_by(Habit.user_id)
+    )
+
+    habit_counts = {row.user_id: row.habit_count for row in (await db.execute(habit_count_q)).mappings()}
+    checked_counts = {row.user_id: row.checked_count for row in (await db.execute(checked_count_q)).mappings()}
+
+    complete_rates = {
+        uid: (checked_counts.get(uid, 0) / habit_counts[uid]) * 100 if habit_counts.get(uid, 0) > 0 else 0
+        for uid in user_ids
+    }
 
     return member_nicknames, complete_rates
 
 # 설정용 모임 읽어오기
 async def get_group_4_settings(db: AsyncSession, group_id: int, user_id: int, limit: int = 10, offset: int = 0):
     result = await db.execute(
-        select(models.GroupProfile).filter(models.GroupProfile.group_id == group_id,
+        select(models.GroupProfile).where(models.GroupProfile.group_id == group_id,
                                            models.GroupProfile.user_id == user_id)
     )
     groupprofile = result.scalars().first()
 
-    result = await db.execute(select(models.InviteCode).filter(models.InviteCode.group_id == group_id))
+    result = await db.execute(select(models.InviteCode).where(models.InviteCode.group_id == group_id))
     invite = result.scalars().first()
 
+    member_top_exp = {}
+    member_nicknames = {}
     result = await db.execute(
-        select(models.GroupMember)
-        .filter(models.GroupMember.group_id == group_id)
+        select(models.GroupMember, User.nickname, models.Group.total_support_count)
+        .join(User, User.id == models.GroupMember.user_id)
+        .join(models.Group, models.Group.id == models.GroupMember.group_id)
+        .where(models.GroupMember.group_id == group_id)
         .offset(offset)
         .limit(limit)
     )
-    members = result.scalars().all()
+    rows = result.mappings().all()
 
-    result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
+    members = [row["GroupMember"] for row in rows]
+    member_nicknames = {row["GroupMember"].user_id: row["nickname"] for row in rows}
+    member_top_exp = {row["GroupMember"].user_id: row["total_support_count"] for row in rows}
+
+    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
     group = result.scalars().first()
 
     habit_info = None
     if group and group.post_id:
-        result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id))
+        result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == group.post_id))
         post_info = result.scalars().first()
         if post_info:
             habit_info = {
                 "habit_title": post_info.habit_title,
                 "frequency": post_info.frequency
             }
-
-    member_top_exp = {}
-    member_nicknames = {}
-    for m in members:
-        result = await db.execute(
-            select(models.Group.total_support_count)
-            .join(models.GroupMember, models.Group.id == models.GroupMember.group_id)
-            .filter(models.GroupMember.user_id == m.user_id)
-            .order_by(desc(models.Group.total_support_count))
-        )
-        top_support_row = result.scalars().first()
-        if top_support_row is not None:
-            member_top_exp[m.user_id] = top_support_row
-
-        result = await db.execute(select(User).filter(User.id == m.user_id))
-        user = result.scalars().first()
-        if user:
-            member_nicknames[m.user_id] = user.nickname
 
     return group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames
 
@@ -195,7 +161,7 @@ async def get_group_4_settings(db: AsyncSession, group_id: int, user_id: int, li
 # 초대코드로 그룹 ID 조회
 async def get_group_id_by_code(db: AsyncSession, invite_code: str):
     result = await db.execute(
-        select(models.InviteCode).filter(models.InviteCode.code == invite_code,
+        select(models.InviteCode).where(models.InviteCode.code == invite_code,
                                          models.InviteCode.is_active == True)
     )
     invite = result.scalars().first()
@@ -204,10 +170,10 @@ async def get_group_id_by_code(db: AsyncSession, invite_code: str):
 
 # 모임 구해요의 post_id로 가입하기
 async def get_or_create_group_id_by_post(db: AsyncSession, post_id: int, user_id: int):
-    result = await db.execute(select(models.Group).filter(models.Group.post_id == post_id))
+    result = await db.execute(select(models.Group).where(models.Group.post_id == post_id))
     group = result.scalars().first()
     if not group:
-        result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == post_id))
+        result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == post_id))
         post_info = result.scalars().first()
         if not post_info:
             return None
@@ -231,12 +197,12 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
     await db.commit()
     await db.refresh(new_member)
 
-    result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
+    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
     group = result.scalars().first()
     if group and group.post_id:
-        result = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == group.post_id))
+        result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == group.post_id))
         post_info = result.scalars().first()
-        result = await db.execute(select(FeedPost.category).filter(FeedPost.post_id == group.post_id))
+        result = await db.execute(select(FeedPost.category).where(FeedPost.post_id == group.post_id))
         post_category = result.scalar()
 
         if post_info and post_category:
@@ -267,13 +233,13 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
 
 # 모임 탈퇴
 async def remove_group_member(db: AsyncSession, group_id: int, user_id: int):
-    result = await db.execute(select(Habit).filter(Habit.group_id == group_id, Habit.user_id == user_id))
+    result = await db.execute(select(Habit).where(Habit.group_id == group_id, Habit.user_id == user_id))
     group_habits = result.scalars().all()
     for habit in group_habits:
         await db.delete(habit)
 
     result = await db.execute(
-        select(models.GroupMember).filter(models.GroupMember.group_id == group_id,
+        select(models.GroupMember).where(models.GroupMember.group_id == group_id,
                                           models.GroupMember.user_id == user_id)
     )
     member = result.scalars().first()
@@ -287,7 +253,7 @@ async def remove_group_member(db: AsyncSession, group_id: int, user_id: int):
 # 모임 정보 수정
 async def update_group_profile(db: AsyncSession, group_id: int, user_id: int, group: schemas.GroupCreate):
     result = await db.execute(
-        select(models.GroupProfile).filter(models.GroupProfile.group_id == group_id,
+        select(models.GroupProfile).where(models.GroupProfile.group_id == group_id,
                                            models.GroupProfile.user_id == user_id)
     )
     groupprofile = result.scalars().first()
@@ -309,14 +275,14 @@ async def create_support(db: AsyncSession, group_id: int, from_user_id: int, to_
     )
     db.add(support)
 
-    result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
+    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
     group = result.scalars().first()
     if group:
         today = datetime.now().date()
 
         result = await db.execute(
             select(models.Support)
-            .filter(models.Support.group_id == group_id)
+            .where(models.Support.group_id == group_id)
             .order_by(models.Support.created_at.desc())
         )
         last_support = result.scalars().first()
@@ -341,7 +307,7 @@ async def create_support(db: AsyncSession, group_id: int, from_user_id: int, to_
 async def check_support_exists(db: AsyncSession, group_id: int, from_user_id: int, to_user_id: int):
     today = date.today()
     result = await db.execute(
-        select(models.Support).filter(
+        select(models.Support).where(
             models.Support.group_id == group_id,
             models.Support.from_user_id == from_user_id,
             models.Support.to_user_id == to_user_id,
@@ -363,57 +329,67 @@ async def create_notification(db: AsyncSession, user_id: int, type: str, content
 # 초대코드로 그룹 정보 가져오기
 async def get_group_summary(db: AsyncSession, invite_code: str, limit: int = 10, offset: int = 0):
     result = await db.execute(
-        select(models.InviteCode).filter(models.InviteCode.code == invite_code,
+        select(models.InviteCode).where(models.InviteCode.code == invite_code,
                                          models.InviteCode.is_active == True)
     )
     invite = result.scalars().first()
     if not invite:
         return None
 
-    result = await db.execute(select(models.Group).filter(models.Group.id == invite.group_id))
+    result = await db.execute(select(models.Group).where(models.Group.id == invite.group_id))
     group = result.scalars().first()
     if not group:
         return None
 
+    nicknames = []
+    member_ids = []
+
     result = await db.execute(
-        select(models.GroupMember)
-        .filter(models.GroupMember.group_id == invite.group_id)
+        select(models.GroupMember, User.nickname)
+        .join(User, User.id == models.GroupMember.user_id)
+        .where(models.GroupMember.group_id == invite.group_id)
         .offset(offset)
         .limit(limit)
     )
-    members = result.scalars().all()
-
-    nicknames = []
-    member_ids = []
-    for m in members:
-        result = await db.execute(select(User).filter(User.id == m.user_id))
-        user = result.scalars().first()
-        if user:
-            nicknames.append(user.nickname)
-            member_ids.append(m.user_id)
+    rows = result.mappings().all()
+    members = [row["GroupMember"] for row in rows]
+    nicknames = [row["nickname"] for row in rows]
+    member_ids = [m.user_id for m in members]
 
     return group, nicknames, member_ids
 
-# uid로 그룹 id 목록 가져오기
+# uid로 그룹 id 목록 및 내용물, 습관(post 연결 된 경우) 가져오기
 async def get_group_ids_by_uid(db: AsyncSession, user_id: int, limit: int = 3, offset: int = 0):
     result = await db.execute(
-        select(models.GroupMember.group_id)
-        .filter(models.GroupMember.user_id == user_id)
+        select(
+            models.GroupMember.group_id,
+            models.Group.name,
+            models.Group.group_type,
+            models.Group.total_support_count,
+            models.Group.support_streak,
+            models.Group.max_streak,
+            models.Group.post_id,
+            GroupSearchPost.habit_title,
+            GroupSearchPost.frequency
+        )
+        .join(models.Group, models.Group.id == models.GroupMember.group_id)
+        .outerjoin(GroupSearchPost, GroupSearchPost.post_id == models.Group.post_id)
+        .where(models.GroupMember.user_id == user_id)
         .offset(offset)
         .limit(limit)
     )
-    return result.all()
+    return result.mappings().all()
 
 # 모임 존재 여부 확인
 async def get_group_by_id(db: AsyncSession, group_id: int):
-    result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
+    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
     return result.scalars().first()
 
 
 # 특정 모임의 특정 맴버 조회
 async def get_group_member(db: AsyncSession, group_id: int, user_id: int):
     result = await db.execute(
-        select(models.GroupMember).filter(models.GroupMember.group_id == group_id,
+        select(models.GroupMember).where(models.GroupMember.group_id == group_id,
                                           models.GroupMember.user_id == user_id)
     )
     return result.scalars().first()
@@ -423,7 +399,7 @@ async def get_group_member(db: AsyncSession, group_id: int, user_id: int):
 async def check_group_support(db: AsyncSession, group_id: int, from_user_id: int):
     today = date.today()
     result = await db.execute(
-        select(models.Support).filter(
+        select(models.Support).where(
             models.Support.group_id == group_id,
             models.Support.from_user_id == from_user_id,
             models.Support.created_at >= today
@@ -437,7 +413,7 @@ async def check_group_support_yesterday(db: AsyncSession, group_id: int, from_us
     today = date.today()
     yesterday = today - timedelta(days=1)
     result = await db.execute(
-        select(models.Support).filter(
+        select(models.Support).where(
             models.Support.group_id == group_id,
             models.Support.from_user_id == from_user_id,
             models.Support.created_at >= yesterday,
@@ -449,7 +425,7 @@ async def check_group_support_yesterday(db: AsyncSession, group_id: int, from_us
 
 # 스트릭 초기화
 async def reset_group_streak(db: AsyncSession, group_id: int):
-    result = await db.execute(select(models.Group).filter(models.Group.id == group_id))
+    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
     group = result.scalars().first()
     if group:
         group.support_streak = 0
@@ -460,16 +436,31 @@ async def reset_group_streak(db: AsyncSession, group_id: int):
 
 # 특정 유저 조회
 async def get_user_by_id(db: AsyncSession, user_id: int):
-    result = await db.execute(select(User).filter(User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
     return result.scalars().first()
 
 
 # 안 읽은 알림 가져오기
 async def get_unread_notification_count(db: AsyncSession, user_id: int):
     result = await db.execute(
-        select(func.count()).select_from(models.Notification).filter(
+        select(func.count()).select_from(models.Notification).where(
             models.Notification.user_id == user_id,
             models.Notification.is_read == False
         )
     )
     return result.scalar()
+
+# 지지탭용 개인별 습관 리스트 가져오기
+async def get_personal_habits(db: AsyncSession, user_id: int):
+    today = date.today()
+    result = await db.execute(
+        select(
+            Habit.id,
+            Habit.title,
+            Habit.category,
+            (HabitCheck.id.isnot(None).label("is_checked"))
+        )
+        .outerjoin(HabitCheck, (Habit.id == HabitCheck.habit_id) & (HabitCheck.checked_date == today))
+        .where(Habit.user_id == user_id , Habit.is_active == True)
+    )
+    return result.all()

@@ -11,6 +11,21 @@ const groupLimit = 3;
 let loading = false;
 let hasMore = true;
 
+// 경험치 단계 계산 함수
+function getLevelInfo(exp) {
+  if (exp < 50) {
+    return { name: "씨앗", icon: "🌱", next: 50 - exp };
+  } else if (exp < 100) {
+    return { name: "새싹", icon: "🌿", next: 100 - exp };
+  } else if (exp < 150) {
+    return { name: "가지", icon: "🍃", next: 150 - exp };
+  } else if (exp < 200) {
+    return { name: "열매", icon: "🍎", next: 200 - exp };
+  } else {
+    return { name: "나무", icon: "🌳", next: null }; // 최대 레벨
+  }
+}
+
 // JWT에서 현재 사용자 ID 추출
 function getCurrentUserId() {
   const token = localStorage.getItem("gigi_token");
@@ -46,8 +61,17 @@ async function sendSupport(groupId, toUserId, button, card) {
     // 그룹 정보 갱신
     const groupData = await res.json();
     const groupInfo = groupData.group;
+    const level = getLevelInfo(groupInfo.exp);
 
-    card.querySelector("[data-stat='exp']").textContent = `경험치 · ${groupInfo.exp}회`;
+    card.querySelector("[data-stat='exp']").textContent =
+      `${level.icon} ${level.name} · 경험치 ${groupInfo.exp}회`;
+
+    if (level.next !== null) {
+      card.querySelector(".stat-sub").textContent =
+        `다음 레벨까지 ${level.next}회 남음`;
+    } else {
+      card.querySelector(".stat-sub").textContent = "최대 레벨입니다.";
+    }
     card.querySelector("[data-stat='streak']").textContent = `연속 지지 스트릭 · ${groupInfo.streak}일`;
     card.querySelector("[data-stat='max-streak']").textContent = `최고 기록 ${groupInfo.max_streak}일`;    
 
@@ -126,13 +150,18 @@ async function loadGroups() {
       // 그룹 통계
       const stats = document.createElement("div");
       stats.className = "group-stats";
+
+      const level = getLevelInfo(group.exp);
+
       stats.innerHTML = `
         <div class="stat-box">
           <div class="stat-row">
-            <span class="stat-icon">🌳</span>
+            <span class="stat-icon">${level.icon}</span>
             <div>
-              <div class="stat-main" data-stat="exp">경험치 · ${group.exp}회</div>
-              <div class="stat-sub">다음 레벨까지는 추후 계산</div>
+              <div class="stat-main" data-stat="exp">${level.icon} ${level.name} · 경험치 ${group.exp}회</div>
+              <div class="stat-sub">
+                ${level.next !== null ? `다음 레벨까지 ${level.next}회 남음` : "최대 레벨입니다."}
+              </div>
             </div>
           </div>
         </div>
@@ -196,6 +225,9 @@ async function loadGroups() {
           `;
           row.appendChild(button);
           memberList.appendChild(row);
+          
+          // 드롭다운메뉴 호출
+          attachMemberClick(row, m.user_id);
         });
       }
 
@@ -214,6 +246,53 @@ async function loadGroups() {
   } finally {
     loading = false;
   }
+}
+
+function attachMemberClick(row, userId) {
+  row.addEventListener("click", async () => {
+    let dropdown = row.nextElementSibling;
+    if (dropdown && dropdown.classList.contains("habit-dropdown")) {
+      dropdown.classList.toggle("open");
+      if (!dropdown.classList.contains("open")) {
+        dropdown.remove();
+      }
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("gigi_token");
+      const res = await fetch(`/api/v1/support/habits/${userId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        showToast("습관 불러오기 실패");
+        return;
+      }
+      const data = await res.json();
+
+      dropdown = document.createElement("div");
+      dropdown.className = "habit-dropdown open";
+
+      if (!data.habits || data.habits.length === 0) {
+        dropdown.textContent = "습관이 없습니다.";
+      } else {
+        data.habits.forEach(habit => {
+          const item = document.createElement("div");
+          item.className = "habit-row";
+          item.innerHTML = `
+            <span class="habit-title">${habit.title}</span>
+            <span class="habit-category">${habit.category}</span>
+            <span class="chk-box ${habit.is_checked ? "done" : ""}"></span>
+          `;
+          dropdown.appendChild(item);
+        });
+      }
+
+      row.insertAdjacentElement("afterend", dropdown);
+    } catch (err) {
+      console.error("습관 불러오기 실패:", err);
+    }
+  });
 }
 
 window.addEventListener("scroll", () => {

@@ -135,9 +135,14 @@ function initStep3() {
     submitBtn.textContent = '등록 중...';
     
     try {
-      await apiPost('/onboarding/ai-recommend/select', { selected_habits: selected });
+      const res = await apiPost('/onboarding/ai-recommend/select', { selected_habits: selected });
       localStorage.removeItem('gigi_ai_habits');
       localStorage.removeItem('gigi_age_group');
+
+      // 서버가 판단한 첫 습관 여부 → today 탭 진입 시 모달 표시
+      if (res && res.is_first_habit) {
+        localStorage.setItem('gigi_show_first_habit_modal', 'true');
+      }
       window.location.href = PAGES.today;
     } catch (err) {
       showToast(err.message);

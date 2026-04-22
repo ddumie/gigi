@@ -148,6 +148,23 @@ body[data-section="support"] .page-header {
   background-color: var(--color-success);
 }
 
+#group-habit {
+  width: 100%;
+  padding: 0.9rem 1rem;                 /* 크기 키우기 */
+  font-size: var(--font-size-lg);       /* 글자 크기 크게 */
+  border: 1px solid var(--color-border-light); /* 연한 테두리 */
+  border-radius: var(--radius-lg);      /* 둥근 모서리 */
+  background-color: var(--color-card);  /* 카드와 동일한 배경 */
+  box-shadow: var(--shadow-sm);         /* 카드와 어울리는 그림자 */
+  transition: border-color 0.2s ease;
+}
+
+#group-habit:disabled {
+  color: var(--color-text-secondary);   /* 비활성화된 텍스트 색상 */
+  background-color: var(--color-card);  /* 배경은 동일하게 유지 */
+  opacity: 1;                           /* 기본 disabled 흐림 효과 제거 */
+}
+
 /* 초대 코드 박스 */
 .invite-code-box {
   text-align: center;
@@ -211,4 +228,49 @@ body[data-section="support"] .page-header {
 #group-name:focus {
   border-color: var(--color-primary);   /* 포커스 시 강조 */
   outline: none;
+}
+
+.chk-box {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-border);
+}
+.chk-box.done {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.habit-dropdown {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  background: #f9f9f9;
+  border-left: 2px solid var(--color-border);
+  margin-left: 2rem;
+  padding: 0 0.5rem;
+}
+
+.habit-dropdown.open {
+  max-height: 500px; /* 충분히 크게 설정 */
+  padding: 0.5rem;
+}
+
+.habit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+
+.habit-title {
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.habit-category {
+  font-size: 0.85rem;
+  color: #666;
+  margin-right: auto;
 }

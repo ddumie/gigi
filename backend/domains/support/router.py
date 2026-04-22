@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import schemas, service
 from backend.database import get_async_db
-from backend.domains.auth.router import get_current_user
+from backend.domains.auth.router import get_current_user, get_optional_current_user
 
 router = APIRouter()
 
@@ -13,12 +13,13 @@ router = APIRouter()
 async def group_summary(
     invite_code: str,
     db: AsyncSession = Depends(get_async_db),
-    current_user: int = Depends(get_current_user),
+    current_user = Depends(get_optional_current_user),
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0)
 ):
     try:
-        return await service.group_summary_service(db, invite_code, current_user.id, limit, offset)
+        user_id = current_user.id if current_user else None
+        return await service.group_summary_service(db, invite_code, user_id, limit, offset)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -61,6 +62,18 @@ async def send_support(
 ):
     try:
         return await service.send_support_service(db, group_id, current_user.id, to_user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# 개별 인원 습관 및 달성 여부 호출
+@router.get("/habits/{user_id}", response_model=schemas.PersonalHabitResponse)
+async def get_habits(
+    user_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: int = Depends(get_current_user)
+):
+    try:
+        return await service.get_habits_service(db, user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
