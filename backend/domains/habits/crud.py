@@ -115,6 +115,21 @@ async def get_checks_in_range(
     return list(result.scalars().all())
 
 
+async def get_checks_bulk(
+    db: AsyncSession, habit_ids: set[int], start: date, end: date
+) -> set[tuple[int, date]]:
+    """여러 습관의 지정 기간 체크 기록을 한 번에 조회한다."""
+    result = await db.execute(
+        select(HabitCheck.habit_id, HabitCheck.checked_date)
+        .where(
+            HabitCheck.habit_id.in_(habit_ids),
+            HabitCheck.checked_date >= start,
+            HabitCheck.checked_date <= end,
+        )
+    )
+    return {(row.habit_id, row.checked_date) for row in result}
+
+
 async def get_today_checks_for_user(db: AsyncSession, user_id: int, today: date) -> list[HabitCheck]:
     """오늘 탭에서 사용 — 해당 유저의 오늘 체크 전체 조회."""
     result = await db.execute(

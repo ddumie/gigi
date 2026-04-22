@@ -21,19 +21,16 @@ async def _calc_streak(db: AsyncSession, user_id: int, today: date) -> int:
 
     habit_ids = {h.id for h in habits}
     total     = len(habit_ids)
-    streak    = 0
+    start     = today - timedelta(days=29)
+    checks    = await habits_crud.get_checks_bulk(db, habit_ids, start, today)
 
+    streak = 0
     for days_ago in range(30):
         check_date  = today - timedelta(days=days_ago)
-        day_checked = 0
-        for h_id in habit_ids:
-            if await habits_crud.get_check(db, h_id, check_date):
-                day_checked += 1
-
+        day_checked = sum(1 for h_id in habit_ids if (h_id, check_date) in checks)
         if day_checked == total:
             streak += 1
         else:
-            # 오늘이 아직 미완료면 어제부터 카운트 시작
             if days_ago == 0:
                 continue
             break
@@ -49,16 +46,15 @@ async def _calc_weekly_average(db: AsyncSession, user_id: int, today: date) -> i
     if not habits:
         return 0
 
-    habit_ids  = {h.id for h in habits}
-    total      = len(habit_ids)
+    habit_ids   = {h.id for h in habits}
+    total       = len(habit_ids)
+    start       = today - timedelta(days=6)
+    checks      = await habits_crud.get_checks_bulk(db, habit_ids, start, today)
     daily_rates = []
 
     for days_ago in range(7):
         check_date  = today - timedelta(days=days_ago)
-        day_checked = 0
-        for h_id in habit_ids:
-            if await habits_crud.get_check(db, h_id, check_date):
-                day_checked += 1
+        day_checked = sum(1 for h_id in habit_ids if (h_id, check_date) in checks)
         daily_rates.append(round(day_checked / total * 100))
 
     return round(sum(daily_rates) / len(daily_rates)) if daily_rates else 0

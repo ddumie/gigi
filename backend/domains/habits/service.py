@@ -1,8 +1,11 @@
+import logging
 from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.habits import crud
 from backend.domains.habits.models import Habit, HabitCheck
 from backend.domains.habits.schemas import HabitCreate, HabitUpdate
+
+logger = logging.getLogger(__name__)
 
 
 async def get_habit_or_raise(db: AsyncSession, user_id: int, habit_id: int) -> Habit:
@@ -50,3 +53,24 @@ async def uncheck_habit(
     await get_habit_or_raise(db, user_id, habit_id)
     if not await crud.uncheck_habit(db, habit_id, checked_date):
         raise ValueError("체크 기록이 없습니다")
+
+
+async def save_ai_selected_habits(
+    db: AsyncSession, user_id: int, selected_habits: list
+) -> None:
+    """AI 추천 습관 선택 목록을 저장한다."""
+    try:
+        for item in selected_habits:
+            db.add(Habit(
+                user_id=user_id,
+                title=item.title,
+                category=item.category,
+                description=item.description,
+                repeat_type="매일",
+                is_ai_recommended=True,
+            ))
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"습관 저장 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("습관 저장 중 오류가 발생했습니다.")
