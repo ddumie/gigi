@@ -55,7 +55,8 @@ async function api(method, path, body = null) {
 }
 
 // 편의 함수
-const apiGet = (path) => api('GET', path);
-const apiPost = (path, body) => api('POST', path, body);
-const apiPut = (path, body) => api('PUT', path, body);
+const apiGet    = (path) => api('GET', path);
+const apiPost   = (path, body) => api('POST', path, body);
+const apiPut    = (path, body) => api('PUT', path, body);
+const apiPatch  = (path, body) => api('PATCH', path, body);
 const apiDelete = (path) => api('DELETE', path);
