@@ -95,7 +95,7 @@ async function renderFeed(posts) {
     })
     const data = res.ok ? await res.json() : null;
     if (!data) continue;
-    let is_supported = false;
+    let is_supported = data.is_supported;
     btn.textContent = `🔥 지지 ${data.support_count}`;
     if (data.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
    
