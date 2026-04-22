@@ -56,7 +56,7 @@ async def get_ai_recommendations(age_group: str | None, health_interests: list[s
     try:
         response = await asyncio.wait_for(
             client.aio.models.generate_content(
-                model="gemini-2.0-flash", # 전 상태 gemini-2.5-flash
+                model="gemini-2.5-flash",
                 contents=prompt
             ),
             timeout=30.0
@@ -85,6 +85,8 @@ async def get_ai_recommendations(age_group: str | None, health_interests: list[s
 
 async def save_selected_habits(db: AsyncSession, user_id: int, selected: list[AIHabitItem]) -> None:
     """AI 추천 습관 저장과 온보딩 완료처리"""
+    if not selected:  # 라우터에서도 확인으로 이중체크 중
+        raise ValueError("습관을 하나 이상 선택해주세요.")
     try:
         for item in selected:
             db.add(Habit(

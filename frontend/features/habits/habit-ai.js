@@ -4,6 +4,7 @@
 
 let currentHabits = [];
 let currentInterests = [];
+let customInterests = []; // 직접 입력한 관심사
 
 document.addEventListener('DOMContentLoaded', () => {
   requireLogin();
@@ -14,6 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
     chip.replaceWith(fresh);
     fresh.addEventListener('click', () => fresh.classList.toggle('active'));
   });
+
+  // 직접 입력 - 엔터
+  const customInput = document.getElementById('custom-interest-input');
+  customInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); addCustomInterest(); }
+  });
+  // 직접 입력 - 추가 버튼
+  document.getElementById('btn-add-custom').addEventListener('click', addCustomInterest);
 
   // AI 추천받기 버튼
   document.getElementById('btn-get-recommend').addEventListener('click', getRecommendations);
@@ -26,11 +35,44 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// 직접 입력 관심사 추가
+function addCustomInterest() {
+  const input = document.getElementById('custom-interest-input');
+  const value = input.value.trim();
+  if (!value) return;
+  if (customInterests.includes(value)) {
+    showToast('이미 추가된 항목이에요.');
+    return;
+  }
+  customInterests.push(value);
+  renderCustomTags();
+  input.value = '';
+}
+
+// 직접 입력 태그 렌더링
+function renderCustomTags() {
+  const container = document.getElementById('custom-tags');
+  container.innerHTML = customInterests.map((tag, i) => `
+    <span class="chip active" style="display:inline-flex;align-items:center;gap:0.25rem;">
+      ${tag}
+      <button onclick="removeCustomTag(${i})" style="background:none;border:none;cursor:pointer;font-size:0.9rem;line-height:1;">✕</button>
+    </span>
+  `).join('');
+}
+
+// 직접 입력 태그 삭제
+function removeCustomTag(index) {
+  customInterests.splice(index, 1);
+  renderCustomTags();
+}
+
+
 // 관심사 선택 후 AI 추천 요청
 async function getRecommendations() {
   const btn = document.getElementById('btn-get-recommend');
-  currentInterests = [...document.querySelectorAll('[data-chip-select="interest"].active')]
+  const chipInterests = [...document.querySelectorAll('[data-chip-select="interest"].active')]
     .map((c) => c.textContent.trim());
+  currentInterests = [...chipInterests, ...customInterests];
 
   if (!currentInterests.length) {
     showToast('관심사를 하나 이상 선택해주세요.');
