@@ -1,3 +1,8 @@
+// ── 로그인 상태에서 auth 페이지 접근 차단 ──
+if (isLoggedIn()) {
+  window.location.href = PAGES.today;
+}
+
 // ── 공통 유틸 ──
 function showError(id, message) {
   const el = document.getElementById(id);
