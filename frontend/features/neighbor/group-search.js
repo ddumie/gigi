@@ -18,12 +18,18 @@ const list = document.getElementById('group-search-list');
     article.className = 'group-search-card';
 
     const title = document.createElement('strong');
-    title.textContent = `${p.title} · ${p.author?.nickname ?? '알 수 없음'}`;
+    title.textContent = p.title;
+
+    const authorEl = document.createElement('p');
+    authorEl.className = 'meta-text';
+    authorEl.style.marginTop = '0.25rem'
+    authorEl.textContent = `${p.author?.nickname ?? '알 수 없음'} · 참여자 ${p.member_count}명`;
 
     const meta = document.createElement('p');
     meta.className = 'meta-text';
     meta.style.marginTop = '0.5rem';
-    meta.textContent = `${p.group_type} · 함께할 습관: ${p.habit_title} · ${p.frequency}`;
+    const categoryLabel = p.category ? ` · #${p.category}` : '';
+    meta.textContent = `${p.group_type}${categoryLabel} · 함께할 습관: ${p.habit_title} · ${p.frequency}`;
 
     const desc = document.createElement('p');
     desc.style.marginTop = '0.5rem';
@@ -48,7 +54,7 @@ const list = document.getElementById('group-search-list');
     }
 
     actions.appendChild(link);
-    article.append(title, meta, desc, actions);
+    article.append(title, authorEl, meta, desc, actions);
     list.appendChild(article);
   });
 })();

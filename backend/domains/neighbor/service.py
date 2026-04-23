@@ -40,8 +40,9 @@ async def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: A
 async def get_group_search_logic(db: AsyncSession):
     result = []
     rows = await get_group_search(db=db)
-    for group_search, user in rows:
+    for group_search, user, member_count in rows:
         group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
+        group_search.member_count = member_count
         result.append(group_search)
     
     return result
