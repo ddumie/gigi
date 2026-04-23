@@ -3,15 +3,17 @@ from backend.domains.habits.models import HABIT_CATEGORIES
 
 
 class PreferenceRequest(BaseModel):
-    """온보딩 1,2 : 나이대, 관심사 저장"""
+    """온보딩 1,2 : 나이대, 관심사, 글씨크기 저장"""
     age_group: str | None = None
     health_interests: list[str] | None = None
+    font_size: str | None = None  # 보통, 큼, 아주큼
 
 
 class PreferenceResponse(BaseModel):
     """온보딩 저장 선호도 조회"""
     age_group: str | None = None
     health_interests: list[str] | None = None
+    font_size: str | None = None
 
 
 class AIHabitItem(BaseModel):
