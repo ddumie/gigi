@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding import crud, service
-from backend.domains.onboarding.schemas import PreferenceRequest, AIRecommendResponse, SelectRequest
+from backend.domains.onboarding.schemas import PreferenceRequest, PreferenceResponse, AIRecommendResponse, SelectRequest
 from backend.domains.auth.router import get_current_user
 from backend.domains.habits.crud import has_any_habit
 from backend.database import get_async_db
@@ -18,6 +18,16 @@ async def save_preferences(request: PreferenceRequest, db: AsyncSession = Depend
     except ValueError:
         raise HTTPException(status_code=500, detail="선호도 저장 중 오류가 발생했습니다.")
     return {"message": "선호도가 저장되었습니다."}
+
+
+# 저장된 선호도 조회
+@router.get("/preferences", response_model=PreferenceResponse)
+async def get_preferences(db: AsyncSession = Depends(get_async_db), current_user = Depends(get_current_user)):
+    """저장된 나이대, 관심사 조회"""
+    pref = await crud.get_preferences(db, current_user.id)
+    if pref is None:
+        return PreferenceResponse()
+    return PreferenceResponse(age_group=pref.age_group, health_interests=pref.health_interests)
 
 
 # AI습관 추천(선호도 조회, 횟수체크)

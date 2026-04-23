@@ -139,6 +139,10 @@ function initStep3() {
       localStorage.removeItem('gigi_ai_habits');
       localStorage.removeItem('gigi_age_group');
 
+      // 온보딩 완료 → localStorage 사용자 정보 동기화
+      const user = getCurrentUser();
+      if (user) setCurrentUser({ ...user, is_first_login: false });
+
       // 서버가 판단한 첫 습관 여부 → today 탭 진입 시 모달 표시
       if (res && res.is_first_habit) {
         localStorage.setItem('gigi_show_first_habit_modal', 'true');

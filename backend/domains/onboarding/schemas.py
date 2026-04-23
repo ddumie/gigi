@@ -8,6 +8,12 @@ class PreferenceRequest(BaseModel):
     health_interests: list[str] | None = None
 
 
+class PreferenceResponse(BaseModel):
+    """온보딩 저장 선호도 조회"""
+    age_group: str | None = None
+    health_interests: list[str] | None = None
+
+
 class AIHabitItem(BaseModel):
     """AI추천습관 단일항목"""
     title: str = Field(..., min_length=1)
