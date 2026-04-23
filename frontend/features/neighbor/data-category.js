@@ -88,13 +88,12 @@ async function renderFeed(posts) {
     btn.type = 'button';
     btn.className = 'btn btn-outline btn-sm feed-support-toggle';
 
-    const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\. /g,'.').replace('.','') : '';
+    const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\.$/,'') : '';
     // 초기 지지 상태 로드
     const res = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
     })
     const data = res.ok ? await res.json() : null;
-    if (!data) continue;
     let is_supported = data.is_supported;
     btn.textContent = `🔥 지지 ${data.support_count}`;
     if (data.is_supported) btn.classList.replace('btn-outline', 'btn-primary');

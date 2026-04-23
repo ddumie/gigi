@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import models, schemas
 from backend.domains.neighbor.models import GroupSearchPost
@@ -442,6 +442,20 @@ async def get_recent_notifications(db: AsyncSession, user_id: int, limit: int = 
         .limit(limit)
     )
     return result.scalars().all()
+
+
+# 사용자의 안 읽은 알림 전부 읽음 처리
+async def mark_all_notifications_read(db: AsyncSession, user_id: int):
+    result = await db.execute(
+        update(models.Notification)
+        .where(
+            models.Notification.user_id == user_id,
+            models.Notification.is_read == False
+        )
+        .values(is_read=True)
+    )
+    await db.commit()
+    return result.rowcount or 0
 
 # 지지탭용 개인별 습관 리스트 가져오기
 async def get_personal_habits(db: AsyncSession, user_id: int):
