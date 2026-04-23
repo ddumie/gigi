@@ -121,7 +121,7 @@ def check_nickname(nickname: str = Query(...), db: Session = Depends(get_db)):
 # 비밀번호 변경
 # ──────────────────────────────────────────
 
-@router.put("/password", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/password")
 def change_password(
     data: PasswordChangeRequest,
     current_user: User = Depends(get_current_user),
@@ -132,4 +132,4 @@ def change_password(
         service.change_password(db, current_user, data)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    return None
+    return {"message": "비밀번호가 변경되었습니다."}
