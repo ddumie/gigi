@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (path.includes('step1-age')) {
     initStep1();
+  } else if (path.includes('step2-fontsize')) {
+    initStep2FontSize();
   } else if (path.includes('step2-interests')) {
     initStep2();
   } else if (path.includes('step3-ai')) {
@@ -21,9 +23,44 @@ function initStep1() {
     if (selected) {
       localStorage.setItem('gigi_age_group', selected.textContent.trim());
     }
-    window.location.href = PAGES.onboard2;
+    window.location.href = '/pages/onboarding/step2-fontsize.html';
   });
 }
+
+// Step2: 글씨 크기 선택
+function initStep2FontSize() {
+  // 칩 클릭 시 즉시 미리보기
+  document.querySelectorAll('[data-chip-select="font-size"]').forEach((chip) => {
+    const fresh = chip.cloneNode(true);
+    chip.replaceWith(fresh);
+    fresh.addEventListener('click', () => {
+      setFontScale(parseInt(fresh.dataset.fontStep));
+    });
+  });
+
+  const nextBtn = document.getElementById('btn-fontsize-next');
+  if (!nextBtn) return;
+
+  nextBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const selected = document.querySelector('[data-chip-select="font-size"].active');
+
+    if (selected) {
+      const label = selected.textContent.trim();
+      const stepIndex = parseInt(selected.dataset.fontStep);
+      setFontScale(stepIndex);
+
+      try {
+        await apiPost('/onboarding/preferences', { font_size: label });
+      } catch (_) {
+        // 저장 실패해도 다음 단계로 이동
+      }
+    }
+
+    window.location.href = '/pages/onboarding/step2-interests.html';
+  });
+}
+
 
 // Step2: 관심사 선택
 function initStep2() {

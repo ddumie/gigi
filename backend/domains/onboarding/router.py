@@ -14,7 +14,7 @@ router = APIRouter()
 async def save_preferences(request: PreferenceRequest, db: AsyncSession = Depends(get_async_db), current_user = Depends(get_current_user)):
     """나이대, 관심사 저장"""
     try:
-        await crud.save_preferences(db, current_user.id, request.age_group, request.health_interests)
+        await crud.save_preferences(db, current_user.id, request.age_group, request.health_interests, request.font_size)
     except ValueError:
         raise HTTPException(status_code=500, detail="선호도 저장 중 오류가 발생했습니다.")
     return {"message": "선호도가 저장되었습니다."}
@@ -27,7 +27,7 @@ async def get_preferences(db: AsyncSession = Depends(get_async_db), current_user
     pref = await crud.get_preferences(db, current_user.id)
     if pref is None:
         return PreferenceResponse()
-    return PreferenceResponse(age_group=pref.age_group, health_interests=pref.health_interests)
+    return PreferenceResponse(age_group=pref.age_group, health_interests=pref.health_interests, font_size=pref.font_size)
 
 
 # AI습관 추천(선호도 조회, 횟수체크)

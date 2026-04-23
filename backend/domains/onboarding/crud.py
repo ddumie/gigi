@@ -15,15 +15,17 @@ async def get_preferences(db: AsyncSession, user_id: int):
     return result.scalars().first()
 
 
-async def save_preferences(db: AsyncSession, user_id: int, age_group: str | None, health_interests: list[str] | None):
-    """나이대, 관심사 저장 또는 수정"""
+async def save_preferences(db: AsyncSession, user_id: int, age_group: str | None, health_interests: list[str] | None, font_size: str | None = None):
+    """나이대, 관심사, 글씨크기 저장 또는 수정"""
     try:
         db_pref = await get_preferences(db, user_id)
         if db_pref:
             db_pref.age_group = age_group
             db_pref.health_interests = health_interests
+            if font_size is not None:
+                db_pref.font_size = font_size
         else:
-            db_pref = UserPreference(user_id=user_id, age_group=age_group, health_interests=health_interests)
+            db_pref = UserPreference(user_id=user_id, age_group=age_group, health_interests=health_interests, font_size=font_size)
             db.add(db_pref)
         await db.commit()
         await db.refresh(db_pref)
