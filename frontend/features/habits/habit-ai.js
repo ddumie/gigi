@@ -110,7 +110,9 @@ async function getRecommendations() {
   } catch (err) {
     if (err.message === '온보딩을 먼저 완료해주세요.') {
       showToast('온보딩을 먼저 완료해주세요. 온보딩 페이지로 이동합니다.');
-      setTimeout(() => { window.location.href = PAGES.onboard1; }, 1500);
+      setTimeout(() => {
+        window.location.href = PAGES.onboard1 + '?returnTo=' + encodeURIComponent(window.location.pathname);
+      }, 1500);
       return;
     }
     showToast(err.message);
@@ -192,4 +194,10 @@ function renderResult(habits) {
 function showStep(step) {
   document.getElementById('step-interests').style.display = step === 'interests' ? '' : 'none';
   document.getElementById('step-result').style.display = step === 'result' ? '' : 'none';
+
+  if (step === 'interests') {
+    const btn = document.getElementById('btn-get-recommend');
+    btn.disabled = false;
+    btn.textContent = '나의 맞춤 습관 추천받기';
+  }
 }

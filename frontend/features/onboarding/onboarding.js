@@ -1,3 +1,12 @@
+function getReturnTo() {
+  return new URLSearchParams(window.location.search).get('returnTo') || '';
+}
+
+function withReturnTo(url) {
+  const returnTo = getReturnTo();
+  return returnTo ? url + '?returnTo=' + encodeURIComponent(returnTo) : url;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const path = window.location.pathname;
 
@@ -23,7 +32,7 @@ function initStep1() {
     if (selected) {
       localStorage.setItem('gigi_age_group', selected.textContent.trim());
     }
-    window.location.href = '/pages/onboarding/step2-fontsize.html';
+    window.location.href = withReturnTo('/pages/onboarding/step2-fontsize.html');
   });
 }
 
@@ -57,7 +66,7 @@ function initStep2FontSize() {
       }
     }
 
-    window.location.href = '/pages/onboarding/step2-interests.html';
+    window.location.href = withReturnTo('/pages/onboarding/step2-interests.html');
   });
 }
 
@@ -94,7 +103,7 @@ function initStep2() {
       const result = await apiPost('/onboarding/ai-recommend');
       if (!result) return; // 401 등으로 이미 리다이렉트된 경우
       localStorage.setItem('gigi_ai_habits', JSON.stringify(result)); //결과 저장
-      window.location.href = PAGES.onboard3;
+      window.location.href = withReturnTo(PAGES.onboard3);
     } catch (err) {
       showToast(err.message);
       recommendBtn.disabled = false;
@@ -184,7 +193,10 @@ function initStep3() {
       if (res && res.is_first_habit) {
         localStorage.setItem('gigi_show_first_habit_modal', 'true');
       }
-      window.location.href = PAGES.today;
+
+      const params = new URLSearchParams(window.location.search);
+      const returnTo = params.get('returnTo');
+      window.location.href = returnTo || PAGES.today;
     } catch (err) {
       showToast(err.message);
       submitBtn.disabled = false;
