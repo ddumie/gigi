@@ -128,6 +128,38 @@ body[data-section="support"] .page-header {
   font-weight: 600;
 }
 
+.member-last-activity {
+  font-size: 0.75rem;
+  color: var(--color-text-t); /* 연한 색상 */
+  margin-left: 0.5rem;
+}
+
+.activity-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;      /* last_activity와 동일 크기 */
+  font-weight: 500;
+  margin-left: 0.4rem;
+  color: var(--color-text);
+}
+
+/* 상태별 배경색 (나중에 원하는 색상으로 변경 가능) */
+.activity-badge.조용함 {
+  background-color: var(--color-amber-light);
+  color: #633806;
+}
+
+.activity-badge.활동-중 {
+  background-color: var(--color-success-light);
+  color: #0D6B4F;
+}
+
+.activity-badge.완료 {
+  background-color: var(--color-success-light);
+  color: #0D6B4F;
+}
+
 .member-progress {
   height: 0.5rem;
   background: var(--color-border-light);
