@@ -65,15 +65,32 @@ async function loadComments() {
     const content = document.createElement('p');
     content.style.marginTop = '0.25rem';
     content.textContent = c.content;
+    
+    const createdAt = document.createElement('span');
+    createdAt.className = 'meta-text';
+    createdAt.textContent = c.created_at
+      ? new Date(c.created_at).toLocaleDateString('ko-KR').replace(/\.$/, '')
+      : '';
 
-    card.append(nick, content);
+    card.append(nick, content, createdAt);
       // 내 댓글일 때만 수정 버튼 표시
 if (c.author_id === currentUserId) {
+  const editRow = document.createElement('div');
+  editRow.style.cssText = 'display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem;';
+
   const editBtn = document.createElement('button');
   editBtn.type = 'button';
   editBtn.className = 'btn btn-outline btn-sm';
   editBtn.textContent = '수정';
-  editBtn.style.marginTop = '0.5rem';
+  // 수정 날짜 표시
+  if (c.updated_at) {
+    const editedAt = document.createElement('span');
+    editedAt.className = 'meta-text';
+    editedAt.textContent = `(수정됨 ${new Date(c.updated_at).toLocaleDateString('ko-KR')})`;
+    editRow.append(editBtn, editedAt);
+  } else {
+    editRow.append(editBtn);
+  }  
 
   editBtn.addEventListener('click', () => {
     document.getElementById('comment-input').value = c.content;
@@ -108,7 +125,7 @@ if (c.author_id === currentUserId) {
     });
   });
 
-  card.appendChild(editBtn);
+  card.appendChild(editRow);  // editBtn 대신 editRow
 }
 
 

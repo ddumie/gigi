@@ -26,6 +26,8 @@ class GroupSearchResponse(BaseModel):
     habit_title: str
     frequency: str
     category: Optional[str] = None
+    updated_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
     author: PostAuthorResponse
     member_count: int = 0
 
@@ -82,6 +84,7 @@ class NeighborCommentResponse(BaseModel):
     author_nickname: Optional[str] = None
     content: str
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -101,25 +104,4 @@ class PostListResponse(BaseModel):
     created_at : datetime
     updated_at : Optional[datetime] = None
     is_finished : bool
-
-# 댓글 작성 요청 (안 쓰는 스키마)
-class CommentCreate(BaseModel):
-    content : str
-    parent_id : int
-
-# 댓글 응답(안쓰는 스키마)
-class CommentResponse(BaseModel):
-    id : int
-    content : str
-    is_soft_deleted : bool 
-    author_id : int 
-    post_id : int 
-    parent_id : int 
-    created_at : datetime
-# 좋아요 (안 쓰는 스키마)
-class support(BaseModel):
-    id : int
-    user_id : int
-    post_id : int
-    created_at : datetime
 
