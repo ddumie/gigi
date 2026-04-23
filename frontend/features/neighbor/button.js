@@ -7,6 +7,7 @@ const body = {
     description: document.getElementById('description').value,
     habit_title: document.getElementById('habit_title').value,
     frequency: document.getElementById('frequency').value,
+    category: document.getElementById('category').value || null,
 };
 // user_id 추후에 current_user.id로 교체
 const res = await fetch('/api/v1/neighbor/group-search', {
