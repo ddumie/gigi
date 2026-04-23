@@ -32,7 +32,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 다시 추천받기 버튼
   document.getElementById('btn-retry').addEventListener('click', retryRecommendation);
+
+  // 온보딩에서 저장한 관심사 자동 선택
+  loadSavedInterests();
 });
+
+
+async function loadSavedInterests() {
+  try {
+    const pref = await apiGet('/onboarding/preferences');
+    const saved = pref.health_interests || [];
+    if (!saved.length) return;
+
+    document.querySelectorAll('[data-chip-select="interest"]').forEach((chip) => {
+      if (saved.includes(chip.textContent.trim())) {
+        chip.classList.add('active');
+      }
+    });
+  } catch (_) {
+    // 저장한 관심사 조회 실패 시 칩은 비선택 상태로 유지(그냥 사용자가 선택하면됨)
+  }
+}
 
 
 // 직접 입력 관심사 추가
