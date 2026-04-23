@@ -13,6 +13,7 @@
   document.getElementById('description').value = post.description;
   document.getElementById('habit_title').value = post.habit_title;
   document.getElementById('frequency').value = post.frequency;
+  document.getElementById('category').value = post.category ?? '';
   document.getElementById('submit-btn').textContent = '수정 완료';
 
   document.getElementById('group-search-form').addEventListener('submit', async (e) => {
@@ -23,6 +24,7 @@
       description: document.getElementById('description').value,
       habit_title: document.getElementById('habit_title').value,
       frequency: document.getElementById('frequency').value,
+      category: document.getElementById('category').value || null,
     };
     try {
       await apiPut(`/neighbor/group-search/${postId}`, body);

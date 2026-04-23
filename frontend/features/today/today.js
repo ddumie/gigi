@@ -14,6 +14,8 @@ const $statStreak = document.getElementById('stat-streak');
 const $statBadge  = document.getElementById('stat-badge');
 const $calendar   = document.getElementById('mini-calendar');
 const $groupSum   = document.getElementById('group-summary');
+const $notifSection = document.getElementById('notification-section');
+const $notifList    = document.getElementById('notification-list');
 
 let currentHabits = [];
 let currentStats = null;
@@ -28,6 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
   initGreeting();
   initFirstLoginModal();
   loadDashboard();
+
+  // 습관 추가 버튼 - 온보딩 여부에 따라 분기
+  document.getElementById('btn-add-habit-today').addEventListener('click', () => {
+    const user = getCurrentUser();
+    if (user && user.is_first_login) {
+      window.location.href = PAGES.onboard1;
+    } else {
+      window.location.href = PAGES.habits;
+    }
+  });
 });
 
 
@@ -71,6 +83,44 @@ async function loadDashboard() {
   }
 
   await loadGroupSummary();
+  await loadNotifications();
+}
+
+
+// ── 받은 지지 알림 ──
+
+function formatRelativeTime(isoString) {
+  if (!isoString) return '';
+  const then = new Date(isoString);
+  const diffSec = Math.floor((Date.now() - then.getTime()) / 1000);
+  if (diffSec < 60) return '방금 전';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
+  return `${Math.floor(diffSec / 86400)}일 전`;
+}
+
+async function loadNotifications() {
+  if (!$notifSection || !$notifList) return;
+
+  try {
+    const data = await apiGet('/support/notifications/recent?limit=3');
+    const items = data.notifications || [];
+
+    if (items.length === 0) {
+      $notifSection.style.display = 'none';
+      return;
+    }
+
+    $notifSection.style.display = '';
+    $notifList.innerHTML = items.map(n => `
+      <div class="notification-item" style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;padding:0.5rem 0;border-top:1px solid var(--color-border, #eee);">
+        <span style="font-size:0.9rem;">${escapeHtml(n.content)}</span>
+        <span class="meta-text" style="font-size:0.75rem;white-space:nowrap;">${formatRelativeTime(n.created_at)}</span>
+      </div>
+    `).join('');
+  } catch (e) {
+    $notifSection.style.display = 'none';
+  }
 }
 
 
@@ -84,11 +134,9 @@ function renderChecklist(habits, stats) {
       <div style="text-align:center;padding:2rem 1rem;">
         <div style="font-size:1.5rem;margin-bottom:0.5rem;">🌱</div>
         <div style="font-size:0.9rem;font-weight:500;margin-bottom:0.4rem;">첫 습관을 추가해보세요</div>
-        <div style="font-size:0.8rem;color:var(--color-text-s);margin-bottom:1.2rem;line-height:1.7;">
+        <div style="font-size:0.8rem;color:var(--color-text-s);line-height:1.7;">
           건강한 습관 하나가<br>건강한 하루를 만들어요
         </div>
-        <a href="${PAGES.onboard1}" class="btn btn-ai btn-full" style="margin-bottom:0.4rem;">AI 습관 추천받기</a>
-        <a href="${PAGES.habits}" class="btn btn-outline btn-full btn-sm">직접 습관 추가하기</a>
       </div>`;
     return;
   }

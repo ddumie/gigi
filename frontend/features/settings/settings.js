@@ -1,12 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
   requireLogin();
 
-  // 닉네임 표시
+  // 프로필 표시
   const user = getCurrentUser();
   const nicknameEl = document.getElementById('settings-nickname');
   if (nicknameEl && user) {
     nicknameEl.textContent = user.nickname;
   }
+
+  // 나이대 드롭다운 — localStorage에서 불러와 초기값 세팅
+  const ageSelect = document.getElementById('settings-age-group');
+  if (ageSelect) {
+    const saved = localStorage.getItem('gigi_age_group') || '';
+    ageSelect.value = saved;
+    ageSelect.addEventListener('change', () => {
+      localStorage.setItem('gigi_age_group', ageSelect.value);
+    });
+  }
+
 
   // 비밀번호 변경 폼 토글
   const changeBtn  = document.getElementById('password-change-btn');

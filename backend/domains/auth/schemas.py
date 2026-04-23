@@ -135,6 +135,8 @@ class UserResponse(BaseModel):
     name: str
     profile_image: Optional[str] = None
     is_first_login: bool
+    age_group: Optional[str] = None
+    health_interests: Optional[list[str]] = None
 
 class TokenResponse(BaseModel):
     """

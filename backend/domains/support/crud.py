@@ -432,6 +432,17 @@ async def get_unread_notification_count(db: AsyncSession, user_id: int):
     )
     return result.scalar()
 
+
+# 최근 알림 리스트 가져오기
+async def get_recent_notifications(db: AsyncSession, user_id: int, limit: int = 3):
+    result = await db.execute(
+        select(models.Notification)
+        .where(models.Notification.user_id == user_id)
+        .order_by(models.Notification.created_at.desc())
+        .limit(limit)
+    )
+    return result.scalars().all()
+
 # 지지탭용 개인별 습관 리스트 가져오기
 async def get_personal_habits(db: AsyncSession, user_id: int):
     today = date.today()
