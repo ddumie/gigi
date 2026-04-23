@@ -1,12 +1,12 @@
 from datetime import date, datetime, timedelta
-from sqlalchemy import desc, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import models, schemas
 from backend.domains.neighbor.models import GroupSearchPost
 from backend.domains.auth.models import User
 from backend.domains.habits.models import Habit, HabitCheck
 from backend.domains.habits.crud import create_group_habit
-import anyio, secrets, string
+import secrets, string
 
 # 초대코드 생성
 def generate_invitecode(length=4):
@@ -79,7 +79,7 @@ async def get_group_members(db: AsyncSession, group_id: int, limit: int, offset:
     return result.mappings().all()
 
 # 멤버 달성률
-async def get_members_info(db: AsyncSession, members: list[models.GroupMember]):
+async def get_members_achievement(db: AsyncSession, members: list[models.GroupMember]):
     complete_rates = {}
 
     target_date = date.today()
@@ -446,3 +446,17 @@ async def get_personal_habits(db: AsyncSession, user_id: int):
         .where(Habit.user_id == user_id , Habit.is_active == True, Habit.is_hidden_from_group == False)
     )
     return result.mappings().all()
+
+# 맴버별 마지막 활동 기록
+async def get_members_last_activity(db: AsyncSession, members: list[models.GroupMember]):
+    user_ids = [m.user_id for m in members]
+
+    result = await db.execute(
+        select(Habit.user_id, func.max(HabitCheck.created_at).label("last_checked"))
+        .join(Habit, Habit.id == HabitCheck.habit_id)
+        .where(Habit.user_id.in_(user_ids))
+        .group_by(Habit.user_id)
+    )
+
+    rows = result.mappings().all()
+    return {row["user_id"]: row["last_checked"] for row in rows}

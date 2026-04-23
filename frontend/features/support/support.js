@@ -158,7 +158,7 @@ async function loadGroups() {
           <div class="stat-row">
             <span class="stat-icon">${level.icon}</span>
             <div>
-              <div class="stat-main" data-stat="exp">${level.icon} ${level.name} · 경험치 ${group.exp}회</div>
+              <div class="stat-main" data-stat="exp">${level.name} 단계 · ${group.exp}회</div>
               <div class="stat-sub">
                 ${level.next !== null ? `다음 레벨까지 ${level.next}회 남음` : "최대 레벨입니다."}
               </div>
@@ -169,7 +169,7 @@ async function loadGroups() {
           <div class="stat-row">
             <span class="stat-icon">🔥</span>
             <div>
-              <div class="stat-main" data-stat="streak">연속 지지 스트릭 · ${group.streak}일</div>
+              <div class="stat-main" data-stat="streak">연속 지지 일수 · ${group.streak}일</div>
               <div class="stat-sub" data-stat="max-streak">최고 기록 ${group.max_streak}일</div>
             </div>
           </div>

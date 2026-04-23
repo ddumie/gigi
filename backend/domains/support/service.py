@@ -67,9 +67,13 @@ async def groups_info_service(
                     member_nicknames[my_member.user_id] = user.nickname
 
         # 달성률 계산
-        complete_rates = await crud.get_members_info(db, members)
+        achievement_rates = await crud.get_members_achievement(db, members)
 
-        # streak 갱신
+        # 맴버별 마지막 습관 체크일 호출
+        last_activity = await crud.get_members_last_activity(db, members)
+
+        # streak 갱신 TODO 지금 사용자 ID 기준으로 불러오고 있는데 사용자 지지 체크랑 별도로 그룹 내에서 조회 해야 할듯
+        # 오늘 내 지지 기록 -> 없으면 오늘 그룹 기록 -> 없으면 어제 그룹 기록 -> 없으면 0으로 초기화
         supports_today = await crud.check_group_support(db, gid, user_id)
         if not supports_today and row["support_streak"]:
             supports_yesterday = await crud.check_group_support_yesterday(db, gid, user_id)
@@ -93,8 +97,9 @@ async def groups_info_service(
                 {
                     "user_id": m.user_id,
                     "nickname": member_nicknames.get(m.user_id),
-                    "complete_rate": complete_rates.get(m.user_id),
-                    "supported_today": supported_map.get(m.user_id, False)
+                    "complete_rate": achievement_rates.get(m.user_id),
+                    "supported_today": supported_map.get(m.user_id, False),
+                    "last_activity": last_activity.get(m.user_id)
                 }
                 for m in members
             ]

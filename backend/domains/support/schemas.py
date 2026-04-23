@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from datetime import datetime
 
 # 그룹 정보 요청 (초대코드)
 class GroupSummary(BaseModel):
@@ -27,6 +28,7 @@ class MemberInfo(BaseModel):
     nickname: Optional[str]
     complete_rate: Optional[float]
     supported_today: bool
+    last_activity: Optional[datetime]
 
 class GroupInfo(BaseModel):
     id: int
