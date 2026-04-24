@@ -72,13 +72,14 @@ async def groups_info_service(
         # 맴버별 마지막 습관 체크일 호출
         last_activity = await crud.get_members_last_activity(db, members)
 
-        # streak 갱신 TODO 지금 사용자 ID 기준으로 불러오고 있는데 사용자 지지 체크랑 별도로 그룹 내에서 조회 해야 할듯
         # 오늘 내 지지 기록 -> 없으면 오늘 그룹 기록 -> 없으면 어제 그룹 기록 -> 없으면 0으로 초기화
-        supports_today = await crud.check_group_support(db, gid, user_id)
+        supports_today = await crud.check_my_support(db, gid, user_id)
         if not supports_today and row["support_streak"]:
-            supports_yesterday = await crud.check_group_support_yesterday(db, gid, user_id)
-            if not supports_yesterday:
-                await crud.reset_group_streak(db, gid)
+            group_supports_today = await crud.check_group_support(db, gid)
+            if not group_supports_today:
+                supports_yesterday = await crud.check_group_support_yesterday(db, gid)
+                if not supports_yesterday:
+                    await crud.reset_group_streak(db, gid)
 
         supported_map = {s.to_user_id: True for s in supports_today}
 
