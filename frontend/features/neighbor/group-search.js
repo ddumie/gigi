@@ -31,6 +31,18 @@ const list = document.getElementById('group-search-list');
     const categoryLabel = p.category ? ` · #${p.category}` : '';
     meta.textContent = `${p.group_type}${categoryLabel} · 함께할 습관: ${p.habit_title} · ${p.frequency}`;
 
+    const createdEl = document.createElement('p');
+    createdEl.className = 'meta-text';
+    createdEl.style.marginTop = '0.25rem';
+    createdEl.textContent = `등록 · ${new Date(p.created_at).toLocaleDateString('ko-KR')}`;
+    
+    let updatedEl = null;
+    if (p.updated_at) {
+      updatedEl = document.createElement('p');
+      updatedEl.className = 'meta-text';
+      updatedEl.style.marginTop = '0.25rem';
+      updatedEl.textContent = `수정됨 · ${new Date(p.updated_at).toLocaleDateString('ko-KR')}`;
+    }
     const desc = document.createElement('p');
     desc.style.marginTop = '0.5rem';
     desc.textContent = p.description ?? '';
@@ -54,7 +66,7 @@ const list = document.getElementById('group-search-list');
     }
 
     actions.appendChild(link);
-    article.append(title, authorEl, meta, desc, actions);
+    article.append(title, authorEl, meta, createdEl, ...(updatedEl ? [updatedEl] : []), desc, actions);
     list.appendChild(article);
   });
 })();

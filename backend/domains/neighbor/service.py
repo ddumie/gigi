@@ -40,9 +40,11 @@ async def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: A
 async def get_group_search_logic(db: AsyncSession):
     result = []
     rows = await get_group_search(db=db)
-    for group_search, user, member_count in rows:
+    for group_search, post, user, member_count in rows:
         group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         group_search.member_count = member_count
+        group_search.updated_at = post.updated_at
+        group_search.created_at = post.created_at
         result.append(group_search)
     
     return result
@@ -131,6 +133,7 @@ async def get_feed_comments_logic(post_id: int, db: AsyncSession):
             "author_nickname": user.nickname,
             "content": comment.content,
             "created_at": comment.created_at,
+            "updated_at": comment.updated_at,
         })
     return result
 

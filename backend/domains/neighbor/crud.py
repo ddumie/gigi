@@ -1,4 +1,5 @@
 # TODO: DB CRUD 작성 (담당: 이영진)
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Comment, PostSupport
@@ -41,7 +42,7 @@ async def create_group_search(post_id: int, post: GroupSearchCreate, db: AsyncSe
 # 글쓰기 내용 읽어오기
 async def get_group_search(db: AsyncSession) -> list[tuple[GroupSearchPost, User]]:
     result = await db.execute(
-        select(GroupSearchPost, User, func.count(GroupMember.id).label('member_count'))
+        select(GroupSearchPost, Post, User, func.count(GroupMember.id).label('member_count'))
         .join(Post, GroupSearchPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .outerjoin(Group, Group.post_id == Post.id)
@@ -68,6 +69,7 @@ async def update_group_search(post_id: int, user_id: int, post: GroupSearchCreat
     db_group_search.habit_title = post.habit_title
     db_group_search.frequency = post.frequency
     db_group_search.category = post.category
+    db_post.updated_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(db_group_search)
     return db_group_search

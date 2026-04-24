@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>지지 GIGI - 온보딩 1단계</title>
+  <title>지지 GIGI - 온보딩 2단계</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/styles/common.css">
@@ -15,20 +15,21 @@
   <main>
     <div class="container auth-shell">
       <section class="card auth-card">
+        <a href="/pages/onboarding/step1-age.html" class="btn btn-outline btn-sm" style="align-self:flex-start;margin-bottom:0.5rem;">← 뒤로</a>
         <div class="page-header">
-          <div class="section-eyebrow">Onboarding 1</div>
-          <h1 class="section-title">본인의 나이를 선택해주세요.</h1>
-          <p class="section-copy">나이대를 입력하면 더 정확한 맞춤 습관 추천을 받을 수 있어요.</p>
+          <div class="section-eyebrow">Onboarding 2</div>
+          <h1 class="section-title">어떤 글씨 크기가 편하세요?</h1>
+          <p class="section-copy">글씨 크기를 눌러보며 원하는 크기를 선택해보세요.</p>
         </div>
         <div class="selection-grid">
-          <button class="chip" data-chip-select="age-group">40대 이하</button>
-          <button class="chip" data-chip-select="age-group">50대</button>
-          <button class="chip" data-chip-select="age-group">60대</button>
-          <button class="chip" data-chip-select="age-group">70대 이상</button>
+          <button class="chip" data-chip-select="font-size" data-font-step="2" style="font-size:0.9rem;">보통</button>
+          <button class="chip" data-chip-select="font-size" data-font-step="4" style="font-size:1.1rem;">큼</button>
+          <button class="chip" data-chip-select="font-size" data-font-step="6" style="font-size:1.3rem;">아주큼</button>
         </div>
+
         <div class="page-actions">
-          <a href="/pages/onboarding/step2-fontsize.html" class="btn btn-ai btn-full">다음으로</a>
-          <a href="/pages/onboarding/step2-fontsize.html" class="btn btn-outline btn-full">건너뛰기</a>
+          <button id="btn-fontsize-next" class="btn btn-ai btn-full">다음으로</button>
+          <a href="/pages/onboarding/step2-interests.html" class="btn btn-outline btn-full">건너뛰기</a>
         </div>
       </section>
     </div>
