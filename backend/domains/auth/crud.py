@@ -27,10 +27,14 @@ def create_user(db: Session, email: str, password_hash: str, nickname: str, name
         name=name,
         profile_image=profile_image,
     )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+    except Exception:
+        db.rollback()
+        raise
 
 
 def update_profile(
@@ -64,14 +68,22 @@ def update_profile(
     if not updated:
         return user
 
-    db.commit()
-    db.refresh(user)
-    return user
+    try:
+        db.commit()
+        db.refresh(user)
+        return user
+    except Exception:
+        db.rollback()
+        raise
 
 
 def update_password(db: Session, user: User, new_password_hash: str) -> User:
     """비밀번호 변경"""
     user.password_hash = new_password_hash
-    db.commit()
-    db.refresh(user)
-    return user
+    try:
+        db.commit()
+        db.refresh(user)
+        return user
+    except Exception:
+        db.rollback()
+        raise
