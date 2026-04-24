@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 from sqlalchemy import func, select, update
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import models, schemas
 from backend.domains.neighbor.models import GroupSearchPost
@@ -25,38 +26,43 @@ async def create_unique_invitecode(db: AsyncSession, prefix="GIGI-", length=4, m
 
 # 그룹 생성
 async def create_group(db: AsyncSession, group: schemas.GroupCreate, user_id: int):
-    db_group = models.Group(
-        name=group.name,
-        group_type=group.group_type,
-        total_support_count=0,
-        support_streak=0
-    )
-    db.add(db_group)
-    await db.commit()
-    await db.refresh(db_group)
+    try:
+        db_group = models.Group(
+            name=group.name,
+            group_type=group.group_type,
+            total_support_count=0,
+            support_streak=0
+        )
+        db.add(db_group)
 
-    db_group_profile = models.GroupProfile(
-        group_id=db_group.id,
-        user_id=user_id,
-        name=group.name,
-        group_type=group.group_type
-    )
-    db.add(db_group_profile)
-    await db.commit()
-    await db.refresh(db_group_profile)
+        db_group_profile = models.GroupProfile(
+            group_id=db_group.id,
+            user_id=user_id,
+            name=group.name,
+            group_type=group.group_type
+        )
+        db.add(db_group_profile)
 
-    code = await create_unique_invitecode(db)
-    invite = models.InviteCode(
-        code=code,
-        group_id=db_group.id,
-        created_by=user_id,
-        is_active=True
-    )
-    db.add(invite)
-    await db.commit()
-    await db.refresh(invite)
+        code = await create_unique_invitecode(db)
+        invite = models.InviteCode(
+            code=code,
+            group_id=db_group.id,
+            created_by=user_id,
+            is_active=True
+        )
+        db.add(invite)
 
-    return db_group
+        await db.commit()
+        await db.refresh(db_group)
+        await db.refresh(db_group_profile)
+        await db.refresh(invite)
+
+        return db_group
+    
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
+
 
 # 나만 호출하기
 async def get_me(db: AsyncSession, group_id: int, user_id: int):
@@ -168,122 +174,151 @@ async def get_group_id_by_code(db: AsyncSession, invite_code: str):
 async def get_or_create_group_id_by_post(db: AsyncSession, post_id: int, user_id: int):
     result = await db.execute(select(models.Group).where(models.Group.post_id == post_id))
     group = result.scalars().first()
-    if not group:
-        result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == post_id))
-        post_info = result.scalars().first()
-        if not post_info:
-            return None
 
-        group_setting = schemas.GroupCreate(
-            name=post_info.title,
-            group_type=post_info.group_type,
-        )
-        group = await create_group(db, group_setting, user_id)
-        group.post_id = post_id
-        await db.commit()
-        await db.refresh(group)
+    if not group:
+        try:
+            result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == post_id))
+            post_info = result.scalars().first()
+            if not post_info:
+                return None
+
+            group_setting = schemas.GroupCreate(
+                name=post_info.title,
+                group_type=post_info.group_type,
+            )
+            group = await create_group(db, group_setting, user_id)
+            group.post_id = post_id
+
+            await db.commit()
+            await db.refresh(group)
+        
+        except SQLAlchemyError as e:
+            await db.rollback()
+            raise e
 
     return group.id
 
 
 # 모임 참가
 async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
-    new_member = models.GroupMember(group_id=group_id, user_id=user_id)
-    db.add(new_member)
-    await db.commit()
-    await db.refresh(new_member)
+    try:
+        new_member = models.GroupMember(group_id=group_id, user_id=user_id)
+        db.add(new_member)
 
-    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
-    group = result.scalars().first()
-    if group and group.post_id:
-        result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == group.post_id))
-        post_info = result.scalars().first()
-        result = await db.execute(select(GroupSearchPost.category).where(GroupSearchPost.post_id == group.post_id))
-        post_category = result.scalar()
+        result = await db.execute(select(models.Group).where(models.Group.id == group_id))
+        group = result.scalars().first()
 
-        if post_info and post_category:
-            await create_group_habit(
-                db=db,
-                user_id=user_id,
-                group_id=group_id,
-                title=post_info.habit_title,
-                category=post_category,
-                repeat_type=post_info.frequency
-            )
-    return new_member
+        # 그룹에 post 엮여있으면 습관 생성
+        if group and group.post_id:
+            result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == group.post_id))
+            post_info = result.scalars().first()
+            result = await db.execute(select(GroupSearchPost.category).where(GroupSearchPost.post_id == group.post_id))
+            post_category = result.scalar()
+
+            if post_info and post_category:
+                await create_group_habit(
+                    db=db,
+                    user_id=user_id,
+                    group_id=group_id,
+                    title=post_info.habit_title,
+                    category=post_category,
+                    repeat_type=post_info.frequency
+                )
+        await db.commit()
+        await db.refresh(new_member)
+        return new_member
+    
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
 
 
 # 모임 탈퇴
 async def remove_group_member(db: AsyncSession, group_id: int, user_id: int):
-    result = await db.execute(select(Habit).where(Habit.group_id == group_id, Habit.user_id == user_id))
-    group_habits = result.scalars().all()
-    for habit in group_habits:
-        await db.delete(habit)
+    try:
+        result = await db.execute(select(Habit).where(Habit.group_id == group_id, Habit.user_id == user_id))
+        group_habits = result.scalars().all()
+        for habit in group_habits:
+            await db.delete(habit)
 
-    result = await db.execute(
-        select(models.GroupMember).where(models.GroupMember.group_id == group_id,
-                                          models.GroupMember.user_id == user_id)
-    )
-    member = result.scalars().first()
-    if not member:
-        return None
-    await db.delete(member)
-    await db.commit()
-    return True
-
+        result = await db.execute(
+            select(models.GroupMember).where(models.GroupMember.group_id == group_id,
+                                            models.GroupMember.user_id == user_id)
+        )
+        member = result.scalars().first()
+        if not member:
+            return None
+        
+        await db.delete(member)
+        await db.commit()
+        return True
+    
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
 
 # 모임 정보 수정
 async def update_group_profile(db: AsyncSession, group_id: int, user_id: int, group: schemas.GroupCreate):
-    result = await db.execute(
-        select(models.GroupProfile).where(models.GroupProfile.group_id == group_id,
-                                           models.GroupProfile.user_id == user_id)
-    )
-    groupprofile = result.scalars().first()
-    if not groupprofile:
-        return None
+    try:
+        result = await db.execute(
+            select(models.GroupProfile).where(models.GroupProfile.group_id == group_id,
+                                            models.GroupProfile.user_id == user_id)
+        )
+        groupprofile = result.scalars().first()
+        if not groupprofile:
+            return None
 
-    groupprofile.name = group.name
-    groupprofile.group_type = group.group_type
-    await db.commit()
-    await db.refresh(groupprofile)
-    return groupprofile
+        groupprofile.name = group.name
+        groupprofile.group_type = group.group_type
 
+        await db.commit()
+        await db.refresh(groupprofile)
+        return groupprofile
+    
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
+    
 # 지지하기 생성
 async def create_support(db: AsyncSession, group_id: int, from_user_id: int, to_user_id: int):
-    support = models.Support(
-        group_id=group_id,
-        from_user_id=from_user_id,
-        to_user_id=to_user_id
-    )
-    db.add(support)
-
-    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
-    group = result.scalars().first()
-    if group:
-        today = datetime.now().date()
-
-        result = await db.execute(
-            select(models.Support)
-            .where(models.Support.group_id == group_id)
-            .order_by(models.Support.created_at.desc())
+    try:
+        support = models.Support(
+            group_id=group_id,
+            from_user_id=from_user_id,
+            to_user_id=to_user_id
         )
-        last_support = result.scalars().first()
+        db.add(support)
 
-        if last_support and last_support.created_at.date() == today - timedelta(days=1):
-            group.support_streak += 1
-        else:
-            group.support_streak = 1
+        result = await db.execute(select(models.Group).where(models.Group.id == group_id))
+        group = result.scalars().first()
+        if group:
+            today = datetime.now().date()
 
-        if group.support_streak > group.max_streak:
-            group.max_streak = group.support_streak
+            result = await db.execute(
+                select(models.Support)
+                .where(models.Support.group_id == group_id)
+                .order_by(models.Support.created_at.desc())
+            )
+            last_support = result.scalars().first()
 
-        group.total_support_count += 1
+            if last_support and last_support.created_at.date() == today - timedelta(days=1):
+                group.support_streak += 1
+            else:
+                group.support_streak = 1
 
-    await db.commit()
-    await db.refresh(support)
-    await db.refresh(group)
-    return support
+            if group.support_streak > group.max_streak:
+                group.max_streak = group.support_streak
 
+            group.total_support_count += 1
+
+        await db.commit()
+        await db.refresh(support)
+        await db.refresh(group)
+        return support
+    
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
 
 # 오늘 이미 지지했는지 확인
 async def check_support_exists(db: AsyncSession, group_id: int, from_user_id: int, to_user_id: int):
@@ -301,12 +336,17 @@ async def check_support_exists(db: AsyncSession, group_id: int, from_user_id: in
 
 # 알림 생성
 async def create_notification(db: AsyncSession, user_id: int, type: str, content: str):
-    notification = models.Notification(user_id=user_id, type=type, content=content)
-    db.add(notification)
-    await db.commit()
-    await db.refresh(notification)
-    return notification
+    try:
+        notification = models.Notification(user_id=user_id, type=type, content=content)
+        db.add(notification)
 
+        await db.commit()
+        await db.refresh(notification)
+        return notification
+    
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
 
 # 초대코드로 그룹 정보 가져오기
 async def get_group_summary(db: AsyncSession, invite_code: str, limit: int = 10, offset: int = 0):
@@ -377,8 +417,8 @@ async def get_group_member(db: AsyncSession, group_id: int, user_id: int):
     return result.scalars().first()
 
 
-# 당일 그룹 지지 리스트 반환
-async def check_group_support(db: AsyncSession, group_id: int, from_user_id: int):
+# 당일 내가 그룹에 지지한 리스트 반환
+async def check_my_support(db: AsyncSession, group_id: int, from_user_id: int):
     today = date.today()
     result = await db.execute(
         select(models.Support).where(
@@ -389,15 +429,24 @@ async def check_group_support(db: AsyncSession, group_id: int, from_user_id: int
     )
     return result.scalars().all()
 
+# 당일 그룹 내 지지 리스트 반환
+async def check_group_support(db: AsyncSession, group_id: int):
+    today = date.today()
+    result = await db.execute(
+        select(models.Support).where(
+            models.Support.group_id == group_id,
+            models.Support.created_at >= today
+        )
+    )
+    return result.scalars().all()
 
 # 전일 그룹 지지 리스트 반환
-async def check_group_support_yesterday(db: AsyncSession, group_id: int, from_user_id: int):
+async def check_group_support_yesterday(db: AsyncSession, group_id: int):
     today = date.today()
     yesterday = today - timedelta(days=1)
     result = await db.execute(
         select(models.Support).where(
             models.Support.group_id == group_id,
-            models.Support.from_user_id == from_user_id,
             models.Support.created_at >= yesterday,
             models.Support.created_at < today
         )
@@ -407,14 +456,18 @@ async def check_group_support_yesterday(db: AsyncSession, group_id: int, from_us
 
 # 스트릭 초기화
 async def reset_group_streak(db: AsyncSession, group_id: int):
-    result = await db.execute(select(models.Group).where(models.Group.id == group_id))
-    group = result.scalars().first()
-    if group:
-        group.support_streak = 0
-        await db.commit()
-        await db.refresh(group)
-    return group
+    try:
+        result = await db.execute(select(models.Group).where(models.Group.id == group_id))
+        group = result.scalars().first()
+        if group:
+            group.support_streak = 0
+            await db.commit()
+            await db.refresh(group)
+        return group
 
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
 
 # 특정 유저 조회
 async def get_user_by_id(db: AsyncSession, user_id: int):
@@ -446,16 +499,22 @@ async def get_recent_notifications(db: AsyncSession, user_id: int, limit: int = 
 
 # 사용자의 안 읽은 알림 전부 읽음 처리
 async def mark_all_notifications_read(db: AsyncSession, user_id: int):
-    result = await db.execute(
-        update(models.Notification)
-        .where(
-            models.Notification.user_id == user_id,
-            models.Notification.is_read == False
+    try:
+        result = await db.execute(
+            update(models.Notification)
+            .where(
+                models.Notification.user_id == user_id,
+                models.Notification.is_read == False
+            )
+            .values(is_read=True)
         )
-        .values(is_read=True)
-    )
-    await db.commit()
-    return result.rowcount or 0
+
+        await db.commit()
+        return result.rowcount or 0
+    
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise e
 
 # 지지탭용 개인별 습관 리스트 가져오기
 async def get_personal_habits(db: AsyncSession, user_id: int):
