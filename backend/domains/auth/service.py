@@ -56,7 +56,7 @@ def get_current_user(token: str, db: Session) -> User:
         user_id = int(payload["sub"])
     except jwt.ExpiredSignatureError:
         raise ValueError("토큰이 만료되었습니다")
-    except jwt.InvalidTokenError:
+    except (jwt.InvalidTokenError, KeyError, ValueError, TypeError):
         raise ValueError("유효하지 않은 토큰입니다")
 
     user = crud.get_user_by_id(db, user_id)
