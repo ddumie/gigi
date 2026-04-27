@@ -94,6 +94,7 @@ def deactivate_user(db: Session, user: User) -> None:
     user.is_active = False
     try:
         db.commit()
+        db.refresh(user)
     except Exception:
         db.rollback()
         raise
