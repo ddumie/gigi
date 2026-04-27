@@ -14,6 +14,7 @@ const PAGES = {
   onboard1:  '/pages/onboarding/step1-age.html',
   onboard2:  '/pages/onboarding/step2-interests.html',
   onboard3:  '/pages/onboarding/step3-ai.html',
+  home:      '/pages/home/index.html',
   today:     '/pages/today/index.html',
   habits:    '/pages/habits/index.html',
   support:   '/pages/support/index.html',
@@ -154,6 +155,7 @@ function initGnb() {
   header.innerHTML = `
     <div class="gnb-logo">지지</div>
     <nav class="gnb-nav">
+      ${nav('home',     'home',     '홈')}
       ${nav('today',    'today',    '오늘')}
       ${nav('habits',   'habits',   '습관')}
       ${nav('support',  'support',  '지지')}

@@ -1,0 +1,73 @@
+/* ============================================================
+   홈 탭 스타일
+   ============================================================ */
+
+.home-list {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-list .empty-state {
+  padding: 1.25rem 0.5rem;
+  text-align: center;
+  color: var(--color-text-s);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.home-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--color-border, #eee);
+}
+
+.home-item:first-child {
+  border-top: none;
+}
+
+.home-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-item-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.15rem;
+  word-break: break-word;
+}
+
+.home-item-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-s);
+}
+
+.home-item-actions {
+  flex-shrink: 0;
+}
+
+.home-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--color-border, #eee);
+  font-size: 0.9rem;
+}
+
+.home-summary-row:first-child {
+  border-top: none;
+}
+
+.home-summary-row strong {
+  font-weight: 500;
+}
+
+.home-summary-row .home-summary-value {
+  font-weight: 700;
+  color: var(--color-primary, #2563eb);
+}
