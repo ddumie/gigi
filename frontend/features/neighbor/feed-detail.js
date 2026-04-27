@@ -82,14 +82,33 @@ if (c.author_id === currentUserId) {
   editBtn.type = 'button';
   editBtn.className = 'btn btn-outline btn-sm';
   editBtn.textContent = '수정';
+  // 삭제 버튼
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'btn btn-outline btn-sm';
+  deleteBtn.textContent = '삭제';
+  // 댓글 삭제 버튼 구현
+  deleteBtn.addEventListener('click', async () => {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return;
+  const r = await fetch(`/api/v1/neighbor/feed/${postId}/comments/${c.id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` },
+  });
+  if (r.ok) {
+    await loadComments();
+  } else {
+    alert('삭제에 실패했습니다.');
+  }
+});
+
   // 수정 날짜 표시
   if (c.updated_at) {
     const editedAt = document.createElement('span');
     editedAt.className = 'meta-text';
     editedAt.textContent = `(수정됨 ${new Date(c.updated_at).toLocaleDateString('ko-KR')})`;
-    editRow.append(editBtn, editedAt);
+    editRow.append(editBtn, editedAt, deleteBtn);
   } else {
-    editRow.append(editBtn);
+    editRow.append(editBtn, deleteBtn);
   }  
 
   editBtn.addEventListener('click', () => {

@@ -8,6 +8,14 @@ function formatTimeAgo(date) {
 }
 
 let allPosts = [];  // 전체 피드 캐시
+function getCurrentUserId() {
+  const token = localStorage.getItem('gigi_token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return parseInt(payload.sub, 10);
+  } catch { return null; }
+}
 
 // 피드 카드 렌더링
 async function renderFeed(posts) {
@@ -117,7 +125,22 @@ async function renderFeed(posts) {
     const commentBtn = document.createElement('button');
     commentBtn.type = 'button';
     commentBtn.className = 'btn btn-outline btn-sm';
-    commentBtn.textContent = '댓글';
+    commentBtn.textContent = `💬 댓글 ${p.comment_count ?? 0}`;
+    
+    const currentUserId = getCurrentUserId();
+    if (currentUserId) {
+      const commentsRes = await fetch(`/api/v1/neighbor/feed/${p.post_id}/comments`);
+      if (commentsRes.ok) {
+        const comments = await commentsRes.json();
+        const today = new Date().toLocaleDateString('ko-KR');
+        const hasMyCommentToday = comments
+          .filter(c => c.author_id === currentUserId)
+          .some(c => c.created_at && new Date(c.created_at).toLocaleDateString('ko-KR') === today);
+        if (hasMyCommentToday) {
+          commentBtn.classList.replace('btn-outline', 'btn-primary');
+        }
+      }
+    }
     commentBtn.addEventListener('click', () => {
     location.href = `/pages/neighbor/feed-detail.html?post_id=${p.post_id}`;
     });

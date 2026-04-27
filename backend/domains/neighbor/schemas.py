@@ -44,6 +44,7 @@ class FeedPostResponse(BaseModel):
     habit_description: Optional[str] = None
     author: Optional[PostAuthorResponse] = None
     created_at: Optional[datetime] = None
+    comment_count: int = 0
 
     class Config:
         from_attributes = True
