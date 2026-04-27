@@ -114,7 +114,7 @@ async def recommend_habits_and_count(db: AsyncSession, user_id: int, age_group: 
     """AI 습관추천 + 추천 횟수(카운트) 증가를 하나로 처리 : AI호출 성공시에만 카운트 증가"""
     habits = await get_ai_recommendations(age_group, health_interests)  # AI 호출
     try:
-        updated_pref = await crud.incre_recommend_count(db, user_id)  # 카운트 증가
+        updated_pref = await crud.increment_recommend_count(db, user_id)  # 카운트 증가
     except ValueError:  # 카운트 증가 실패하면 ValueError로 라우터에서 502에러
         raise ValueError("추천 횟수 업데이트 중 오류가 발생했습니다.")
     if updated_pref is None:
