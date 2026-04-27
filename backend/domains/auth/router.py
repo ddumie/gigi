@@ -3,7 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
-from backend.domains.auth import service
+from backend.domains.auth import crud, service
 from backend.domains.auth.models import User
 from backend.domains.auth.schemas import (
     RegisterRequest,
@@ -133,3 +133,20 @@ def change_password(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     return {"message": "비밀번호가 변경되었습니다."}
+
+
+# ──────────────────────────────────────────
+# 회원탈퇴
+# ──────────────────────────────────────────
+
+@router.delete("/me", status_code=status.HTTP_200_OK)
+def delete_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """회원탈퇴 (소프트 삭제 — is_active = False)"""
+    try:
+        crud.deactivate_user(db, current_user)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="회원탈퇴 처리 중 오류가 발생했습니다.")
+    return {"message": "회원탈퇴가 완료되었습니다."}
