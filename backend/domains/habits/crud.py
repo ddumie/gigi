@@ -1,8 +1,12 @@
+import logging
 from datetime import date, timedelta
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.habits.models import Habit, HabitCheck
 from backend.domains.habits.schemas import HabitCreate, HabitUpdate
+
+
+logger = logging.getLogger(__name__)
 
 
 # ── Habit ──
@@ -37,11 +41,16 @@ async def get_habits(db: AsyncSession, user_id: int, category: str | None = None
 
 
 async def create_habit(db: AsyncSession, user_id: int, habit_in: HabitCreate) -> Habit:
-    habit = Habit(user_id=user_id, **habit_in.model_dump())
-    db.add(habit)
-    await db.commit()
-    await db.refresh(habit)
-    return habit
+    try:
+        habit = Habit(user_id=user_id, **habit_in.model_dump())
+        db.add(habit)
+        await db.commit()
+        await db.refresh(habit)
+        return habit
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"습관 생성 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("습관 생성 중 오류가 발생했습니다.")
 
 
 async def create_group_habit(
@@ -53,40 +62,60 @@ async def create_group_habit(
     repeat_type: str,
 ) -> Habit:
     """모임 참여 시 그룹 습관을 자동으로 생성한다 (Flow A/B 공통)."""
-    habit = Habit(
-        user_id     = user_id,
-        group_id    = group_id,
-        title       = title,
-        category    = category,
-        repeat_type = repeat_type,
-    )
-    db.add(habit)
-    await db.commit()
-    await db.refresh(habit)
-    return habit
+    try:
+        habit = Habit(
+            user_id     = user_id,
+            group_id    = group_id,
+            title       = title,
+            category    = category,
+            repeat_type = repeat_type,
+        )
+        db.add(habit)
+        await db.commit()
+        await db.refresh(habit)
+        return habit
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"모임 습관 생성 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("모임 습관 생성 중 오류가 발생했습니다.")
 
 
 async def update_habit(db: AsyncSession, habit: Habit, habit_in: HabitUpdate) -> Habit:
-    for field, value in habit_in.model_dump(exclude_unset=True).items():
-        setattr(habit, field, value)
-    await db.commit()
-    await db.refresh(habit)
-    return habit
+    try:
+        for field, value in habit_in.model_dump(exclude_unset=True).items():
+            setattr(habit, field, value)
+        await db.commit()
+        await db.refresh(habit)
+        return habit
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"습관 수정 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("습관 수정 중 오류가 발생했습니다.")
 
 
 async def toggle_visibility(db: AsyncSession, habit: Habit) -> Habit:
     """모임 내 습관 공개/숨기기를 토글한다."""
-    habit.is_hidden_from_group = not habit.is_hidden_from_group
-    await db.commit()
-    await db.refresh(habit)
-    return habit
+    try:
+        habit.is_hidden_from_group = not habit.is_hidden_from_group
+        await db.commit()
+        await db.refresh(habit)
+        return habit
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"습관 공개 설정 변경 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("습관 공개 설정 변경 중 오류가 발생했습니다.")
 
 
 async def deactivate_habit(db: AsyncSession, habit: Habit) -> Habit:
     """소프트 삭제 — is_active=False로 변경한다."""
-    habit.is_active = False
-    await db.commit()
-    return habit
+    try:
+        habit.is_active = False
+        await db.commit()
+        return habit
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"습관 삭제 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("습관 삭제 중 오류가 발생했습니다.")
 
 
 # ── HabitCheck ──
@@ -149,11 +178,16 @@ async def check_habit(db: AsyncSession, habit_id: int, checked_date: date) -> Ha
     existing = await get_check(db, habit_id, checked_date)
     if existing:
         return existing
-    check = HabitCheck(habit_id = habit_id, checked_date = checked_date)
-    db.add(check)
-    await db.commit()
-    await db.refresh(check)
-    return check
+    try:
+        check = HabitCheck(habit_id = habit_id, checked_date = checked_date)
+        db.add(check)
+        await db.commit()
+        await db.refresh(check)
+        return check
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"습관 체크 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("습관 체크 중 오류가 발생했습니다.")
 
 
 async def uncheck_habit(db: AsyncSession, habit_id: int, checked_date: date) -> bool:
@@ -161,9 +195,14 @@ async def uncheck_habit(db: AsyncSession, habit_id: int, checked_date: date) -> 
     existing = await get_check(db, habit_id, checked_date)
     if not existing:
         return False
-    await db.delete(existing)
-    await db.commit()
-    return True
+    try:
+        await db.delete(existing)
+        await db.commit()
+        return True
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"습관 체크 해제 중 오류 발생: {e}", exc_info=True)
+        raise ValueError("습관 체크 해제 중 오류가 발생했습니다.")
 
 
 # ── 통계 (오늘 탭 전달용) ──
