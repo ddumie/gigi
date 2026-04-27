@@ -44,6 +44,6 @@ class HabitCheck(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    habit_id = Column(Integer, ForeignKey("habits_list.id"), nullable=False, index=True)
+    habit_id = Column(Integer, ForeignKey("habits_list.id", ondelete="SET NULL"), nullable=False, index=True)
     checked_date = Column(Date, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

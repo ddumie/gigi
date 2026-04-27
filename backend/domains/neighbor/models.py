@@ -26,7 +26,7 @@ class FeedPost(Base):
 
     id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, unique=True)
-    habit_id = Column(Integer, ForeignKey("habits_list.id"), nullable=True)
+    habit_id = Column(Integer, ForeignKey("habits_list.id", ondelete="SET NULL"), nullable=True)
     category = Column(String, nullable=False)  # 운동, 식단, 복약, 수면, 기타
     content = Column(String, nullable=True)    # 습관 완료 후 한마디
 
