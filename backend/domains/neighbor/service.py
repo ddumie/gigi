@@ -89,11 +89,12 @@ async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db:
 async def get_habit_feed_logic(db: AsyncSession, category: str | None = None) -> list[FeedPost]:
     result = []
     rows = await get_habit_feed(category=category, db=db)
-    for feed, post, user, habit in rows:
+    for feed, post, user, habit, comment_count in rows:
         feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         feed.created_at = post.created_at
         feed.habit_title = habit.title if habit else None
         feed.habit_description = habit.description if habit else None
+        feed.comment_count = comment_count
         result.append(feed)
     return result
 
