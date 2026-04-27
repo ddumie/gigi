@@ -148,12 +148,13 @@ function initGnb() {
   const nickname = user ? user.nickname + '님' : '사용자님';
 
   const nav = (pageKey, sectionKey, label) =>
-    `<a href="${PAGES[pageKey]}" data-nav="${sectionKey}" class="${section === sectionKey ? 'active' : ''}">${label}</a>`;
+    `<a href="${PAGES[pageKey]}" data-nav="${sectionKey}" class="${section === sectionKey ? 'active' : ''}"
+       onclick="if(!isLoggedIn()){event.preventDefault();window.location.href=PAGES.login;}">${label}</a>`;
 
   const header = document.createElement('header');
   header.className = 'gnb';
   header.innerHTML = `
-    <div class="gnb-logo">지지</div>
+    <a href="${PAGES.landing}" class="gnb-logo">지지</a>
     <nav class="gnb-nav">
       ${nav('home',     'home',     '홈')}
       ${nav('today',    'today',    '오늘')}
