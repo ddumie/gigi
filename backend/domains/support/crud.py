@@ -34,6 +34,7 @@ async def create_group(db: AsyncSession, group: schemas.GroupCreate, user_id: in
             support_streak=0
         )
         db.add(db_group)
+        await db.flush()  # 임시 발급 => 오류 생기면 롤백에서 지워짐
 
         db_group_profile = models.GroupProfile(
             group_id=db_group.id,
