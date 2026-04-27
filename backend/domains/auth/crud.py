@@ -87,3 +87,13 @@ def update_password(db: Session, user: User, new_password_hash: str) -> User:
     except Exception:
         db.rollback()
         raise
+
+
+def deactivate_user(db: Session, user: User) -> None:
+    """회원탈퇴 (소프트 삭제 — is_active = False)"""
+    user.is_active = False
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
