@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initStep1();
   } else if (path.includes('step2-fontsize')) {
     initStep2FontSize();
-  } else if (path.includes('step2-interests')) {
+  } else if (path.includes('step3-interests')) {
     initStep2();
-  } else if (path.includes('step3-ai')) {
+  } else if (path.includes('step4-ai')) {
     initStep3();
   }
 });
@@ -23,7 +23,7 @@ function initStep1() {
     if (selected) {
       localStorage.setItem('gigi_age_group', selected.textContent.trim());
     }
-    window.location.href = '/pages/onboarding/step2-fontsize.html';
+    window.location.href = PAGES.onboard2;
   });
 }
 
@@ -57,7 +57,7 @@ function initStep2FontSize() {
       }
     }
 
-    window.location.href = '/pages/onboarding/step2-interests.html';
+    window.location.href = PAGES.onboard3;
   });
 }
 
@@ -77,6 +77,7 @@ function initStep2() {
   // AI 추천받기 버튼 클릭 → preferences 저장 → ai-recommend 호출 → step3 이동
   recommendBtn.addEventListener('click', async (e) => {
     e.preventDefault();
+
     recommendBtn.disabled = true;
     recommendBtn.textContent = '추천 받는 중...';
     // 선택한 나이대랑 관심사 수집하고
@@ -94,7 +95,8 @@ function initStep2() {
       const result = await apiPost('/onboarding/ai-recommend');
       if (!result) return; // 401 등으로 이미 리다이렉트된 경우
       localStorage.setItem('gigi_ai_habits', JSON.stringify(result)); //결과 저장
-      window.location.href = PAGES.onboard3;
+      localStorage.setItem('gigi_selected_interests', JSON.stringify(interests)); // 선택 관심사 저장
+      window.location.href = PAGES.onboard4;
     } catch (err) {
       showToast(err.message);
       recommendBtn.disabled = false;
@@ -108,12 +110,20 @@ function initStep3() {
   const stored = localStorage.getItem('gigi_ai_habits');
   if (!stored || stored === 'undefined') {
     showToast('추천 정보를 불러올 수 없습니다. 다시 시도해주세요.');
-    window.location.href = PAGES.onboard2;
+    window.location.href = PAGES.onboard3;
     return;
   }
 
   const data = JSON.parse(stored);
   const habits = data.habits || [];
+
+  // 선택한 관심사 표시
+  const savedInterests = JSON.parse(localStorage.getItem('gigi_selected_interests') || '[]');
+  const interestsBox = document.getElementById('selected-interests-box');
+  if (interestsBox && savedInterests.length) {
+    const tags = savedInterests.map(i => `<span class="interest-tag">${i}</span>`).join('');
+    interestsBox.innerHTML = `<span class="interest-label">내가 선택한 항목:</span> ${tags}`;
+  }
 
   // localStorage에서 habits 꺼내서 카드 렌더링
   const list = document.querySelector('.recommendation-list');
@@ -131,7 +141,7 @@ function initStep3() {
 
   // 다시 추천받기 버튼
   const retryBtn = [...document.querySelectorAll('.btn-outline')]
-    .find((btn) => btn.href && btn.href.includes('step3'));
+    .find((btn) => btn.href && btn.href.includes('step4'));
 
   if (retryBtn) {
     if (!data.can_retry) {

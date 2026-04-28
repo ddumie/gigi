@@ -37,7 +37,7 @@ async def save_preferences(db: AsyncSession, user_id: int, age_group: str | None
 
 
 async def increment_recommend_count(db: AsyncSession, user_id: int):
-    """AI 재추천 횟수 증가 (+1), 날짜가 바뀌면 자동 초기화 (하루 3회 제한)"""
+    """AI 재추천 횟수 증가 (+1), 날짜가 바뀌면 자동 초기화 (하루 15회 제한)"""
     try:
         db_pref = await get_preferences(db, user_id)
         if db_pref is None:
@@ -46,8 +46,8 @@ async def increment_recommend_count(db: AsyncSession, user_id: int):
         # 날짜가 바뀌면 횟수 초기화
         if db_pref.last_recommend_date != today:
             db_pref.recommend_count = 0
-        # 하루 3회 초과 시 예외 발생
-        if db_pref.recommend_count >= 3:
+        # 하루 15회 초과 시 예외 발생
+        if db_pref.recommend_count >= 15:
             raise ValueError("하루 재추천 횟수를 초과했습니다.")
         db_pref.recommend_count += 1
         db_pref.last_recommend_date = today

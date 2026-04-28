@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>지지 GIGI - 온보딩 3단계</title>
+  <title>지지 GIGI - 온보딩 4단계</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared/styles/common.css">
@@ -15,37 +15,22 @@
   <main>
     <div class="container auth-shell">
       <section class="card auth-card">
-        <a href="/pages/onboarding/step2-interests.html" class="btn btn-outline btn-sm" style="align-self:flex-start;margin-bottom:0.5rem;">← 뒤로</a>
+        <a href="/pages/onboarding/step3-interests.html" class="btn btn-outline btn-sm" style="align-self:flex-start;margin-bottom:0.5rem;">← 뒤로</a>
         <div class="page-header">
           <div class="section-eyebrow">Onboarding 4</div>
           <h1 class="section-title">딱 맞는 건강 습관을 찾았어요</h1>
           <p class="section-copy">나에게 맞는 습관을 선택하고 오늘부터 바로 시작해볼까요?</p>
         </div>
+        <div id="selected-interests-box"></div>
         <div class="ai-box">
           <span class="ai-dot"></span>
           <span class="ai-label">맞춤형 추천 결과</span>
           <p class="section-copy">나이대와 관심사에 맞춰 습관 3가지를 골라봤어요.</p>
         </div>
-        <div class="recommendation-list">
-          <!-- 아래 카드는 예시용입니다. — onboarding.js에서 동적으로 렌더링됨 -->
-          <!--
-          <article class="recommendation-card">
-            <strong>아침 10분 걷기</strong>
-            <p class="meta-text">관절·근력 관리에 맞춘 기본 습관</p>
-          </article>
-          <article class="recommendation-card">
-            <strong>복약 체크</strong>
-            <p class="meta-text">하루 한 번 복약 여부 기록</p>
-          </article>
-          <article class="recommendation-card">
-            <strong>취침 전 스트레칭</strong>
-            <p class="meta-text">수면 준비와 근육 이완을 돕는 습관</p>
-          </article>
-          -->
-        </div>
+        <div class="recommendation-list"></div>
         <div class="page-actions">
           <a href="/pages/today/index.html" class="btn btn-primary btn-full">선택한 습관 등록하고 시작하기</a>
-          <a href="/pages/onboarding/step3-ai.html" class="btn btn-outline btn-full">다시 추천받기</a>
+          <a href="/pages/onboarding/step4-ai.html" class="btn btn-outline btn-full">다시 추천받기</a>
           <a href="/pages/today/index.html" class="btn btn-outline btn-full">직접 습관 등록하기</a>
         </div>
       </section>
