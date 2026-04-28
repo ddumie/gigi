@@ -79,7 +79,11 @@ function initStep2() {
     e.preventDefault();
 
     recommendBtn.disabled = true;
-    recommendBtn.textContent = '추천 받는 중...';
+    let dotCount = 1;
+    const dotInterval = setInterval(() => {
+      recommendBtn.textContent = '추천 받는 중' + '.'.repeat(dotCount);
+      dotCount = dotCount >= 3 ? 1 : dotCount + 1;
+    }, 400);
     // 선택한 나이대랑 관심사 수집하고
     const ageGroup = localStorage.getItem('gigi_age_group') || null;
     const interests = [...document.querySelectorAll('[data-chip-select="interest"].active')]
@@ -94,10 +98,12 @@ function initStep2() {
       // ai-recommend 호출 → localStorage 저장 → step3 이동
       const result = await apiPost('/onboarding/ai-recommend');
       if (!result) return; // 401 등으로 이미 리다이렉트된 경우
+      clearInterval(dotInterval);
       localStorage.setItem('gigi_ai_habits', JSON.stringify(result)); //결과 저장
       localStorage.setItem('gigi_selected_interests', JSON.stringify(interests)); // 선택 관심사 저장
       window.location.href = PAGES.onboard4;
     } catch (err) {
+      clearInterval(dotInterval);
       showToast(err.message);
       recommendBtn.disabled = false;
       recommendBtn.textContent = 'AI 습관 추천받기';
@@ -155,12 +161,18 @@ function initStep3() {
       retryBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         retryBtn.disabled = true;
-        retryBtn.textContent = '추천 받는 중...';
+        let dotCount = 1;
+        const dotInterval = setInterval(() => {
+          retryBtn.textContent = '추천 받는 중' + '.'.repeat(dotCount);
+          dotCount = dotCount >= 3 ? 1 : dotCount + 1;
+        }, 400);
         try {
           const result = await apiPost('/onboarding/ai-recommend');
+          clearInterval(dotInterval);
           localStorage.setItem('gigi_ai_habits', JSON.stringify(result));
           location.reload();
         } catch (err) {
+          clearInterval(dotInterval);
           showToast(err.message);
           retryBtn.disabled = false;
           retryBtn.textContent = '다시 추천받기';
