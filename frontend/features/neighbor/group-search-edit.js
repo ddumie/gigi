@@ -12,7 +12,11 @@
   document.getElementById('title').value = post.title;
   document.getElementById('description').value = post.description;
   document.getElementById('habit_title').value = post.habit_title;
-  document.getElementById('frequency').value = post.frequency;
+  // 변경 — 저장된 "월, 수, 금" 문자열을 파싱해서 해당 체크박스를 체크
+  post.frequency.split(', ').forEach(day => {
+    const cb = document.querySelector(`input[name="frequency"][value="${day}"]`);
+    if (cb) cb.checked = true;
+  });
   document.getElementById('category').value = post.category ?? '';
   document.getElementById('submit-btn').textContent = '수정 완료';
 
@@ -23,7 +27,7 @@
       title: document.getElementById('title').value,
       description: document.getElementById('description').value,
       habit_title: document.getElementById('habit_title').value,
-      frequency: document.getElementById('frequency').value,
+      frequency: Array.from(document.querySelectorAll('input[name="frequency"]:checked')).map(cb => cb.value).join(', '),
       category: document.getElementById('category').value || null,
     };
     try {

@@ -78,8 +78,9 @@ async def delete_group_search_logic(post_id: int, user_id: int, db: AsyncSession
 async def get_my_group_search_logic(user_id: int, db: AsyncSession):
     result = []
     posts = await get_my_group_search(user_id=user_id, db=db)
-    for group_search, user in posts:
+    for group_search, post, user in posts:
         group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
+        group_search.created_at = post.created_at
         result.append(group_search)
 
     return result
@@ -87,8 +88,9 @@ async def get_my_group_search_logic(user_id: int, db: AsyncSession):
 async def get_my_habits_logic(user_id: int, db: AsyncSession):
     result = []
     posts = await get_my_habits(user_id=user_id, db=db)
-    for habits_feed, user in posts:
+    for habits_feed, post, user in posts:
         habits_feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
+        habits_feed.created_at = post.created_at
         result.append(habits_feed)
     return result
 

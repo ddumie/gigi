@@ -29,12 +29,24 @@ async function renderFeed(posts) {
     list.appendChild(empty);
     return;
   }
-
+  let lastDate = null;
   for (const p of posts) {
     const article = document.createElement('article');
     article.className = 'feed-card';
     article.dataset.category = p.category;
 
+    //아래 블록 추가
+    const postDate = p.created_at
+      ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '';
+    if (postDate && postDate !== lastDate) {
+      const sep = document.createElement('div');
+      sep.className = 'feed-date-separator';
+      sep.textContent = postDate;
+      list.appendChild(sep);
+      lastDate = postDate;
+    }
+    //여기까지 추가
     const nickname = p.author?.nickname ?? '알 수 없음';
     const firstChar = nickname.charAt(0);
     const timeAgo = p.created_at ? formatTimeAgo(new Date(p.created_at)) : '';
