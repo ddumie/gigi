@@ -8,10 +8,23 @@
 
   // group-search 글 렌더링
   const list_gs = document.getElementById('my-posts-list-gs');
+  let lastDateGs = null;
   groupPosts.forEach(p => {
     const article = document.createElement('article');
     article.className = 'group-search-card';
 
+    // 아래 블록 추가
+    const postDate = p.created_at
+      ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '';
+    if (postDate && postDate !== lastDateGs) {
+      const sep = document.createElement('div');
+      sep.className = 'feed-date-separator';
+      sep.textContent = postDate;
+      list_gs.appendChild(sep);
+      lastDateGs = postDate;
+    }
+    // 여기까지 추가
     const title = document.createElement('strong');
     title.textContent = p.title;
 
@@ -31,10 +44,24 @@
 
   // feed 글 렌더링
   const list_f = document.getElementById('my-posts-list-fd')
+  let lastDateFd = null;
   feedPosts.forEach(p => {
     const article = document.createElement('article');
     article.className = 'feed-card';
 
+    // 아래 블록 추가
+    const postDate = p.created_at
+      ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '';
+    if (postDate && postDate !== lastDateFd) {
+      const sep = document.createElement('div');
+      sep.className = 'feed-date-separator';
+      sep.textContent = postDate;
+      list_f.appendChild(sep);
+      lastDateFd = postDate;
+    }
+    // 여기까지 추가
+    
     const title = document.createElement('strong');
     title.textContent = `${p.category} 완료`;
 

@@ -99,3 +99,70 @@
   font-size: 0.85rem;
   font-weight: 600;
 }
+
+/* 날짜로 피드 분리관련 css */
+.feed-date-separator {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #999);
+  position: relative;
+  margin: 0.5rem 0;
+}
+
+.feed-date-separator::before,
+.feed-date-separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 35%;
+  height: 1px;
+  background: var(--color-border-light);
+}
+
+.feed-date-separator::before { left: 0; }
+.feed-date-separator::after  { right: 0; }
+
+
+/* 댓글 작성 css */
+.comment-textarea {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  outline: none;
+  resize: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  line-height: 1.6;
+}
+
+.comment-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+}
+
+.comment-textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/*빈도수 체크박스 스타일 */
+.frequency-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.day-checkboxes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.day-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}

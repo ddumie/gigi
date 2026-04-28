@@ -12,11 +12,22 @@ const list = document.getElementById('group-search-list');
     return;
   }
 
-
+  let lastDate = null;
   posts.forEach(p => {
     const article = document.createElement('article');
     article.className = 'group-search-card';
-
+    // 아래에 날짜 블록 추가
+    const postDate = p.created_at
+      ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '';
+    if (postDate && postDate !== lastDate) {
+      const sep = document.createElement('div');
+      sep.className = 'feed-date-separator';
+      sep.textContent = postDate;
+      list.appendChild(sep);
+      lastDate = postDate;
+    }
+    // 여기까지 추가
     const nickname = p.author?.nickname ?? '알 수 없음';
     const firstChar = nickname.charAt(0);
     const dateStr = p.created_at

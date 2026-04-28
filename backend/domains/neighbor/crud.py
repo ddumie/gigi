@@ -88,7 +88,7 @@ async def delete_group_search(post_id: int, user_id: int, db: AsyncSession) -> P
 # my posts 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
 async def get_my_group_search(user_id: int, db: AsyncSession) -> list[tuple[GroupSearchPost, User]]: 
     result = await db.execute(
-        select(GroupSearchPost, User)
+        select(GroupSearchPost, Post, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
@@ -100,7 +100,7 @@ async def get_my_group_search(user_id: int, db: AsyncSession) -> list[tuple[Grou
 #my posts 페이지에서 내가 쓴 습관도 보여주기
 async def get_my_habits(user_id: int, db: AsyncSession) -> list[tuple[FeedPost, User]]: 
     result = await db.execute(
-        select(FeedPost, User)
+        select(FeedPost, Post, User)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
