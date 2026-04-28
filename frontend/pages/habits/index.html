@@ -19,9 +19,15 @@
   </div>
   <main>
     <div class="container page-shell">
-      <header class="page-header">
-        <div style="font-size:1rem;font-weight:500;">내 습관 관리</div>
-        <p id="habit-count" class="meta-text">습관을 불러오는 중...</p>
+      <header class="page-header habits-index-header">
+        <div>
+          <div style="font-size:1rem;font-weight:500;">내 습관 관리</div>
+          <p id="habit-count" class="meta-text">습관을 불러오는 중...</p>
+        </div>
+        <div class="page-actions">
+          <a href="/pages/habits/ai-recommend.html" class="btn btn-ai">맞춤 습관 추천</a>
+          <button id="btn-add-habit" class="btn btn-primary">+ 습관 추가</button>
+        </div>
       </header>
 
       <!-- 카테고리 필터 -->
@@ -34,18 +40,8 @@
         <button class="chip" data-habit-filter="기타">기타</button>
       </div>
 
-      <!-- AI 습관 추천 배너 -->
-      <div class="card ai-box" style="margin-bottom:1rem;">
-        <strong>AI 습관 추천</strong>
-        <p class="meta-text" style="margin-top:0.25rem;">관심사를 바탕으로 새로운 습관을 추천받아보세요</p>
-        <a href="/pages/habits/ai-recommend.html" class="btn btn-ai btn-sm" style="margin-top:0.5rem;">AI 추천받기</a>
-      </div>
-
       <!-- 습관 목록 (JS에서 동적 렌더링) -->
       <section id="habit-list" class="habit-list"></section>
-
-      <!-- 습관 추가 버튼 -->
-      <button id="btn-add-habit" class="btn btn-primary btn-full" style="margin-top:1rem;">+ 습관 추가</button>
 
       <!-- 첫 진입 모달 (화면 8: 첫 습관 등록 직후 모임 유도) -->
       <div id="first-habit-overlay" class="first-habit-overlay">
@@ -63,32 +59,6 @@
         </section>
       </div>
 
-      <!-- 습관 추가/수정 모달 -->
-      <div id="habit-modal" class="modal" style="display:none;">
-        <div class="modal-content card">
-          <strong id="modal-title">습관 추가</strong>
-          <input id="modal-habit-title" class="input" type="text" placeholder="습관 이름" maxlength="100">
-          <select id="modal-habit-category" class="input">
-            <option value="운동">운동</option>
-            <option value="복약">복약</option>
-            <option value="식단">식단</option>
-            <option value="수면">수면</option>
-            <option value="기타">기타</option>
-          </select>
-          <input id="modal-habit-time" class="input" type="time" placeholder="시간 (선택)">
-          <select id="modal-habit-repeat" class="input">
-            <option value="매일">매일</option>
-            <option value="평일">평일</option>
-            <option value="주말">주말</option>
-            <option value="주1회">주1회</option>
-            <option value="주3회">주3회</option>
-          </select>
-          <div class="page-actions" style="margin-top:1rem;">
-            <button id="modal-save" class="btn btn-primary">저장</button>
-            <button id="modal-cancel" class="btn btn-outline">취소</button>
-          </div>
-        </div>
-      </div>
     </div>
   </main>
   <script src="/shared/lib/api.js"></script>

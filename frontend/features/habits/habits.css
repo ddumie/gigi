@@ -1,3 +1,20 @@
+/* 페이지 헤더 (습관 목록 페이지 전용) */
+.habits-index-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .habits-index-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+
 .habit-list {
   display: grid;
   gap: 0.75rem;
@@ -22,6 +39,80 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+
+/* ── 카드 뷰 ↔ 편집 모드 전환 ── */
+
+/* 기본: 뷰 보임, 편집 숨김 */
+.habit-card-edit { display: none; }
+
+/* 편집 모드: 뷰 숨김, 편집 보임 */
+.habit-row.editing .habit-card-view { display: none; }
+.habit-row.editing .habit-card-edit { display: block; }
+
+.edit-input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.edit-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.edit-row .input {
+  flex: 1;
+  min-width: 80px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+
+/* ── 요일 피커 ── */
+
+.day-picker {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.day-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-s);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.day-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+
+/* ── 인라인 습관 추가 폼 ── */
+
+.habit-add-form {
+  border: 1.5px dashed var(--color-primary);
+  background: var(--color-card);
 }
 
 

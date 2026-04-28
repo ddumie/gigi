@@ -1,6 +1,6 @@
 // ── 로그인 상태에서 auth 페이지 접근 차단 ──
 if (isLoggedIn()) {
-  window.location.href = PAGES.today;
+  window.location.href = PAGES.home;
 }
 
 // ── 공통 유틸 ──
@@ -220,7 +220,7 @@ if (loginBtn) {
       setToken(data.access_token);
       setCurrentUser(data.user);
 
-      window.location.href = PAGES.today;
+      window.location.href = PAGES.home;
     } catch (e) {
       loginBtn.disabled = false;
       loginBtn.textContent = '로그인';
