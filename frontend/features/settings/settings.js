@@ -119,4 +119,24 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.js-logout').forEach((button) => {
     button.addEventListener('click', logout);
   });
+
+  // 회원탈퇴
+  const deleteBtn = document.getElementById('delete-account-btn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async () => {
+      if (!confirm('정말 탈퇴하시겠습니까? 탈퇴 후에는 복구할 수 없습니다.')) return;
+
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = '처리 중...';
+
+      try {
+        await apiDelete('/auth/me');
+        logout();
+      } catch (e) {
+        showToast(e.message || '회원탈퇴에 실패했습니다.');
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = '탈퇴하기';
+      }
+    });
+  }
 });

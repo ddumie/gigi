@@ -90,8 +90,9 @@ def update_password(db: Session, user: User, new_password_hash: str) -> User:
 
 
 def deactivate_user(db: Session, user: User) -> None:
-    """회원탈퇴 (소프트 삭제 — is_active = False)"""
+    """회원탈퇴 (소프트 삭제 — is_active = False, 이메일 익명화)"""
     user.is_active = False
+    user.email = f"deleted_{user.id}@deleted.com"
     try:
         db.commit()
         db.refresh(user)
