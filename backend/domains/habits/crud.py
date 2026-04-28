@@ -35,7 +35,7 @@ async def get_habits(db: AsyncSession, user_id: int, category: str | None = None
     stmt = select(Habit).where(Habit.user_id == user_id, Habit.is_active == True)
     if category:
         stmt = stmt.where(Habit.category == category)
-    stmt = stmt.order_by(Habit.created_at.asc())
+    stmt = stmt.order_by(Habit.created_at.desc())
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
