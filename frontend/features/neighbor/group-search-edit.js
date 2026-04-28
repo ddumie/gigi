@@ -28,7 +28,7 @@
     };
     try {
       await apiPut(`/neighbor/group-search/${postId}`, body);
-      location.href = PAGES.groupSearch;
+      location.href = PAGES.myPosts;
     } catch (err) {
       alert(err.message || '수정에 실패했습니다.');
     }

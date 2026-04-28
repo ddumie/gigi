@@ -79,10 +79,14 @@ async function renderFeed(posts) {
     titleIcon.className = 'feed-title-icon';
     titleIcon.textContent = '■';
 
+    const categoryComplete = document.createElement('span');
+    categoryComplete.className = 'feed-category-complete';
+    categoryComplete.textContent = `[${p.category ?? '기타'} 완료]`;
+
     const titleText = document.createElement('span');
     titleText.textContent = p.habit_title ?? (p.category + ' 완료');
 
-    titleBox.append(titleIcon, titleText);
+    titleBox.append(titleIcon, categoryComplete, titleText);
 
     // 3. 본문
     const body = document.createElement('p');

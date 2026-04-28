@@ -17,56 +17,85 @@ const list = document.getElementById('group-search-list');
     const article = document.createElement('article');
     article.className = 'group-search-card';
 
-    const title = document.createElement('strong');
-    title.textContent = p.title;
+    const nickname = p.author?.nickname ?? '알 수 없음';
+    const firstChar = nickname.charAt(0);
+    const dateStr = p.created_at
+      ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\.$/, '')
+      : '';
 
-    const authorEl = document.createElement('p');
-    authorEl.className = 'meta-text';
-    authorEl.style.marginTop = '0.25rem'
-    authorEl.textContent = `${p.author?.nickname ?? '알 수 없음'} · 참여자 ${p.member_count}명`;
+    // 헤더: 아바타 + 닉네임 + 등록날짜
+    const header = document.createElement('div');
+    header.className = 'feed-card-header';
 
+    const memberRow = document.createElement('div');
+    memberRow.className = 'member-row';
+    memberRow.style.cssText = 'padding:0; background:none;';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'member-avatar';
+    avatar.textContent = firstChar;
+
+    const memberInfo = document.createElement('div');
+    memberInfo.className = 'member-info';
+
+    const memberName = document.createElement('div');
+    memberName.className = 'member-name';
+    memberName.textContent = nickname;
+
+    const memberDate = document.createElement('div');
+    memberDate.className = 'meta-text';
+    memberDate.textContent = dateStr;
+
+    memberInfo.append(memberName, memberDate);
+    memberRow.append(avatar, memberInfo);
+    header.append(memberRow);
+
+    // 제목 박스 (■ 아이콘 + 제목)
+    const titleBox = document.createElement('div');
+    titleBox.className = 'feed-title-box';
+
+    const titleIcon = document.createElement('span');
+    titleIcon.className = 'feed-title-icon';
+    titleIcon.textContent = '■';
+
+    const titleText = document.createElement('span');
+    titleText.textContent = p.title;
+
+    titleBox.append(titleIcon, titleText);
+
+    // 세부 정보 (모임유형, 카테고리, 습관, 빈도)
     const meta = document.createElement('p');
     meta.className = 'meta-text';
     meta.style.marginTop = '0.5rem';
     const categoryLabel = p.category ? ` · #${p.category}` : '';
     meta.textContent = `${p.group_type}${categoryLabel} · 함께할 습관: ${p.habit_title} · ${p.frequency}`;
 
-    const createdEl = document.createElement('p');
-    createdEl.className = 'meta-text';
-    createdEl.style.marginTop = '0.25rem';
-    createdEl.textContent = `등록 · ${new Date(p.created_at).toLocaleDateString('ko-KR')}`;
-    
-    let updatedEl = null;
-    if (p.updated_at) {
-      updatedEl = document.createElement('p');
-      updatedEl.className = 'meta-text';
-      updatedEl.style.marginTop = '0.25rem';
-      updatedEl.textContent = `수정됨 · ${new Date(p.updated_at).toLocaleDateString('ko-KR')}`;
-    }
+    // 글 세부내용 (description)
     const desc = document.createElement('p');
-    desc.style.marginTop = '0.5rem';
+    desc.className = 'section-copy';
     desc.textContent = p.description ?? '';
 
-    const actions = document.createElement('div');
-    actions.className = 'page-actions';
-    actions.style.marginTop = '1rem';
+    // 하단: 참여자 수 + 버튼
+    const footer = document.createElement('div');
+    footer.className = 'feed-card-footer';
+
+    const memberCount = document.createElement('span');
+    memberCount.className = 'meta-text';
+    memberCount.textContent = `참여자 ${p.member_count}명`;
+
+    const btnGroup = document.createElement('div');
+    btnGroup.style.cssText = 'margin-left:auto; display:flex; gap:0.5rem;';
 
     const link = document.createElement('a');
     link.href = `/pages/neighbor/group-search-join.html?post_id=${p.post_id}&habit_title=${encodeURIComponent(p.habit_title)}&frequency=${encodeURIComponent(p.frequency)}`;
     link.className = 'btn btn-outline btn-sm';
     link.textContent = '함께하기';
 
-    const currentUser = getCurrentUser(); // common.js의 함수
-    if (currentUser && p.author?.id === currentUser.id) {
-      const editLink = document.createElement('a');
-      editLink.href = `/pages/neighbor/group-search-edit.html?post_id=${p.post_id}`;
-      editLink.className = 'btn btn-outline btn-sm';
-      editLink.textContent = '수정하기';
-      actions.appendChild(editLink);
-    }
+    btnGroup.appendChild(link);
+    footer.append(memberCount, btnGroup);
 
-    actions.appendChild(link);
-    article.append(title, authorEl, meta, createdEl, ...(updatedEl ? [updatedEl] : []), desc, actions);
+    article.append(header, titleBox, meta, desc, footer);
     list.appendChild(article);
   });
+
 })();
