@@ -4,6 +4,26 @@ from pydantic import BaseModel, Field, field_validator
 from backend.domains.habits.models import HABIT_CATEGORIES, HABIT_REPEAT_TYPES
 from backend.domains.onboarding.schemas import AIHabitItem
 
+# 요일 피커로 들어오는 임의 조합 검증용 (예: "월수금", "화목")
+_VALID_DAYS = set("월화수목금토일")
+
+
+def _is_valid_repeat_type(v: str) -> bool:
+    """
+    허용 형식:
+      1) 기존 프리셋: 매일/평일/주말/주1회/주3회
+      2) 요일 조합 문자열: 월,화,수,목,금,토,일 중 1~7자, 중복 없음
+    """
+    if v in HABIT_REPEAT_TYPES:
+        return True
+    if not v or len(v) > 7:
+        return False
+    if any(ch not in _VALID_DAYS for ch in v):
+        return False
+    if len(set(v)) != len(v):  # 중복 요일 금지
+        return False
+    return True
+
 
 # ── Habit 요청 ──
 
@@ -27,8 +47,10 @@ class HabitCreate(BaseModel):
     @field_validator("repeat_type")
     @classmethod
     def validate_repeat_type(cls, v):
-        if v not in HABIT_REPEAT_TYPES:
-            raise ValueError(f"반복 유형은 {', '.join(HABIT_REPEAT_TYPES)} 중 하나여야 합니다")
+        if not _is_valid_repeat_type(v):
+            raise ValueError(
+                f"반복 유형은 {', '.join(HABIT_REPEAT_TYPES)} 또는 요일 조합(예: 월수금)이어야 합니다"
+            )
         return v
 
 
@@ -49,8 +71,10 @@ class HabitUpdate(BaseModel):
     @field_validator("repeat_type")
     @classmethod
     def validate_repeat_type(cls, v):
-        if v is not None and v not in HABIT_REPEAT_TYPES:
-            raise ValueError(f"반복 유형은 {', '.join(HABIT_REPEAT_TYPES)} 중 하나여야 합니다")
+        if v is not None and not _is_valid_repeat_type(v):
+            raise ValueError(
+                f"반복 유형은 {', '.join(HABIT_REPEAT_TYPES)} 또는 요일 조합(예: 월수금)이어야 합니다"
+            )
         return v
 
 
