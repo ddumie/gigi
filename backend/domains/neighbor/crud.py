@@ -7,7 +7,7 @@ from backend.domains.neighbor.schemas import GroupSearchCreate
 from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
 from backend.domains.support.models import Group, GroupMember
-
+from sqlalchemy.exc import IntegrityError
 
 # 현재 로그인 사용자 기준이 아니라 author_id와 동일한 user.id를 1로 고정하였기 때문에,
 # 추후 수정해야 함.
@@ -19,7 +19,7 @@ async def create_post(author_id: int, post_type: str, db: AsyncSession) -> Post:
         post_type=post_type
     )
     db.add(db_post)
-    await db.commit()  # ← post.id 확보
+    await db.flush()  # ← post.id 확보
     await db.refresh(db_post)
     return db_post # ← 결과를 반환만 함, 판단은 안 함
 
@@ -35,7 +35,7 @@ async def create_group_search(post_id: int, post: GroupSearchCreate, db: AsyncSe
         category=post.category
     )
     db.add(db_group_search)
-    await db.commit()
+    await db.flush()
     await db.refresh(db_group_search)
     return db_group_search
 
@@ -70,9 +70,14 @@ async def update_group_search(post_id: int, user_id: int, post: GroupSearchCreat
     db_group_search.frequency = post.frequency
     db_group_search.category = post.category
     db_post.updated_at = datetime.now(timezone.utc)
-    await db.commit()
-    await db.refresh(db_group_search)
-    return db_group_search
+    try:
+        await db.commit()
+        await db.refresh(db_group_search)
+        return db_group_search
+    except IntegrityError:
+        await db.rollback()
+        raise 
+
  
 # 글 삭제 기능(docs용)
 async def delete_group_search(post_id: int, user_id: int, db: AsyncSession) -> Post | None:
@@ -114,7 +119,7 @@ async def get_habit(habit_id: int, user_id: int, db: AsyncSession) -> Habit | No
 async def create_habit_feed(habit_id: int, category: str, content: str, user_id: int, db: AsyncSession) -> dict:
     db_post = Post(author_id=user_id, post_type="feed")
     db.add(db_post)
-    await db.commit()
+    await db.flush()
     await db.refresh(db_post)
     
     db_feed = FeedPost(
@@ -124,7 +129,7 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
         content=content
     )
     db.add(db_feed)
-    await db.commit()
+    await db.flush()
         
     return {"id": db_post.id, "message": "피드 등록 완료"}
 
@@ -157,9 +162,13 @@ async def update_habit_feed(post_id: int, user_id: int, content: str, db: AsyncS
     if not db_feed:
         return None
     db_feed.content = content
-    await db.commit()
-    await db.refresh(db_feed)
-    return db_feed
+    try:
+        await db.commit()
+        await db.refresh(db_feed)
+        return db_feed
+    except IntegrityError:
+        await db.rollback()
+        raise
     
 
 # 피드 목록 지우기
@@ -197,10 +206,14 @@ async def get_post(post_id: int, db: AsyncSession) -> Post | None:
 async def create_feed_comment(post_id: int, content: str, user_id: int, db: AsyncSession) -> dict[str, int | str]:
     comment = Comment(post_id=post_id, author_id=user_id, content=content)
     db.add(comment)
-    await db.commit()
-    await db.refresh(comment)
-    return {"id": comment.id, "message": "댓글 등록 완료"}
-    
+    try:
+        await db.commit()
+        await db.refresh(comment)
+        return {"id": comment.id, "message": "댓글 등록 완료"}
+    except IntegrityError:
+        await db.rollback()
+        raise
+
 # 댓글 수정
 async def update_feed_comment(comment_id: int, post_id: int, user_id: int, content: str, db: AsyncSession) -> Comment | None:
     result = await db.execute(
@@ -214,9 +227,13 @@ async def update_feed_comment(comment_id: int, post_id: int, user_id: int, conte
     if not comment:
         return None
     comment.content = content
-    await db.commit()
-    await db.refresh(comment)
-    return comment
+    try:
+        await db.commit()
+        await db.refresh(comment)
+        return comment
+    except IntegrityError:
+        await db.rollback()
+        raise
 
 # 댓글 삭제
 async def delete_feed_comment(comment_id: int, post_id: int, user_id: int, db: AsyncSession) -> Comment | None:

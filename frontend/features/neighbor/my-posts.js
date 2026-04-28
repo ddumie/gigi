@@ -19,7 +19,13 @@
     meta.className = 'meta-text';
     meta.textContent = `모임 구해요 · ${p.group_type} · ${p.habit_title}`;
 
-    article.append(title, meta);
+    const editLink = document.createElement('a');
+    editLink.href = `/pages/neighbor/group-search-edit.html?post_id=${p.post_id}`;
+    editLink.className = 'btn btn-outline btn-sm';
+    editLink.style.marginTop = '0.75rem';
+    editLink.textContent = '수정하기';
+
+    article.append(title, meta, editLink);
     list_gs.appendChild(article);
   });
 
