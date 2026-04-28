@@ -24,3 +24,28 @@
 .ai-box .section-copy {
   margin-top: 0.5rem;
 }
+
+#selected-interests-box {
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #222;
+  background: #fafafa;
+}
+
+.interest-label {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.interest-tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border: 1.5px solid #aaa;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0 0.15rem;
+}

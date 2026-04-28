@@ -30,11 +30,13 @@ client = genai.Client(api_key=settings.GEMINI_API_KEY)
 async def get_ai_recommendations(age_group: str | None, health_interests: list[str] | None) -> list[AIHabitItem]:
     """사용자가 설정한 나이대, 관심사 기반 Gemini AI 습관 추천"""
     interests_str = ", ".join(health_interests) if health_interests else "일반 건강 관리"
+    interest_count = len(health_interests) if health_interests else 0
+    num_habits = 3 if interest_count <= 1 else (4 if interest_count == 2 else 5)
     prompt = f"""
     사용자의 나이대: {age_group if age_group else "미입력"}
     사용자의 관심사: {interests_str}
 
-    위 정보를 바탕으로 사용자에게 추천할 수 있는 건강 습관 3가지를 JSON 형식으로 제공해주세요.
+    위 정보를 바탕으로 사용자에게 추천할 수 있는 건강 습관 {num_habits}가지를 JSON 형식으로 제공해주세요.
     각 습관은 title(습관 제목), category(카테고리), description(짧고 간단한 설명)을 포함해야 합니다.
     카테고리는 다음 중 하나여야 합니다: 운동, 복약, 식단, 수면, 기타
     매번 호출할 때마다 서로 다른 습관을 추천해주세요. 이전에 추천했을 가능성이 있는 습관은 피하고, 다양한 관점에서 새로운 습관을 제안해주세요.
