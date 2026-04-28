@@ -117,6 +117,11 @@ function initStep3() {
   const data = JSON.parse(stored);
   const habits = data.habits || [];
 
+  // 닉네임 표시
+  const user = getCurrentUser();
+  const nicknameEl = document.getElementById('onboard-nickname');
+  if (nicknameEl && user) nicknameEl.textContent = user.nickname;
+
   // 선택한 관심사 표시
   const savedInterests = JSON.parse(localStorage.getItem('gigi_selected_interests') || '[]');
   const interestsBox = document.getElementById('selected-interests-box');
