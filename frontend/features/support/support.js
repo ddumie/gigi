@@ -63,17 +63,24 @@ async function sendSupport(groupId, toUserId, button, card) {
     const groupInfo = groupData.group;
     const level = getLevelInfo(groupInfo.exp);
 
-    card.querySelector("[data-stat='exp']").textContent =
-      `${level.icon} ${level.name} · 경험치 ${groupInfo.exp}회`;
+    card.querySelector("[data-stat='exp']").innerHTML =
+      `<span class="exp-level">${level.name} 단계</span>
+      <span class="dot">·</span>
+      <span class="exp-count">${groupInfo.exp}회</span>`;
 
     if (level.next !== null) {
-      card.querySelector(".stat-sub").textContent =
-        `다음 레벨까지 ${level.next}회 남음`;
+      card.querySelector(".stat-sub").textContent = `다음 레벨까지 ${level.next}회 남음`;
     } else {
       card.querySelector(".stat-sub").textContent = "최대 레벨입니다.";
     }
-    card.querySelector("[data-stat='streak']").textContent = `연속 지지 스트릭 · ${groupInfo.streak}일`;
-    card.querySelector("[data-stat='max-streak']").textContent = `최고 기록 ${groupInfo.max_streak}일`;    
+
+    // 스트릭/최고 기록
+    card.querySelector("[data-stat='streak']").innerHTML =
+      `<span class="streak-label">연속 지지 일수</span>
+      <span class="dot">·</span>
+      <span class="streak-count">${groupInfo.streak}일</span>`;
+    card.querySelector("[data-stat='max-streak']").textContent =
+      `최고 기록 ${groupInfo.max_streak}일`;
 
     button.disabled = true;
     button.textContent = "오늘 지지 완료";
@@ -203,7 +210,11 @@ async function loadGroups() {
           <div class="stat-row">
             <span class="stat-icon">${level.icon}</span>
             <div>
-              <div class="stat-main" data-stat="exp">${level.name} 단계 · ${group.exp}회</div>
+              <div class="stat-main" data-stat="exp">
+                <span class="exp-level">${level.name} 단계</span>
+                <span class="dot">·</span>
+                <span class="exp-count">${group.exp}회</span>
+              </div>
               <div class="stat-sub">
                 ${level.next !== null ? `다음 레벨까지 ${level.next}회 남음` : "최대 레벨입니다."}
               </div>
@@ -214,7 +225,11 @@ async function loadGroups() {
           <div class="stat-row">
             <span class="stat-icon">🔥</span>
             <div>
-              <div class="stat-main" data-stat="streak">연속 지지 일수 · ${group.streak}일</div>
+              <div class="stat-main" data-stat="streak">
+                <span class="streak-label">연속 지지 일수</span>
+                <span class="dot">·</span>
+                <span class="streak-count">${group.streak}일</span>
+              </div>
               <div class="stat-sub" data-stat="max-streak">최고 기록 ${group.max_streak}일</div>
             </div>
           </div>
