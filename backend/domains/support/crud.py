@@ -6,7 +6,6 @@ from . import models, schemas
 from backend.domains.neighbor.models import GroupSearchPost
 from backend.domains.auth.models import User
 from backend.domains.habits.models import Habit, HabitCheck
-from backend.domains.habits.crud import create_group_habit
 import secrets, string
 
 # 초대코드 생성
@@ -216,19 +215,16 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
             result = await db.execute(select(GroupSearchPost.category).where(GroupSearchPost.post_id == group.post_id))
             post_category = result.scalar()
 
-            refined_frequency = post_info.frequency.replace(",","").replace(" ","")
-
             if post_info and post_category:
-                await create_group_habit(
-                    db=db,
+                create_group_habit = Habit(
                     user_id=user_id,
-                    group_id=group_id,
-                    title=post_info.habit_title,
-                    category=post_category,
-                    repeat_type=refined_frequency
+                    group_id=group_id
                 )
+                db.add(create_group_habit)
+
         await db.commit()
         await db.refresh(new_member)
+        await db.refresh(create_group_habit)
         return new_member
     
     except SQLAlchemyError as e:
