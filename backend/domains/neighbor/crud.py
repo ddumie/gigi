@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Comment, PostSupport
 from backend.domains.neighbor.schemas import GroupSearchCreate
-from backend.domains.habits.models import Habit
+from backend.domains.habits.models import Habit, HabitCheck
 from backend.domains.auth.models import User
 from backend.domains.support.models import Group, GroupMember
 from sqlalchemy.exc import IntegrityError
@@ -137,13 +137,14 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
 # 피드 목록 조회 (category 파라미터로 필터)
 async def get_habit_feed(db: AsyncSession, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
     stmt = (
-        select(FeedPost, Post, User, Habit, func.count(Comment.id).label("comment_count"))
+        select(FeedPost, Post, User, Habit, func.count(Comment.id).label("comment_count"), Group)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .outerjoin(Habit, FeedPost.habit_id == Habit.id)
+        .outerjoin(Group, Habit.group_id == Group.id) 
         .outerjoin(Comment, Comment.post_id == Post.id)
         .filter(Post.is_active == True)
-        .group_by(FeedPost.id, Post.id, User.id, Habit.id)
+        .group_by(FeedPost.id, Post.id, User.id, Habit.id, Group.id)
         .order_by(Post.created_at.desc())
     )
     if category:
@@ -267,3 +268,22 @@ async def get_support_info(post_id: int, user_id: int, db: AsyncSession) -> dict
     return {"support_count": count_result.scalar(),
             "is_supported": support_result.scalars().first() is not None,
             }
+
+async def get_today_completion(user_id: int, db: AsyncSession) -> tuple[int, int]:
+    from datetime import date
+    today = date.today()
+
+    total_result = await db.execute(
+        select(func.count()).select_from(Habit)
+        .filter(Habit.user_id == user_id, Habit.is_active == True)
+    )
+    total_count = total_result.scalar()
+
+    checked_result = await db.execute(
+        select(func.count()).select_from(HabitCheck)
+        .join(Habit, HabitCheck.habit_id == Habit.id)
+        .filter(Habit.user_id == user_id, HabitCheck.checked_date == today)
+    )
+    checked_count = checked_result.scalar()
+
+    return checked_count, total_count

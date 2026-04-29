@@ -87,6 +87,20 @@ async function renderFeed(posts) {
     const titleBox = document.createElement('div');
     titleBox.className = 'feed-title-box';
 
+        // titleBox 아래에 개인/모임 뱃지
+    const groupLabel = document.createElement('div');
+    groupLabel.style.cssText = 'margin: 0.25rem 0 0.5rem 0;';
+
+    const groupBadge = document.createElement('span');
+    if (p.group_name) {
+        groupBadge.className = 'badge badge-green';
+        groupBadge.textContent = p.group_name;
+    } else {
+        groupBadge.className = 'badge badge-gray';
+        groupBadge.textContent = '개인 습관';
+    }
+    groupLabel.appendChild(groupBadge);
+
     const titleIcon = document.createElement('span');
     titleIcon.className = 'feed-title-icon';
     titleIcon.textContent = '■';
@@ -166,7 +180,7 @@ async function renderFeed(posts) {
     dateEl.textContent = dateStr;
 
     actions.append(btn, commentBtn, dateEl);
-    article.append(header, titleBox, body, actions);
+    article.append(header, titleBox, groupLabel, body, actions);
     list.appendChild(article);
   }
 }    

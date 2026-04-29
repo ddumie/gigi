@@ -22,20 +22,26 @@ async function loadDetail() {
   const el = document.getElementById('feed-detail-content');
   el.innerHTML = '';
 
-  const title = document.createElement('strong');
-  title.textContent = `${p.category} 완료`;
+  // 상단 행: 카테고리 뱃지 + 작성자
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;';
 
-  const author = document.createElement('p');
+  const badge = document.createElement('span');
+  badge.className = 'badge badge-blue';
+  badge.textContent = p.category;
+
+  const author = document.createElement('span');
   author.className = 'meta-text';
-  author.style.marginTop = '0.25rem';
   author.textContent = p.author?.nickname ?? '알 수 없음';
 
+  header.append(badge, author);
+
+  // 본문
   const body = document.createElement('p');
-  body.className = 'section-copy';
-  body.style.marginTop = '0.5rem';
+  body.style.cssText = 'font-size:1.05rem; line-height:1.7; margin:0;';
   body.textContent = p.content ?? '';
 
-  el.append(title, author, body);
+  el.append(header, body);
 }
 
 async function loadComments() {

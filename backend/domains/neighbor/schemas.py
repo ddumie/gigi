@@ -42,6 +42,8 @@ class FeedPostResponse(BaseModel):
     content: str | None = None
     habit_title: Optional[str] = None
     habit_description: Optional[str] = None
+    group_id: Optional[int] = None   
+    group_name: Optional[str] = None 
     author: Optional[PostAuthorResponse] = None
     created_at: Optional[datetime] = None
     comment_count: int = 0
@@ -89,6 +91,11 @@ class NeighborCommentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class MyFeedResponse(BaseModel):
+    posts: list[FeedPostResponse]
+    today_all_done: bool
+
 # =============================================================================
 # 게시글 목록 / 상세 응답 (안 쓰는 스키마)
 class PostListResponse(BaseModel):
