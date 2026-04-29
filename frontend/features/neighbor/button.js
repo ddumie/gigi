@@ -9,7 +9,7 @@ const body = {
     frequency: Array.from(document.querySelectorAll('input[name="frequency"]:checked')).map(cb => cb.value).join(', '),
     category: document.getElementById('category').value || null,
 };
-// user_id 추후에 current_user.id로 교체
+// current_user.id로 교체
 const res = await fetch('/api/v1/neighbor/group-search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json',

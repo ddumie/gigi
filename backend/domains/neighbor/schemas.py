@@ -92,6 +92,7 @@ class NeighborCommentResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# 오늘 슴관 완료 여부
 class MyFeedResponse(BaseModel):
     posts: list[FeedPostResponse]
     today_all_done: bool

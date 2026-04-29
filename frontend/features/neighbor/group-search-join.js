@@ -18,19 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
             location.href = '/pages/auth/login.html';
             return;
         }
-
-        if (res.ok) {
-            location.href = '/pages/support/index.html';
-            return;
-        }
-
         const data = await res.json().catch(() => ({}));
-        // 이미 가입된 경우(내가 만든 모임 포함)도 지지 페이지로 이동
-        if ((data.detail ?? '').includes('이미 모임에 가입')) {
+        if (res.ok) {
+            alert(data.message === "모임생성" ? '모임생성' : '가입에 성공했습니다.')
             location.href = '/pages/support/index.html';
             return;
         }
 
-        alert(`오류: ${data.detail || '모임 참가에 실패했습니다.'}`);
+
+        alert(data.detail || '모임 참가에 실패했습니다.');
     });
 });

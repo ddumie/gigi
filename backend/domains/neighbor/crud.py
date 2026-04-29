@@ -9,13 +9,12 @@ from backend.domains.auth.models import User
 from backend.domains.support.models import Group, GroupMember
 from sqlalchemy.exc import IntegrityError
 
-# 현재 로그인 사용자 기준이 아니라 author_id와 동일한 user.id를 1로 고정하였기 때문에,
-# 추후 수정해야 함.
+
 # 글쓰기 post
 async def create_post(author_id: int, post_type: str, db: AsyncSession) -> Post:
     # 1. 부모 Post 먼저 생성
     db_post = Post(
-        author_id=author_id,  # auth가 아직 없어서 임시 테스트 값으로 1을 넣음. 실제론 현재 로그인 유저 id current_user.id로 교체
+        author_id=author_id,
         post_type=post_type
     )
     db.add(db_post)
@@ -53,7 +52,7 @@ async def get_group_search(db: AsyncSession) -> list[tuple[GroupSearchPost, User
     )
     return result.all()
 
-#
+# 모임글 업데이트
 async def update_group_search(post_id: int, user_id: int, post: GroupSearchCreate, db: AsyncSession) -> GroupSearchPost | None:
     result = await db.execute(select(Post).filter(Post.id == post_id, Post.author_id == user_id))
     db_post = result.scalars().first()
@@ -85,25 +84,25 @@ async def delete_group_search(post_id: int, user_id: int, db: AsyncSession) -> P
     post = result.scalars().first() # 나중에 author_id를 current_user.id 로 교체
     return post
 
-# my posts 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
+# 내 글보기 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
 async def get_my_group_search(user_id: int, db: AsyncSession) -> list[tuple[GroupSearchPost, User]]: 
     result = await db.execute(
         select(GroupSearchPost, Post, User)
         .join(Post, GroupSearchPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
-        .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
+        .filter(Post.is_active == True, Post.author_id == user_id) 
         .order_by(Post.created_at.desc())
     )
     return result.all()
     
 
-#my posts 페이지에서 내가 쓴 습관도 보여주기
+#내 글보기 페이지에서 내가 쓴 습관도 보여주기
 async def get_my_habits(user_id: int, db: AsyncSession) -> list[tuple[FeedPost, User]]: 
     result = await db.execute(
         select(FeedPost, Post, User)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
-        .filter(Post.is_active == True, Post.author_id == user_id)  # 나중에 author_id를 current_user.id로 교체
+        .filter(Post.is_active == True, Post.author_id == user_id)
         .order_by(Post.created_at.desc())
     )
 
@@ -269,6 +268,7 @@ async def get_support_info(post_id: int, user_id: int, db: AsyncSession) -> dict
             "is_supported": support_result.scalars().first() is not None,
             }
 
+# 오늘 습관 완료했는지 체크하는 함수(엔드포인트 아님)
 async def get_today_completion(user_id: int, db: AsyncSession) -> tuple[int, int]:
     from datetime import date
     today = date.today()

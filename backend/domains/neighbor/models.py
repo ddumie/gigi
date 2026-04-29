@@ -50,6 +50,7 @@ class GroupSearchPost(Base):
     post = relationship("Post", back_populates="group_search")
 
 class Comment(Base):
+    """댓글 전용 필드"""
     __tablename__ = "comments"
 
     id = Column(Integer, primary_key=True)
