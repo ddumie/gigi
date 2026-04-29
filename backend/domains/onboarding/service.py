@@ -58,7 +58,7 @@ async def get_ai_recommendations(age_group: str | None, health_interests: list[s
     try:
         response = await asyncio.wait_for(
             client.aio.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.5-flash-lite",
                 contents=prompt
             ),
             timeout=30.0

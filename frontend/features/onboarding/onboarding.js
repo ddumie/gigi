@@ -123,6 +123,10 @@ function initStep3() {
   const data = JSON.parse(stored);
   const habits = data.habits || [];
 
+  // 추천 개수 표시
+  const habitCountEl = document.getElementById('habit-count');
+  if (habitCountEl) habitCountEl.textContent = habits.length;
+
   // 닉네임 표시
   const user = getCurrentUser();
   const nicknameEl = document.getElementById('onboard-nickname');
