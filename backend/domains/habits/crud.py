@@ -57,11 +57,15 @@ async def create_group_habit(
     db: AsyncSession,
     user_id: int,
     group_id: int,
-    title: str,
-    category: str,
-    repeat_type: str,
+    title: str | None = None,
+    category: str | None = None,
+    repeat_type: str | None = None,
 ) -> Habit:
-    """모임 참여 시 그룹 습관을 자동으로 생성한다 (Flow A/B 공통)."""
+    """
+    모임 참여 시 그룹 습관 row를 생성한다 (Flow A/B 공통).
+    title/category/repeat_type은 GroupSearchPost에서 가져오므로 이 함수에서는 비워도 된다 (None).
+    하위 호환을 위해 값을 받으면 그대로 저장한다.
+    """
     try:
         habit = Habit(
             user_id     = user_id,
@@ -247,3 +251,28 @@ async def get_weekly_checked_dates(db: AsyncSession, user_id: int, today: date) 
         .distinct()
     )
     return list(result.scalars().all())
+
+
+async def get_monthly_check_counts(
+    db: AsyncSession, user_id: int, year: int, month: int
+) -> dict[date, int]:
+    """이번 달 각 날짜에 체크된 습관 수를 {date: count}로 반환 (미니 달력 진행률용)."""
+    start = date(year, month, 1)
+    # 다음 달 1일 - 1일 = 이번 달 마지막 날
+    if month == 12:
+        end = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        end = date(year, month + 1, 1) - timedelta(days=1)
+
+    result = await db.execute(
+        select(HabitCheck.checked_date, func.count(HabitCheck.id))
+        .join(Habit, Habit.id == HabitCheck.habit_id)
+        .where(
+            Habit.user_id == user_id,
+            Habit.is_active == True,
+            HabitCheck.checked_date >= start,
+            HabitCheck.checked_date <= end,
+        )
+        .group_by(HabitCheck.checked_date)
+    )
+    return {row[0]: row[1] for row in result.all()}

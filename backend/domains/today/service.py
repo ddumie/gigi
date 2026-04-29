@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.habits import crud as habits_crud
 from backend.domains.habits import service as habits_service
 from backend.domains.today.schemas import (
+    DailyProgress,
     TodayDashboardResponse,
     TodayHabitItem,
     TodayStat,
@@ -69,24 +70,45 @@ async def get_today_dashboard(
     today_checks = await habits_crud.get_today_checks_for_user(db, user_id, today)
     checked_ids  = {check.habit_id for check in today_checks}
 
-    habit_items = [
-        TodayHabitItem(
-            id          = h.id,
-            title       = h.title,
-            category    = h.category,
-            time        = h.time,
-            repeat_type = h.repeat_type,
-            is_checked  = h.id in checked_ids,
-            is_group    = h.group_id is not None,
+    habit_items = []
+    for h in habits:
+        meta = await habits_service.resolve_habit_meta(db, h)
+        habit_items.append(
+            TodayHabitItem(
+                id          = h.id,
+                title       = meta["title"],
+                category    = meta["category"],
+                time        = h.time,
+                repeat_type = meta["repeat_type"],
+                is_checked  = h.id in checked_ids,
+                is_group    = h.group_id is not None,
+            )
         )
-        for h in habits
-    ]
 
     checked, total = await habits_crud.count_checked_today(db, user_id, today)
     weekly_dates   = await habits_crud.get_weekly_checked_dates(db, user_id, today)
     rate           = round(checked / total * 100) if total > 0 else 0
     weekly_avg     = await _calc_weekly_average(db, user_id, today)
     streak         = await _calc_streak(db, user_id, today)
+
+    # 이번 달 일별 진행률 (미니 달력 셀 채움 + 클릭 툴팁용)
+    # total은 "그 날 시점에 이미 존재했던 활성 습관 수"로 계산 (등록 전 날짜는 0)
+    monthly_counts = await habits_crud.get_monthly_check_counts(db, user_id, today.year, today.month)
+    last_day       = (date(today.year + (1 if today.month == 12 else 0),
+                            1 if today.month == 12 else today.month + 1, 1) - timedelta(days=1)).day
+    habit_created_dates = [h.created_at.date() for h in habits if h.created_at]
+
+    monthly_progress = []
+    for d in range(1, last_day + 1):
+        day       = date(today.year, today.month, d)
+        day_total = sum(1 for cd in habit_created_dates if cd <= day)
+        monthly_progress.append(
+            DailyProgress(
+                date    = day,
+                checked = monthly_counts.get(day, 0),
+                total   = day_total,
+            )
+        )
 
     stats = TodayStat(
         checked_count        = checked,
@@ -95,6 +117,7 @@ async def get_today_dashboard(
         weekly_average       = weekly_avg,
         streak_days          = streak,
         weekly_checked_dates = weekly_dates,
+        monthly_progress     = monthly_progress,
     )
 
     return TodayDashboardResponse(habits=habit_items, stats=stats)

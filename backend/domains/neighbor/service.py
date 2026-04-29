@@ -15,6 +15,7 @@ from backend.domains.neighbor.crud import (
    update_feed_comment,
    delete_feed_comment,
    get_support,
+   get_today_completion,
 
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -92,7 +93,10 @@ async def get_my_habits_logic(user_id: int, db: AsyncSession):
         habits_feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         habits_feed.created_at = post.created_at
         result.append(habits_feed)
-    return result
+
+    checked_count, total_count = await get_today_completion(user_id=user_id, db=db)
+    today_all_done = total_count > 0 and checked_count >= total_count    
+    return {"posts": result, "today_all_done": today_all_done}
 
 async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db: AsyncSession) -> dict:
     habit = await get_habit(habit_id=habit_id, user_id=user_id, db=db)
@@ -109,11 +113,13 @@ async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db:
 async def get_habit_feed_logic(db: AsyncSession, category: str | None = None) -> list[FeedPost]:
     result = []
     rows = await get_habit_feed(category=category, db=db)
-    for feed, post, user, habit, comment_count in rows:
+    for feed, post, user, habit, comment_count, group in rows:
         feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         feed.created_at = post.created_at
         feed.habit_title = habit.title if habit else None
         feed.habit_description = habit.description if habit else None
+        feed.group_id = habit.group_id if habit else None
+        feed.group_name = group.name if group else None
         feed.comment_count = comment_count
         result.append(feed)
     return result

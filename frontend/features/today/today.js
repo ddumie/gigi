@@ -76,7 +76,7 @@ async function loadDashboard() {
 
     renderChecklist(currentHabits, currentStats);
     renderStats(currentStats);
-    renderCalendar(currentStats.weekly_checked_dates);
+    renderCalendar(currentStats.monthly_progress || []);
   } catch (e) {
     $checklist.innerHTML = '<p class="meta-text">데이터를 불러오지 못했습니다.</p>';
   }
@@ -273,15 +273,25 @@ function renderStats(stats) {
 
 // ── 미니 달력 ──
 
-function renderCalendar(checkedDates) {
+function renderCalendar(monthlyProgress) {
   const now   = new Date();
   const year  = now.getFullYear();
   const month = now.getMonth();
   const today = now.getDate();
 
-  const firstDay   = new Date(year, month, 1).getDay();
-  const lastDate   = new Date(year, month + 1, 0).getDate();
-  const checkedSet = new Set(checkedDates.map(d => new Date(d).getDate()));
+  // 타이틀: 'X월 달성 현황'
+  const $title = document.getElementById('calendar-title');
+  if ($title) $title.textContent = `${month + 1}월 달성 현황`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  // day(1~31) → {checked, total} 맵 생성
+  const progressMap = new Map();
+  (monthlyProgress || []).forEach(p => {
+    const day = new Date(p.date).getDate();
+    progressMap.set(day, { checked: p.checked, total: p.total });
+  });
 
   const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
   let html = dayLabels.map(d => `<span class="cal-hd">${d}</span>`).join('');
@@ -291,18 +301,103 @@ function renderCalendar(checkedDates) {
     html += '<span></span>';
   }
 
-  // 날짜
+  // 날짜 셀
   for (let d = 1; d <= lastDate; d++) {
-    const isDone  = checkedSet.has(d);
+    const p       = progressMap.get(d) || { checked: 0, total: 0 };
+    const ratio   = p.total > 0 ? Math.round(p.checked / p.total * 100) : 0;
     const isToday = d === today;
-    let cls = '';
-    if (isDone)  cls = 'done';
-    if (isToday) cls += ' today';
-    html += `<span class="${cls.trim()}">${d}</span>`;
+    const noHabit = p.total === 0;
+    const classes = ['cal-cell'];
+    if (isToday)   classes.push('today');
+    if (ratio > 0) classes.push('has-progress');
+    if (noHabit)   classes.push('no-habit');
+
+    html += `<span class="${classes.join(' ')}"
+                   data-day="${d}"
+                   data-checked="${p.checked}"
+                   data-total="${p.total}"
+                   style="--fill:${ratio}%">
+               <span class="cal-fill"></span>
+               <span class="cal-num">${d}</span>
+             </span>`;
   }
 
   $calendar.innerHTML = html;
 }
+
+
+// ── 달력 셀 클릭 시 'X/Y개 완료' 툴팁 ──
+
+let activeTooltipDay = null;
+
+function showCalTooltip(cell) {
+  const tooltip = document.getElementById('cal-tooltip');
+  if (!tooltip || !cell) return;
+
+  const day     = cell.dataset.day;
+  const checked = cell.dataset.checked || '0';
+  const total   = cell.dataset.total || '0';
+
+  tooltip.textContent = `${day}일 · ${checked}/${total}개 완료`;
+  tooltip.classList.add('show');
+
+  // 위치: 셀 상단 중앙 (status-calendar 기준 좌표)
+  const container = tooltip.offsetParent || tooltip.parentElement;
+  const cRect     = container.getBoundingClientRect();
+  const rect      = cell.getBoundingClientRect();
+
+  // 일단 중앙 정렬을 위해 width 측정
+  tooltip.style.left = '0px';
+  tooltip.style.top  = '0px';
+  const tipW = tooltip.offsetWidth;
+  const tipH = tooltip.offsetHeight;
+
+  let left = rect.left - cRect.left + rect.width / 2 - tipW / 2;
+  let top  = rect.top  - cRect.top  - tipH - 6;
+
+  // 좌/우 가장자리 클램핑
+  const maxLeft = container.clientWidth - tipW - 2;
+  if (left < 2)        left = 2;
+  if (left > maxLeft)  left = maxLeft;
+  // 상단을 넘어가면 셀 아래로
+  if (top < 0) top = rect.bottom - cRect.top + 6;
+
+  tooltip.style.left = left + 'px';
+  tooltip.style.top  = top + 'px';
+
+  activeTooltipDay = day;
+}
+
+function hideCalTooltip() {
+  const tooltip = document.getElementById('cal-tooltip');
+  if (tooltip) tooltip.classList.remove('show');
+  activeTooltipDay = null;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!$calendar) return;
+
+  // 셀 클릭 위임
+  $calendar.addEventListener('click', (e) => {
+    const cell = e.target.closest('.cal-cell');
+    if (!cell) return;
+    e.stopPropagation();
+    // 습관 등록 전 날짜는 클릭 비활성화
+    if (cell.classList.contains('no-habit')) {
+      hideCalTooltip();
+      return;
+    }
+    // 같은 셀 다시 클릭 시 닫기
+    if (activeTooltipDay === cell.dataset.day) {
+      hideCalTooltip();
+    } else {
+      showCalTooltip(cell);
+    }
+  });
+
+  // 외부 클릭 시 닫기
+  document.addEventListener('click', () => hideCalTooltip());
+});
 
 
 // ── 첫 진입 모달 (첫 습관 등록 직후 1회 표시) ──

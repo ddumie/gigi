@@ -19,6 +19,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
+  // 글씨 크기 선택
+  const savedStep = parseInt(localStorage.getItem('gigi_font_scale') ?? '2');
+  document.querySelectorAll('.js-font-size').forEach((btn) => {
+    const step = parseInt(btn.dataset.fontStep);
+    if (step === savedStep) btn.classList.replace('btn-outline', 'btn-primary');
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.js-font-size').forEach((b) => b.classList.replace('btn-primary', 'btn-outline'));
+      btn.classList.replace('btn-outline', 'btn-primary');
+      setFontScale(step);
+    });
+  });
+
   // 비밀번호 변경 폼 토글
   const changeBtn  = document.getElementById('password-change-btn');
   const cancelBtn  = document.getElementById('password-cancel-btn');
