@@ -70,18 +70,20 @@ async def get_today_dashboard(
     today_checks = await habits_crud.get_today_checks_for_user(db, user_id, today)
     checked_ids  = {check.habit_id for check in today_checks}
 
-    habit_items = [
-        TodayHabitItem(
-            id          = h.id,
-            title       = h.title,
-            category    = h.category,
-            time        = h.time,
-            repeat_type = h.repeat_type,
-            is_checked  = h.id in checked_ids,
-            is_group    = h.group_id is not None,
+    habit_items = []
+    for h in habits:
+        meta = await habits_service.resolve_habit_meta(db, h)
+        habit_items.append(
+            TodayHabitItem(
+                id          = h.id,
+                title       = meta["title"],
+                category    = meta["category"],
+                time        = h.time,
+                repeat_type = meta["repeat_type"],
+                is_checked  = h.id in checked_ids,
+                is_group    = h.group_id is not None,
+            )
         )
-        for h in habits
-    ]
 
     checked, total = await habits_crud.count_checked_today(db, user_id, today)
     weekly_dates   = await habits_crud.get_weekly_checked_dates(db, user_id, today)

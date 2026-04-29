@@ -23,10 +23,11 @@ class Habit(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=True, index=True)
-    title = Column(String, nullable=False)
-    category = Column(String, nullable=False)            # 운동, 복약, 식단, 수면, 기타
+    # group_id 있는 경우 title/category/repeat_type은 GroupSearchPost에서 가져와 보여주므로 nullable
+    title = Column(String, nullable=True)
+    category = Column(String, nullable=True)             # 운동, 복약, 식단, 수면, 기타
     time = Column(String)                                # "07:00"
-    repeat_type = Column(String, default="매일")         # 매일, 평일, 주말, 주1회, 주3회
+    repeat_type = Column(String, nullable=True, default="매일")  # 매일, 평일, 주말, 주1회, 주3회
     description = Column(String, default="")
     is_ai_recommended = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)            # 비활성화 시 False
