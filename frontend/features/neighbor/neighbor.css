@@ -166,3 +166,15 @@
   gap: 4px;
   cursor: pointer;
 }
+/*오늘 습관 완료 여부 배지 스타일 추가*/
+.all-done-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #16a34a;
+  vertical-align: middle;
+}

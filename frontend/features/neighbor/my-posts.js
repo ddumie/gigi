@@ -1,10 +1,14 @@
 // my-posts 용 자바스크립트
 (async () => {
   requireLogin();
-  const [groupPosts, feedPosts] = await Promise.all([
+  const [groupPosts, feedResult] = await Promise.all([
     apiGet('/neighbor/group-search/my'),
     apiGet('/neighbor/feed/my')
   ]);
+  // 오늘 습관 완료 여부 전달
+  const feedPosts = feedResult.posts;
+  const allHabitsDone = feedResult.today_all_done;
+  const todayStr = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
   // group-search 글 렌더링
   const list_gs = document.getElementById('my-posts-list-gs');
@@ -56,7 +60,17 @@
     if (postDate && postDate !== lastDateFd) {
       const sep = document.createElement('div');
       sep.className = 'feed-date-separator';
-      sep.textContent = postDate;
+      const dateSpan = document.createElement('span');
+      dateSpan.textContent = postDate;
+      sep.appendChild(dateSpan);
+
+      if (postDate === todayStr && allHabitsDone) {
+        const badge = document.createElement('span');
+        badge.className = 'all-done-badge';
+        badge.textContent = '모두 완료';
+        sep.appendChild(badge);
+      }
+
       list_f.appendChild(sep);
       lastDateFd = postDate;
     }

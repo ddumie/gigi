@@ -22,6 +22,7 @@ from backend.domains.neighbor.schemas import (
     GroupSearchCreate, GroupSearchResponse, 
     FeedPostResponse, HabitFeedCreate, HabitFeedUpdate,
     FeedDetailResponse, NeighborCommentCreate, NeighborCommentResponse,
+    MyFeedResponse,
     
 )
 from backend.domains.auth.router import get_current_user
@@ -59,7 +60,7 @@ async def get_my_group_search_final(db: AsyncSession = Depends(get_async_db),  c
     return await get_my_group_search_logic(user_id=current_user.id, db=db)
 
 #my posts 페이지에서 내가 쓴 습관도 보여주기
-@router.get("/feed/my", response_model=list[FeedPostResponse])
+@router.get("/feed/my", response_model=MyFeedResponse)
 async def get_my_habits_final(db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)): 
     return await get_my_habits_logic(user_id=current_user.id, db=db)
 
