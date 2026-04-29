@@ -216,6 +216,8 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
             result = await db.execute(select(GroupSearchPost.category).where(GroupSearchPost.post_id == group.post_id))
             post_category = result.scalar()
 
+            refined_frequency = post_info.frequency.replace(",","").replace(" ","")
+
             if post_info and post_category:
                 await create_group_habit(
                     db=db,
@@ -223,7 +225,7 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
                     group_id=group_id,
                     title=post_info.habit_title,
                     category=post_category,
-                    repeat_type=post_info.frequency
+                    repeat_type=refined_frequency
                 )
         await db.commit()
         await db.refresh(new_member)
