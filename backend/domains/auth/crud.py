@@ -93,6 +93,7 @@ def deactivate_user(db: Session, user: User) -> None:
     """회원탈퇴 (소프트 삭제 — is_active = False, 이메일 익명화)"""
     user.is_active = False
     user.email = f"deleted_{user.id}@deleted.com"
+    user.nickname = f"deleted_{user.id}"
     try:
         db.commit()
         db.refresh(user)
