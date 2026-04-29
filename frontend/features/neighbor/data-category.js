@@ -149,9 +149,7 @@ async function renderFeed(posts) {
     is_supported ? btn.classList.replace('btn-outline', 'btn-primary') : btn.classList.replace('btn-primary', 'btn-outline');
   });
 
-    // =================================================================================
-
-    
+  // 댓글수와 오늘 단 댓글 있는 경우 여부 표시  
     const commentBtn = document.createElement('button');
     commentBtn.type = 'button';
     commentBtn.className = 'btn btn-outline btn-sm';
