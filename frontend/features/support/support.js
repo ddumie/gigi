@@ -11,6 +11,36 @@ const groupLimit = 3;
 let loading = false;
 let hasMore = true;
 
+// 빈도 변환
+function formatFrequency(freqStr) {
+  if (!freqStr) return "";
+
+  // 쉼표와 공백 제거 후 배열로 변환
+  const days = freqStr.split(",").map(d => d.trim());
+
+  const weekdays = ["월", "화", "수", "목", "금"];
+  const weekend = ["토", "일"];
+  const alldays = [...weekdays, ...weekend];
+
+  // 평일 체크
+  if (days.length === weekdays.length && weekdays.every(d => days.includes(d))) {
+    return "평일";
+  }
+
+  // 주말 체크
+  if (days.length === weekend.length && weekend.every(d => days.includes(d))) {
+    return "주말";
+  }
+
+  // 매일 체크
+  if (days.length === alldays.length && alldays.every(d => days.includes(d))) {
+    return "매일";
+  }
+
+  // 그 외는 원래 문자열 그대로
+  return freqStr;
+}
+
 // 경험치 단계 계산 함수
 function getLevelInfo(exp) {
   if (exp < 50) {
@@ -195,7 +225,7 @@ async function loadGroups() {
       if (group.habit && group.frequency) {
         const habitBox = document.createElement("div");
         habitBox.className = "habit-box";
-        habitBox.textContent = `📌 함께하는 습관: ${group.habit} · ${group.frequency}`;
+        habitBox.textContent = `📌 함께하는 습관: ${group.habit} · ${formatFrequency(group.frequency)}`;
         card.appendChild(habitBox);
       }
 
