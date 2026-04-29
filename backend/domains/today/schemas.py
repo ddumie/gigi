@@ -13,6 +13,12 @@ class TodayHabitItem(BaseModel):
     is_group:    bool = False
 
 
+class DailyProgress(BaseModel):
+    date:    date
+    checked: int
+    total:   int
+
+
 class TodayStat(BaseModel):
     checked_count:       int
     total_count:         int
@@ -20,6 +26,7 @@ class TodayStat(BaseModel):
     weekly_average:      int
     streak_days:         int
     weekly_checked_dates: list[date]
+    monthly_progress:    list[DailyProgress] = []
 
 
 class TodayDashboardResponse(BaseModel):

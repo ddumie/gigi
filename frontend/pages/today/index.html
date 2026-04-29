@@ -12,11 +12,6 @@
   <link rel="stylesheet" href="/features/today/today.css">
 </head>
 <body data-section="today">
-  <div class="font-scaler">
-    <span>글씨 크기</span>
-    <input id="font-scale-slider" type="range" min="0" max="6" step="1">
-    <span id="font-scale-value">기본</span>
-  </div>
   <main>
     <div class="container page-shell">
       <header class="page-header">
@@ -36,16 +31,23 @@
       </section>
 
       <!-- 나의 현황 -->
-      <section class="card" style="margin-bottom:0.75rem;">
+      <section class="card today-status" style="margin-bottom:0.75rem;">
         <strong>📊 나의 현황</strong>
-        <div class="stat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:1rem;">
-          <div class="stat-card"><div id="stat-rate"   class="stat-value">—</div><div class="stat-label">오늘 달성률</div></div>
-          <div class="stat-card"><div id="stat-weekly" class="stat-value">—</div><div class="stat-label">이번 주 평균</div></div>
-          <div class="stat-card"><div id="stat-streak" class="stat-value">—</div><div class="stat-label">연속 달성</div></div>
-          <div class="stat-card"><div id="stat-badge"  class="stat-value" style="font-size:1rem;">🌱 씨앗</div><div class="stat-label">내 칭호</div></div>
+        <div class="status-body">
+          <!-- 좌: 4지표 2×2 -->
+          <div class="stat-grid">
+            <div class="stat-card"><div id="stat-rate"   class="stat-value">—</div><div class="stat-label">오늘 달성률</div></div>
+            <div class="stat-card"><div id="stat-weekly" class="stat-value">—</div><div class="stat-label">주간 달성률</div></div>
+            <div class="stat-card"><div id="stat-streak" class="stat-value">—</div><div class="stat-label">연속 달성</div></div>
+            <div class="stat-card"><div id="stat-badge"  class="stat-value" style="font-size:1rem;">🌱 씨앗</div><div class="stat-label">내 칭호</div></div>
+          </div>
+          <!-- 우: 달력 -->
+          <div class="status-calendar">
+            <div id="calendar-title" class="status-calendar-title">달성 현황</div>
+            <div id="mini-calendar" class="mini-calendar"></div>
+            <div id="cal-tooltip" class="cal-tooltip"></div>
+          </div>
         </div>
-        <div style="font-size:0.75rem;font-weight:500;margin:0.75rem 0 0.4rem;">이번 달 습관 기록</div>
-        <div id="mini-calendar" class="mini-calendar"></div>
       </section>
 
       <!-- 오늘의 습관 체크리스트 -->
@@ -55,7 +57,7 @@
           <span id="today-pill" class="badge badge-blue"></span>
         </div>
         <div id="today-checklist"></div>
-        <button id="btn-add-habit-today" class="btn btn-outline btn-full btn-sm" style="margin-top:0.5rem;">+ 습관 추가</button>
+        <button id="btn-add-habit-today" class="btn btn-outline btn-full btn-sm" style="margin-top:0.5rem;">습관 설정</button>
       </section>
 
       <!-- 첫 진입 모달 (화면 8: 습관 등록 후 모임 유도) -->
