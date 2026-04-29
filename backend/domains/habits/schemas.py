@@ -82,13 +82,19 @@ class HabitUpdate(BaseModel):
 
 
 class HabitResponse(BaseModel):
+    """
+    응답 시점에 title/category/repeat_type은 다음 우선순위로 채워진다.
+      1) group_id 있고 GroupSearchPost가 살아있으면 → Post 값
+      2) 그 외 → Habit row의 직접 값 (개인 습관 또는 post 없는 직접 만든 모임)
+    `service.build_habit_response()` 사용.
+    """
     id:               int
     user_id:          int
     group_id:         int | None
-    title:            str
-    category:         str
+    title:            str | None
+    category:         str | None
     time:             str | None
-    repeat_type:      str
+    repeat_type:      str | None
     description:      str
     is_ai_recommended: bool
     is_active:        bool

@@ -31,7 +31,8 @@ async def list_habits(
     db:           AsyncSession    = Depends(get_async_db),
     current_user: User       = Depends(get_current_user),
 ):
-    return await service.get_habits(db, current_user.id, category)
+    habits = await service.get_habits(db, current_user.id, category)
+    return [await service.build_habit_response(db, h) for h in habits]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -42,7 +43,8 @@ async def create_habit(
 ):
     is_first = not await has_any_habit(db, current_user.id)
     habit = await service.create_habit(db, current_user.id, data)
-    return {**HabitResponse.model_validate(habit).model_dump(), "is_first_habit": is_first}
+    payload = await service.build_habit_response(db, habit)
+    return {**payload, "is_first_habit": is_first}
 
 
 @router.put("/{habit_id}", response_model=HabitResponse)
@@ -53,7 +55,8 @@ async def update_habit(
     current_user: User    = Depends(get_current_user),
 ):
     try:
-        return await service.update_habit(db, current_user.id, habit_id, data)
+        habit = await service.update_habit(db, current_user.id, habit_id, data)
+        return await service.build_habit_response(db, habit)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
