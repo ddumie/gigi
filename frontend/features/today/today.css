@@ -21,13 +21,56 @@
   color: var(--color-success);
 }
 
+/* ── 나의 현황: 좌우 2단 (좌 4지표 2×2, 우 달력) ── */
+.today-status .status-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: stretch;       /* 좌측 영역을 우측 달력 높이에 맞춤 */
+  margin-top: 0.75rem;
+}
+
+.today-status .stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;  /* 행 균등 분할 → 셀이 세로로 늘어남 */
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.today-status .stat-grid .stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-calendar {
+  position: relative;        /* cal-tooltip 의 기준점 */
+}
+
+.status-calendar-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+@media (max-width: 768px) {
+  .today-status .status-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ── 미니 달력 ── */
+
 .mini-calendar {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
-.mini-calendar span {
+.mini-calendar > * {
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -38,10 +81,84 @@
   color: var(--color-text-tertiary);
 }
 
-.mini-calendar .done {
+.mini-calendar .cal-hd {
+  background: transparent;
+  font-weight: 600;
+}
+
+/* 날짜 셀: 좌→우 비율 채움 */
+.mini-calendar .cal-cell {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mini-calendar .cal-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--fill, 0%);
   background: var(--color-primary-light);
+  transition: width 0.2s;
+  pointer-events: none;
+}
+
+.mini-calendar .cal-num {
+  position: relative;
+  z-index: 1;
+}
+
+.mini-calendar .cal-cell.has-progress .cal-num {
   color: var(--color-primary);
   font-weight: 700;
+}
+
+/* 오늘 날짜 외곽선 — fill 위에 그려져서 덮이지 않도록 ::after 사용 */
+.mini-calendar .cal-cell.today::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--color-primary);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 습관이 없던 날짜: 클릭 비활성 (시각적 dim) */
+.mini-calendar .cal-cell.no-habit {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* 날짜 클릭 시 툴팁 */
+.cal-tooltip {
+  position: absolute;
+  display: none;
+  padding: 0.35rem 0.6rem;
+  background: var(--color-text);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.cal-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--color-text);
+}
+
+.cal-tooltip.show {
+  display: block;
 }
 
 .share-composer {
