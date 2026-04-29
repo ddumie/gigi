@@ -7,7 +7,7 @@ from backend.database import get_async_db
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
 from backend.domains.habits import service
-from backend.domains.habits.crud import has_any_habit
+from backend.domains.habits.crud import has_any_habit, get_active_habit_titles
 from backend.domains.habits.schemas import (
     HabitCreate,
     HabitUpdate,
@@ -31,7 +31,8 @@ async def list_habits(
     db:           AsyncSession    = Depends(get_async_db),
     current_user: User       = Depends(get_current_user),
 ):
-    return await service.get_habits(db, current_user.id, category)
+    habits = await service.get_habits(db, current_user.id, category)
+    return [await service.build_habit_response(db, h) for h in habits]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -42,7 +43,8 @@ async def create_habit(
 ):
     is_first = not await has_any_habit(db, current_user.id)
     habit = await service.create_habit(db, current_user.id, data)
-    return {**HabitResponse.model_validate(habit).model_dump(), "is_first_habit": is_first}
+    payload = await service.build_habit_response(db, habit)
+    return {**payload, "is_first_habit": is_first}
 
 
 @router.put("/{habit_id}", response_model=HabitResponse)
@@ -53,7 +55,8 @@ async def update_habit(
     current_user: User    = Depends(get_current_user),
 ):
     try:
-        return await service.update_habit(db, current_user.id, habit_id, data)
+        habit = await service.update_habit(db, current_user.id, habit_id, data)
+        return await service.build_habit_response(db, habit)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
@@ -124,13 +127,15 @@ async def uncheck_habit(
 @router.post("/ai-recommend", response_model=HabitAIRecommendResponse)
 async def recommend_habits(
     request: HabitAIRecommendRequest,
+    db: AsyncSession = Depends(get_async_db),
     current_user: User = Depends(get_current_user),
 ):
     """관심사 기반 AI 습관 추천 (온보딩 완료 후 추가 추천용)"""
     if current_user.is_first_login:
         raise HTTPException(status_code=403, detail="온보딩을 먼저 완료해주세요.")
     try:
-        habits = await get_ai_recommendations(None, request.health_interests)
+        existing_titles = await get_active_habit_titles(db, current_user.id)
+        habits = await get_ai_recommendations(None, request.health_interests, existing_titles)
     except ValueError:
         raise HTTPException(status_code=502, detail="맞춤 습관 추천 중 오류가 발생했습니다.")
     return HabitAIRecommendResponse(habits=habits)

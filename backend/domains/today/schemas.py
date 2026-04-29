@@ -5,10 +5,10 @@ from pydantic import BaseModel
 
 class TodayHabitItem(BaseModel):
     id:          int
-    title:       str
-    category:    str
+    title:       str | None = None
+    category:    str | None = None
     time:        str | None = None
-    repeat_type: str
+    repeat_type: str | None = None
     is_checked:  bool
     is_group:    bool = False
 

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 직접 입력 - 엔터
   const customInput = document.getElementById('custom-interest-input');
   customInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); addCustomInterest(); }
+    if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addCustomInterest(); }
   });
   // 직접 입력 - 추가 버튼
   document.getElementById('btn-add-custom').addEventListener('click', addCustomInterest);
@@ -99,22 +99,28 @@ async function getRecommendations() {
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = '추천 받는 중...';
+  btn.style.pointerEvents = 'none';
+  let dotCount = 1;
+  const dotInterval = setInterval(() => {
+    btn.textContent = '추천 받는 중' + '.'.repeat(dotCount);
+    dotCount = dotCount >= 3 ? 1 : dotCount + 1;
+  }, 400);
 
   try {
     const result = await apiPost('/habits/ai-recommend', { health_interests: currentInterests });
+    clearInterval(dotInterval);
     currentHabits = result.habits || [];
     renderResult(currentHabits);
     showStep('result');
   } catch (err) {
+    clearInterval(dotInterval);
     if (err.message === '온보딩을 먼저 완료해주세요.') {
       showToast('온보딩을 먼저 완료해주세요. 온보딩 페이지로 이동합니다.');
       setTimeout(() => { window.location.href = PAGES.onboard1; }, 1500);
       return;
     }
     showToast(err.message);
-    btn.disabled = false;
+    btn.style.pointerEvents = '';
     btn.textContent = '맞춤 습관 추천받기';
   }
 }
@@ -123,8 +129,12 @@ async function getRecommendations() {
 // 다시 추천받기
 async function retryRecommendation() {
   const btn = document.getElementById('btn-retry');
-  btn.disabled = true;
-  btn.textContent = '추천 받는 중...';
+  btn.style.pointerEvents = 'none';
+  let dotCount = 1;
+  const dotInterval = setInterval(() => {
+    btn.textContent = '추천 받는 중' + '.'.repeat(dotCount);
+    dotCount = dotCount >= 3 ? 1 : dotCount + 1;
+  }, 400);
 
   try {
     const result = await apiPost('/habits/ai-recommend', { health_interests: currentInterests });
@@ -133,7 +143,8 @@ async function retryRecommendation() {
   } catch (err) {
     showToast(err.message);
   } finally {
-    btn.disabled = false;
+    clearInterval(dotInterval);
+    btn.style.pointerEvents = '';
     btn.textContent = '다시 추천받기';
   }
 }
@@ -172,6 +183,9 @@ async function selectHabits() {
 
 // 추천 결과 카드 렌더링
 function renderResult(habits) {
+  const habitCountEl = document.getElementById('habit-count');
+  if (habitCountEl) habitCountEl.textContent = habits.length;
+
   const list = document.getElementById('recommendation-list');
   list.innerHTML = habits.map((h, i) => `
     <article class="recommendation-card" data-index="${i}" style="cursor:pointer;">
