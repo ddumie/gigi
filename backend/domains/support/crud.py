@@ -224,7 +224,8 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
 
         await db.commit()
         await db.refresh(new_member)
-        await db.refresh(create_group_habit)
+        if group and group.post_id and post_info and post_category:
+            await db.refresh(create_group_habit)
         return new_member
     
     except SQLAlchemyError as e:
