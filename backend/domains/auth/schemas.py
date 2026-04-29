@@ -150,6 +150,25 @@ class TokenResponse(BaseModel):
 
 
 # ──────────────────────────────────────────
+# 닉네임 변경
+# ──────────────────────────────────────────
+
+class NicknameUpdateRequest(BaseModel):
+    """PATCH /auth/nickname 요청 바디"""
+    nickname: str
+
+    @field_validator("nickname")
+    @classmethod
+    def validate_nickname(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError("닉네임을 입력해주세요")
+        if len(v) > 12:
+            raise ValueError("닉네임은 12자 이하여야 합니다")
+        return v
+
+
+# ──────────────────────────────────────────
 # 비밀번호 변경
 # ──────────────────────────────────────────
 

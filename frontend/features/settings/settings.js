@@ -19,6 +19,65 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
+  // 닉네임 변경
+  const nicknameEditBtn  = document.getElementById('nickname-edit-btn');
+  const nicknameCancelBtn = document.getElementById('nickname-cancel-btn');
+  const nicknameEditForm = document.getElementById('nickname-edit-form');
+
+  nicknameEditBtn.addEventListener('click', () => {
+    nicknameEditForm.classList.remove('hidden');
+    nicknameEditBtn.classList.add('hidden');
+  });
+
+  nicknameCancelBtn.addEventListener('click', () => {
+    nicknameEditForm.classList.add('hidden');
+    nicknameEditBtn.classList.remove('hidden');
+    document.getElementById('new-nickname').value = '';
+    const errEl = document.getElementById('nickname-error');
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+  });
+
+  document.getElementById('nickname-save-btn').addEventListener('click', async () => {
+    const newNickname = document.getElementById('new-nickname').value.trim();
+    const errEl = document.getElementById('nickname-error');
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+
+    if (!newNickname) {
+      errEl.textContent = '닉네임을 입력해주세요';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (newNickname.length > 12) {
+      errEl.textContent = '닉네임은 12자 이하여야 합니다';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    const saveBtn = document.getElementById('nickname-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '저장 중...';
+
+    try {
+      const res = await apiPatch('/auth/nickname', { nickname: newNickname });
+      document.getElementById('settings-nickname').textContent = res.nickname;
+      const storedUser = getCurrentUser();
+      if (storedUser) {
+        storedUser.nickname = res.nickname;
+        setCurrentUser(storedUser);
+      }
+      showToast('닉네임이 변경되었습니다.');
+      nicknameCancelBtn.click();
+    } catch (e) {
+      errEl.textContent = e.message || '닉네임 변경에 실패했습니다.';
+      errEl.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '저장';
+    }
+  });
+
   // 글씨 크기 선택
   const savedStep = parseInt(localStorage.getItem('gigi_font_scale') ?? '2');
   document.querySelectorAll('.js-font-size').forEach((btn) => {
