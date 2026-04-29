@@ -12,6 +12,14 @@ logger = logging.getLogger(__name__)
 # ── Habit ──
 
 
+async def get_active_habit_titles(db: AsyncSession, user_id: int) -> list[str]:
+    """활성 습관 제목 목록 반환 (AI 추천 중복 제외용)"""
+    result = await db.execute(
+        select(Habit.title).where(Habit.user_id == user_id, Habit.is_active == True)
+    )
+    return list(result.scalars().all())
+
+
 async def has_any_habit(db: AsyncSession, user_id: int) -> bool:
     """활성/비활성 포함, 해당 유저의 습관 레코드가 하나라도 있는지 확인한다."""
     result = await db.execute(

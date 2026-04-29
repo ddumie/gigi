@@ -7,7 +7,7 @@ from backend.database import get_async_db
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
 from backend.domains.habits import service
-from backend.domains.habits.crud import has_any_habit
+from backend.domains.habits.crud import has_any_habit, get_active_habit_titles
 from backend.domains.habits.schemas import (
     HabitCreate,
     HabitUpdate,
@@ -127,13 +127,15 @@ async def uncheck_habit(
 @router.post("/ai-recommend", response_model=HabitAIRecommendResponse)
 async def recommend_habits(
     request: HabitAIRecommendRequest,
+    db: AsyncSession = Depends(get_async_db),
     current_user: User = Depends(get_current_user),
 ):
     """관심사 기반 AI 습관 추천 (온보딩 완료 후 추가 추천용)"""
     if current_user.is_first_login:
         raise HTTPException(status_code=403, detail="온보딩을 먼저 완료해주세요.")
     try:
-        habits = await get_ai_recommendations(None, request.health_interests)
+        existing_titles = await get_active_habit_titles(db, current_user.id)
+        habits = await get_ai_recommendations(None, request.health_interests, existing_titles)
     except ValueError:
         raise HTTPException(status_code=502, detail="맞춤 습관 추천 중 오류가 발생했습니다.")
     return HabitAIRecommendResponse(habits=habits)

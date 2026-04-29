@@ -27,14 +27,15 @@ client = genai.Client(api_key=settings.GEMINI_API_KEY)
 #     print(f"모델 리스트 조회 실패: {e}")
 
 
-async def get_ai_recommendations(age_group: str | None, health_interests: list[str] | None) -> list[AIHabitItem]:
+async def get_ai_recommendations(age_group: str | None, health_interests: list[str] | None, existing_titles: list[str] | None = None) -> list[AIHabitItem]:
     """사용자가 설정한 나이대, 관심사 기반 Gemini AI 습관 추천"""
     interests_str = ", ".join(health_interests) if health_interests else "일반 건강 관리"
     interest_count = len(health_interests) if health_interests else 0
     num_habits = 3 if interest_count <= 1 else (4 if interest_count == 2 else 5)
+    exclude_str = f"\n    이미 등록된 습관이므로 추천하지 마세요: {', '.join(existing_titles)}" if existing_titles else ""
     prompt = f"""
     사용자의 나이대: {age_group if age_group else "미입력"}
-    사용자의 관심사: {interests_str}
+    사용자의 관심사: {interests_str}{exclude_str}
 
     위 정보를 바탕으로 사용자에게 추천할 수 있는 건강 습관 {num_habits}가지를 JSON 형식으로 제공해주세요.
     각 습관은 title(습관 제목), category(카테고리), description(짧고 간단한 설명)을 포함해야 합니다.
@@ -89,6 +90,9 @@ async def save_selected_habits(db: AsyncSession, user_id: int, selected: list[AI
     """AI 추천 습관 저장과 온보딩 완료처리"""
     if not selected:  # 라우터에서도 확인으로 이중체크 중
         raise ValueError("습관을 하나 이상 선택해주세요.")
+    from backend.domains.habits.crud import get_active_habit_titles
+    existing = {t.lower() for t in await get_active_habit_titles(db, user_id)}
+    selected = [item for item in selected if item.title.lower() not in existing]
     try:
         for item in selected:
             db.add(Habit(
@@ -112,9 +116,9 @@ async def save_selected_habits(db: AsyncSession, user_id: int, selected: list[AI
         raise ValueError("습관 저장 중 오류가 발생했습니다.")
 
 #  AI호출 성공해야 카운트증가로 넘어가서 AI성공=둘다성공, AI실패=둘다실패(카운트증가 실패로 에러처리됨)
-async def recommend_habits_and_count(db: AsyncSession, user_id: int, age_group: str | None, health_interests: list[str] | None):
+async def recommend_habits_and_count(db: AsyncSession, user_id: int, age_group: str | None, health_interests: list[str] | None, existing_titles: list[str] | None = None):
     """AI 습관추천 + 추천 횟수(카운트) 증가를 하나로 처리 : AI호출 성공시에만 카운트 증가"""
-    habits = await get_ai_recommendations(age_group, health_interests)  # AI 호출
+    habits = await get_ai_recommendations(age_group, health_interests, existing_titles)  # AI 호출
     try:
         updated_pref = await crud.increment_recommend_count(db, user_id)  # 카운트 증가
     except ValueError:  # 카운트 증가 실패하면 ValueError로 라우터에서 502에러

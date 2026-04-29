@@ -116,6 +116,9 @@ async def save_ai_selected_habits(
     db: AsyncSession, user_id: int, selected_habits: list
 ) -> None:
     """AI 추천 습관 선택 목록을 저장한다."""
+    from backend.domains.habits.crud import get_active_habit_titles
+    existing = {t.lower() for t in await get_active_habit_titles(db, user_id)}
+    selected_habits = [item for item in selected_habits if item.title.lower() not in existing]
     try:
         for item in selected_habits:
             db.add(Habit(

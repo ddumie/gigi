@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.onboarding import crud, service
 from backend.domains.onboarding.schemas import PreferenceRequest, PreferenceResponse, AIRecommendResponse, SelectRequest
 from backend.domains.auth.router import get_current_user
-from backend.domains.habits.crud import has_any_habit
+from backend.domains.habits.crud import has_any_habit, get_active_habit_titles
 from backend.database import get_async_db
 
 router = APIRouter()
@@ -37,13 +37,14 @@ async def recommend_habits(db: AsyncSession = Depends(get_async_db), current_use
     pref = await crud.get_preferences(db, current_user.id)
     if pref is None:
         raise HTTPException(status_code=404, detail="먼저 선호도를 저장해주세요.")
-    if pref.recommend_count >= 3:
+    if pref.recommend_count >= 15:
         raise HTTPException(status_code=400, detail="오늘 추천 횟수를 모두 사용했습니다. 내일 다시 시도해주세요.")
     try:
-        habits, updated_pref = await service.recommend_habits_and_count(db, current_user.id, pref.age_group, pref.health_interests)
+        existing_titles = await get_active_habit_titles(db, current_user.id)
+        habits, updated_pref = await service.recommend_habits_and_count(db, current_user.id, pref.age_group, pref.health_interests, existing_titles)
     except ValueError:
         raise HTTPException(status_code=502, detail="맞춤 습관 추천 중 오류가 발생했습니다.")
-    return AIRecommendResponse(habits=habits, can_retry=(updated_pref.recommend_count < 3))
+    return AIRecommendResponse(habits=habits, can_retry=(updated_pref.recommend_count < 15))
 
 
 # 사용자가 선택한 습관 등록
