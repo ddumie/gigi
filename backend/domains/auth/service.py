@@ -135,6 +135,13 @@ def check_nickname(db: Session, nickname: str) -> bool:
 # 비밀번호 변경
 # ──────────────────────────────────────────
 
+def update_nickname(db: Session, user: User, nickname: str) -> User:
+    """닉네임 변경"""
+    if crud.get_user_by_nickname(db, nickname):
+        raise ValueError("이미 사용 중인 닉네임입니다")
+    return crud.update_profile(db, user, nickname=nickname)
+
+
 def change_password(db: Session, user: User, data: PasswordChangeRequest) -> User:
     """
     비밀번호 변경

@@ -12,6 +12,7 @@ from backend.domains.auth.schemas import (
     TokenResponse,
     UserResponse,
     PasswordChangeRequest,
+    NicknameUpdateRequest,
 )
 
 router = APIRouter()
@@ -115,6 +116,24 @@ def check_nickname(nickname: str = Query(...), db: Session = Depends(get_db)):
     available = service.check_nickname(db, nickname)
     message = "사용 가능한 닉네임입니다" if available else "이미 사용 중인 닉네임입니다"
     return CheckResponse(available=available, message=message)
+
+
+# ──────────────────────────────────────────
+# 닉네임 변경
+# ──────────────────────────────────────────
+
+@router.patch("/nickname")
+def update_nickname(
+    data: NicknameUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """닉네임 변경 (로그인 필요)"""
+    try:
+        user = service.update_nickname(db, current_user, data.nickname)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    return {"message": "닉네임이 변경되었습니다.", "nickname": user.nickname}
 
 
 # ──────────────────────────────────────────

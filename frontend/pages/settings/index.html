@@ -43,7 +43,21 @@
         </section>
         <section class="card">
           <strong>프로필 설정</strong>
-          <div class="settings-row"><span>닉네임</span><span id="settings-nickname" class="meta-text">-</span></div>
+          <div class="settings-row">
+            <span>닉네임</span>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span id="settings-nickname" class="meta-text">-</span>
+              <button type="button" id="nickname-edit-btn" class="btn btn-outline btn-sm">변경</button>
+            </div>
+          </div>
+          <div id="nickname-edit-form" class="hidden">
+            <input id="new-nickname" class="input-field" type="text" placeholder="새 닉네임 (12자 이하)">
+            <div id="nickname-error" class="input-error hidden"></div>
+            <div class="page-actions">
+              <button type="button" id="nickname-save-btn" class="btn btn-primary btn-sm">저장</button>
+              <button type="button" id="nickname-cancel-btn" class="btn btn-outline btn-sm">취소</button>
+            </div>
+          </div>
           <div class="settings-row"><span>나이대</span><select id="settings-age-group" class="meta-text"><option value="">선택 안 함</option><option value="40대 이하">40대 이하</option><option value="50대">50대</option><option value="60대">60대</option><option value="70대 이상">70대 이상</option></select></div>
           <div class="settings-row"><span>건강 관심사</span><span id="settings-health-interests" class="meta-text">-</span></div>
         </section>
