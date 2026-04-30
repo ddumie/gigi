@@ -39,6 +39,7 @@ jobs:
         env:
           DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/gigi_test
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          GEMINI_API_KEY: "dummy-key-for-testing"
           PYTHONPATH: .
         run: |
           pytest

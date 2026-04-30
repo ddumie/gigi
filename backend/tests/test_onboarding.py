@@ -26,6 +26,21 @@ async def test_increment_recommend_count_functional_logic():
             await crud.increment_recommend_count(mock_db, user_id=1)
 
 @pytest.mark.asyncio
+async def test_get_ai_recommendations_parsing_logic():
+    # Gemini 응답에서 JSON 코드 블록을 추출하고 파싱하는 로직 테스트 (Mock 사용)
+    raw_text = "추천 리스트입니다. ```json\n[{\"title\": \"물 마시기\", \"category\": \"식단\", \"description\": \"하루 2L\"}]\n```"
+    mock_response = MagicMock()
+    mock_response.text = raw_text
+    
+    with patch("backend.domains.onboarding.service.client.aio.models.generate_content", new_callable=AsyncMock) as mock_gen:
+        mock_gen.return_value = mock_response
+        
+        results = await service.get_ai_recommendations("60대", ["식단"])
+        assert len(results) == 1
+        assert results[0].title == "물 마시기"
+        assert results[0].category == "식단"
+
+@pytest.mark.asyncio
 async def test_save_selected_habits_and_complete_onboarding(monkeypatch):
     mock_db = AsyncMock()
     
