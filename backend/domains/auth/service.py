@@ -137,7 +137,8 @@ def check_nickname(db: Session, nickname: str) -> bool:
 
 def update_nickname(db: Session, user: User, nickname: str) -> User:
     """닉네임 변경"""
-    if crud.get_user_by_nickname(db, nickname):
+    existing = crud.get_user_by_nickname(db, nickname)
+    if existing and existing.id != user.id:
         raise ValueError("이미 사용 중인 닉네임입니다")
     return crud.update_profile(db, user, nickname=nickname)
 
