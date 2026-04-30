@@ -1,24 +1,26 @@
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.auth.models import User
 
 
-def get_user_by_email(db: Session, email: str) -> User | None:
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """이메일로 유저 조회 (로그인, 이메일 중복 확인에 사용)"""
-    return db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    result = await db.execute(select(User).where(User.email == email))
+    return result.scalar_one_or_none()
 
 
-def get_user_by_nickname(db: Session, nickname: str) -> User | None:
+async def get_user_by_nickname(db: AsyncSession, nickname: str) -> User | None:
     """닉네임으로 유저 조회 (닉네임 중복 확인에 사용)"""
-    return db.execute(select(User).where(User.nickname == nickname)).scalar_one_or_none()
+    result = await db.execute(select(User).where(User.nickname == nickname))
+    return result.scalar_one_or_none()
 
 
-def get_user_by_id(db: Session, user_id: int) -> User | None:
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
     """ID로 유저 조회 (GET /me 등에 사용)"""
-    return db.get(User, user_id)
+    return await db.get(User, user_id)
 
 
-def create_user(db: Session, email: str, password_hash: str, nickname: str, name: str, profile_image: str | None = None) -> User:
+async def create_user(db: AsyncSession, email: str, password_hash: str, nickname: str, name: str, profile_image: str | None = None) -> User:
     """유저 생성 (회원가입)"""
     user = User(
         email=email,
@@ -29,16 +31,16 @@ def create_user(db: Session, email: str, password_hash: str, nickname: str, name
     )
     try:
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
 
 
-def update_profile(
-    db: Session,
+async def update_profile(
+    db: AsyncSession,
     user: User,
     nickname: str | None = None,
     name: str | None = None,
@@ -46,7 +48,7 @@ def update_profile(
     age_group: str | None = None,
     health_interests: list[str] | None = None
 ) -> User:
-    """프로필 수정 (PUT /mypage/profile)"""
+    """프로필 수정"""
     updated = False
 
     if nickname is not None:
@@ -69,34 +71,34 @@ def update_profile(
         return user
 
     try:
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
 
 
-def update_password(db: Session, user: User, new_password_hash: str) -> User:
+async def update_password(db: AsyncSession, user: User, new_password_hash: str) -> User:
     """비밀번호 변경"""
     user.password_hash = new_password_hash
     try:
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
 
 
-def deactivate_user(db: Session, user: User) -> None:
-    """회원탈퇴 (소프트 삭제 — is_active = False, 이메일 익명화)"""
+async def deactivate_user(db: AsyncSession, user: User) -> None:
+    """회원탈퇴 (소프트 삭제 — is_active = False, 이메일/닉네임 익명화)"""
     user.is_active = False
     user.email = f"deleted_{user.id}@deleted.com"
     user.nickname = f"deleted_{user.id}"
     try:
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise
