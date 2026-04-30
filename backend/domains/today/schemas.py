@@ -9,6 +9,7 @@ class TodayHabitItem(BaseModel):
     category:    str | None = None
     time:        str | None = None
     repeat_type: str | None = None
+    description: str | None = None
     is_checked:  bool
     is_group:    bool = False
 
