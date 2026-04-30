@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
 from backend.domains.auth import crud, service
 from backend.domains.auth.models import User
+from backend.domains.onboarding.models import UserPreference
 from backend.domains.auth.schemas import (
     RegisterRequest,
     LoginRequest,
@@ -93,9 +95,13 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 # ──────────────────────────────────────────
 
 @router.get("/me", response_model=UserResponse)
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """현재 로그인 유저 정보 반환"""
-    return UserResponse.model_validate(current_user)
+    user_data = UserResponse.model_validate(current_user)
+    pref = db.execute(select(UserPreference).where(UserPreference.user_id == current_user.id)).scalar_one_or_none()
+    if pref:
+        user_data.health_interests = pref.health_interests
+    return user_data
 
 
 # ──────────────────────────────────────────

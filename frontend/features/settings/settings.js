@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
+  // 건강 관심사 표시 (user_preferences에서 가져옴)
+  apiGet('/auth/me').then((data) => {
+    const healthEl = document.getElementById('settings-health-interests');
+    if (healthEl) healthEl.textContent = data.health_interests?.length ? data.health_interests.join(', ') : '-';
+  }).catch(() => {});
+
   // 닉네임 변경
   const nicknameEditBtn  = document.getElementById('nickname-edit-btn');
   const nicknameCancelBtn = document.getElementById('nickname-cancel-btn');
