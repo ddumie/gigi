@@ -25,3 +25,6 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# 기타
+.sample
