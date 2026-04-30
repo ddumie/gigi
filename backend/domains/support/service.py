@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud, schemas
 
-# 초대코드로 그룹 정보 조회
+# 초대코드로 모임 정보 조회
 async def group_summary_service(db: AsyncSession, invite_code: str, user_id: int, limit: int = 10, offset: int = 0):
     result = await crud.get_group_summary(db, invite_code, limit, offset)
     if not result:
@@ -24,14 +24,14 @@ async def invited_group_service(db: AsyncSession, invite_code: str, user_id: int
     if not group_id:
         raise ValueError("초대코드가 잘못 되었거나 만료 되었습니다.")
     new_member = await join_group_service(db, group_id, user_id)
-    return {"message": "초대코드로 그룹 가입", "group_id": new_member.group_id, "user_id": new_member.user_id}
+    return {"message": "초대코드로 모임 가입", "group_id": new_member.group_id, "user_id": new_member.user_id}
 
 # 모임 생성
 async def create_group_service(db: AsyncSession, group: schemas.GroupCreate, user_id: int):
     try:
         db_group = await crud.create_group(db, group, user_id)
         if not db_group:
-            raise ValueError("그룹 생성에 실패 했습니다.")
+            raise ValueError("모임 생성에 실패 했습니다.")
         await join_group_service(db, db_group.id, user_id)
         return {"id": db_group.id}
     except Exception as e:
@@ -57,7 +57,7 @@ async def groups_info_service(
         members = [row["GroupMember"] for row in members_rows]
         member_nicknames = {row["GroupMember"].user_id: row["nickname"] for row in members_rows}
 
-        # 첫 번째 그룹이고 첫 페이지일 때 본인을 맨 앞에 추가
+        # 첫 번째 모임이고 첫 페이지일 때 본인을 맨 앞에 추가
         if idx == 0 and group_offset == 0:
             my_member = await crud.get_me(db, gid, user_id)
             if my_member:
@@ -72,7 +72,7 @@ async def groups_info_service(
         # 맴버별 마지막 습관 체크일 호출
         last_activity = await crud.get_members_last_activity(db, members)
 
-        # 오늘 내 지지 기록 -> 없으면 오늘 그룹 기록 -> 없으면 어제 그룹 기록 -> 없으면 0으로 초기화
+        # 오늘 내 지지 기록 -> 없으면 오늘 모임 기록 -> 없으면 어제 모임 기록 -> 없으면 0으로 초기화
         supports_today = await crud.check_my_support(db, gid, user_id)
         if not supports_today and row["support_streak"]:
             group_supports_today = await crud.check_group_support(db, gid)
@@ -116,7 +116,7 @@ async def group_settings_service(db: AsyncSession, group_id: int, user_id: int):
     if not invite:
         raise ValueError("초대코드를 찾을 수 없습니다.")
     if not members:
-        raise ValueError("해당 그룹에 맴버가 없습니다.")
+        raise ValueError("해당 모임에 맴버가 없습니다.")
     return {
         "group": {
             "id": (groupprofile.group_id if groupprofile else group.id),
@@ -140,11 +140,11 @@ async def group_settings_service(db: AsyncSession, group_id: int, user_id: int):
 async def join_by_post_service(db: AsyncSession, post_id: int, user_id: int):
     group_id = await crud.get_or_create_group_id_by_post(db, post_id, user_id)
     if not group_id:
-        raise ValueError("해당 post_id에 연결 된 그룹을 찾을 수 없습니다.")
+        raise ValueError("해당 post_id에 연결 된 모임을 찾을 수 없습니다.")
     new_member = await join_group_service(db, group_id, user_id)
     return {"message": "모임에 참여했습니다.", "group_id": new_member.group_id, "user_id": new_member.user_id}
 
-# 가져온 그룹 id로 가입하기
+# 가져온 모임 id로 가입하기
 async def join_group_service(db: AsyncSession, group_id: int, user_id: int):
     group = await crud.get_group_by_id(db, group_id)
     if not group:
@@ -173,7 +173,7 @@ async def leave_group_service(db: AsyncSession, group_id: int, user_id: int):
 async def update_group_profile_service(db: AsyncSession, group_id: int, user_id: int, group: schemas.GroupCreate):
     updated_profile = await crud.update_group_profile(db, group_id, user_id, group)
     if not updated_profile:
-        raise ValueError("해당 사용자에 대한 그룹 프로필을 찾을 수 없습니다.")
+        raise ValueError("해당 사용자에 대한 모임 프로필을 찾을 수 없습니다.")
     return {
         "id": updated_profile.group_id,
         "name": updated_profile.name,
@@ -186,10 +186,10 @@ async def send_support_service(db: AsyncSession, group_id: int, from_user_id: in
     if from_user_id == to_user_id:
         raise ValueError("자기 자신은 지지 할 수 없습니다.")
 
-    # 그룹 멤버 여부 확인
+    # 모임 멤버 여부 확인
     member = await crud.get_group_member(db, group_id, to_user_id)
     if not member:
-        raise ValueError("해당 그룹에 가입된 사용자만 지지할 수 있습니다.")
+        raise ValueError("해당 모임에 가입된 사용자만 지지할 수 있습니다.")
 
     # 1일 1회 제한 체크
     existing = await crud.check_support_exists(db, group_id, from_user_id, to_user_id)
@@ -204,10 +204,10 @@ async def send_support_service(db: AsyncSession, group_id: int, from_user_id: in
     content = f"{from_user.nickname}님이 지지를 보냈어요!"
     notification = await crud.create_notification(db, to_user_id, "support", content)
 
-    # 그룹 정보 갱신
+    # 모임 정보 갱신
     group = await crud.get_group_by_id(db, group_id)
     if not group:
-        raise ValueError("그룹을 찾을 수 없습니다.")
+        raise ValueError("모임을 찾을 수 없습니다.")
 
     return {
         "group": {
