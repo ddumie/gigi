@@ -53,7 +53,7 @@ def get_optional_current_user(
         return None
     try:
         return service.get_current_user(credentials.credentials, db)
-    except (ValueError, Exception):
+    except Exception:
         return None
 
 
