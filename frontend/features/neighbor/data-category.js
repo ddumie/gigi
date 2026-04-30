@@ -92,9 +92,15 @@ async function renderFeed(posts) {
     groupLabel.style.cssText = 'margin: 0.25rem 0 0.5rem 0;';
 
     const groupBadge = document.createElement('span');
-    if (p.group_name) {
+    if (p.group_id && p.group_name && p.is_member) {
         groupBadge.className = 'badge badge-green';
         groupBadge.textContent = p.group_name;
+    } else if (p.group_id && !p.group_name) {
+        groupBadge.className = 'badge badge-gray';
+        groupBadge.textContent = '없어진 모임입니다.';
+    } else if (p.group_id && p.group_name && !p.is_member) {
+        groupBadge.className = 'badge badge-gray';
+        groupBadge.textContent = `탈퇴한 모임 · ${p.group_name}`;
     } else {
         groupBadge.className = 'badge badge-gray';
         groupBadge.textContent = '개인 습관';

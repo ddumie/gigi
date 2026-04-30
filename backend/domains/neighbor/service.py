@@ -21,9 +21,11 @@ from backend.domains.neighbor.crud import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.neighbor.schemas import GroupSearchCreate, PostAuthorResponse
 from fastapi import HTTPException
-from backend.domains.neighbor.models import FeedPost, PostSupport
+from backend.domains.neighbor.models import Comment, FeedPost, PostSupport, GroupSearchPost
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-
+from backend.domains.habits.service import resolve_habit_meta
+from backend.domains.support.models import Group
 
 
 async def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: AsyncSession):
@@ -69,6 +71,27 @@ async def delete_group_search_logic(post_id: int, user_id: int, db: AsyncSession
     if not post:
         raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     try:
+        # 1. GroupSearchPost 삭제
+        r = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == post_id))
+        group_search = r.scalars().first()
+        if group_search:
+            await db.delete(group_search)
+
+        # 2. groups.post_id → NULL (nullable 컬럼이므로 SET NULL)
+        r = await db.execute(select(Group).filter(Group.post_id == post_id))
+        for group in r.scalars().all():
+            group.post_id = None
+
+        # 3. 댓글 삭제
+        r = await db.execute(select(Comment).filter(Comment.post_id == post_id))
+        for comment in r.scalars().all():
+            await db.delete(comment)
+
+        # 4. 지지 삭제
+        r = await db.execute(select(PostSupport).filter(PostSupport.post_id == post_id))
+        for support in r.scalars().all():
+            await db.delete(support)
+
         await db.delete(post)
         await db.commit()
     except IntegrityError:
@@ -102,8 +125,10 @@ async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db:
     habit = await get_habit(habit_id=habit_id, user_id=user_id, db=db)
     if not habit:
         raise HTTPException(status_code=404, detail="습관을 찾을 수 없습니다.")
+    
+    meta = await resolve_habit_meta(db, habit)
     try:
-        result = await create_habit_feed(habit_id=habit_id, category=habit.category, content=content, user_id=user_id, db=db)
+        result = await create_habit_feed(habit_id=habit_id, category=meta["category"], content=content, user_id=user_id, original_group_id=habit.group_id, db=db)
         await db.commit()
     except IntegrityError:
         await db.rollback()
@@ -113,13 +138,14 @@ async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db:
 async def get_habit_feed_logic(db: AsyncSession, category: str | None = None) -> list[FeedPost]:
     result = []
     rows = await get_habit_feed(category=category, db=db)
-    for feed, post, user, habit, comment_count, group in rows:
+    for feed, post, user, habit, comment_count, group, member in rows:
         feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         feed.created_at = post.created_at
         feed.habit_title = habit.title if habit else None
         feed.habit_description = habit.description if habit else None
-        feed.group_id = habit.group_id if habit else None
+        feed.group_id = feed.original_group_id
         feed.group_name = group.name if group else None
+        feed.is_member = member is not None
         feed.comment_count = comment_count
         result.append(feed)
     return result
