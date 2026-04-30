@@ -13,7 +13,7 @@ async def test_increment_recommend_count_functional_logic():
     mock_pref.last_recommend_date = date.today() - timedelta(days=1)
     mock_pref.recommend_count = 10
     
-    with patch("backend.domains.onboarding.crud.get_preferences", return_value=mock_pref):
+    with patch("backend.domains.onboarding.crud.get_preferences", new_callable=AsyncMock, return_value=mock_pref):
         await crud.increment_recommend_count(mock_db, user_id=1)
         assert mock_pref.recommend_count == 1
         assert mock_pref.last_recommend_date == date.today()
@@ -21,7 +21,7 @@ async def test_increment_recommend_count_functional_logic():
     # 2. 하루 15회 제한 로직 확인
     mock_pref.last_recommend_date = date.today()
     mock_pref.recommend_count = 15
-    with patch("backend.domains.onboarding.crud.get_preferences", return_value=mock_pref):
+    with patch("backend.domains.onboarding.crud.get_preferences", new_callable=AsyncMock, return_value=mock_pref):
         with pytest.raises(ValueError, match="하루 재추천 횟수를 초과했습니다."):
             await crud.increment_recommend_count(mock_db, user_id=1)
 

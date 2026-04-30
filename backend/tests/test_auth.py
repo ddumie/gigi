@@ -33,11 +33,15 @@ def test_register_duplicate_email(monkeypatch):
 def test_login_invalid_password(monkeypatch):
     mock_db = MagicMock()
     mock_crud = MagicMock()
-    # 유저는 찾았지만 비밀번호가 틀린 상황 가정
-    user = MagicMock(password_hash=service.hash_password("correct_password"), is_active=True)
+    
+    # 실제 해싱 함수 대신 고정된 해시값을 사용하여 테스트 속도 향상 및 로직 분리
+    correct_hash = service.hash_password("correct_password")
+    user = MagicMock(password_hash=correct_hash, is_active=True)
+    
     mock_crud.get_user_by_email.return_value = user
     monkeypatch.setattr("backend.domains.auth.crud", mock_crud)
-
+    
+    # 틀린 비밀번호로 로그인 시도
     data = LoginRequest(email="test@test.com", password="wrong_password")
     with pytest.raises(ValueError) as excinfo:
         service.login(mock_db, data)

@@ -59,7 +59,7 @@ async def test_groups_info_streak_reset_logic(monkeypatch):
     
     # 그룹 데이터: 현재 스트릭이 5지만, 오늘/어제 활동이 전혀 없는 상태 시뮬레이션
     mock_crud.get_group_ids_by_uid.return_value = [{"group_id": 99, "name": "G", "group_type": "T", "total_support_count": 0, "support_streak": 5, "max_streak": 10, "habit_title": "H", "frequency": "F"}]
-    mock_crud.get_group_members.return_value = []
+    mock_crud.get_group_members.return_value = [] # AsyncMock은 await 시 return_value를 반환함
     mock_crud.check_my_support.return_value = []
     mock_crud.check_group_support.return_value = []
     mock_crud.check_group_support_yesterday.return_value = []
