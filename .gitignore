@@ -27,4 +27,5 @@ Thumbs.db
 docker-compose.override.yml
 
 # 기타
-.sample
+.sample/
+test_ci.db

@@ -16,7 +16,16 @@ MODEL_MODULES = (
 )
 
 # 동기 엔진 - auth 도메인 비동기 전환 완료 시 삭제
-engine = create_engine(settings.DATABASE_URL)
+if settings.DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        settings.DATABASE_URL,
+        connect_args={"check_same_thread": False},
+    )
+    async_database_url = settings.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://", 1)
+else:
+    engine = create_engine(settings.DATABASE_URL)
+    async_database_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 SessionLocal = sessionmaker(
     bind=engine,
     autocommit=False,
@@ -25,7 +34,6 @@ SessionLocal = sessionmaker(
 )
 
 # 비동기 엔진
-async_database_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
 async_engine = create_async_engine(async_database_url, echo=False)
 AsyncSessionLocal = async_sessionmaker(
     bind=async_engine,

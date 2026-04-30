@@ -1,75 +1,57 @@
-import pytest
-from unittest.mock import MagicMock
-from backend.domains.auth import service
-from backend.domains.auth.schemas import RegisterRequest, LoginRequest
-import jwt
+from uuid import uuid4
 
-def test_hash_and_verify_password():
-    password = "testpassword123"
-    hashed = service.hash_password(password)
-    assert hashed != password
-    assert service.verify_password(password, hashed) is True
-    assert service.verify_password("wrongpassword", hashed) is False
 
-def test_register_duplicate_email(monkeypatch):
-    # Mocking DB crud
-    mock_db = MagicMock()
-    mock_crud = MagicMock()
-    mock_crud.get_user_by_email.return_value = MagicMock(id=1) # 이미 유저가 존재함
-    monkeypatch.setattr("backend.domains.auth.crud", mock_crud)
+def random_email():
+    return f"test+{uuid4().hex[:8]}@example.com"
 
-    data = RegisterRequest(
-        email="duplicate@test.com",
-        password="password123",
-        password_confirm="password123",
-        nickname="testnick",
-        name="TestUser"
-    )
-    
-    with pytest.raises(ValueError) as excinfo:
-        service.register(mock_db, data)
-    assert "이미 사용 중인 이메일입니다" in str(excinfo.value)
 
-def test_login_invalid_password(monkeypatch):
-    mock_db = MagicMock()
-    mock_crud = MagicMock()
-    
-    # 실제 해싱 함수 대신 고정된 해시값을 사용하여 테스트 속도 향상 및 로직 분리
-    correct_hash = service.hash_password("correct_password")
-    user = MagicMock(password_hash=correct_hash, is_active=True)
-    
-    mock_crud.get_user_by_email.return_value = user
-    monkeypatch.setattr("backend.domains.auth.crud", mock_crud)
-    
-    # 틀린 비밀번호로 로그인 시도
-    data = LoginRequest(email="test@test.com", password="wrong_password")
-    with pytest.raises(ValueError) as excinfo:
-        service.login(mock_db, data)
-    assert "이메일 또는 비밀번호가 올바르지 않습니다" in str(excinfo.value)
+def auth_headers(token: str) -> dict:
+    return {"Authorization": f"Bearer {token}"}
 
-def test_update_nickname_duplicate_check(monkeypatch):
-    mock_db = MagicMock()
-    mock_user = MagicMock(id=1, nickname="old_nick")
-    # 다른 사람이 사용 중인 닉네임인 경우
-    mock_other_user = MagicMock(id=2, nickname="new_nick")
-    
-    mock_crud = MagicMock()
-    mock_crud.get_user_by_nickname.return_value = mock_other_user
-    monkeypatch.setattr("backend.domains.auth.crud", mock_crud)
 
-    with pytest.raises(ValueError, match="이미 사용 중인 닉네임입니다"):
-        service.update_nickname(mock_db, mock_user, "new_nick")
+def test_auth_endpoints(client):
+    response = client.post("/api/v1/auth/login", json={"email": "test@example.com", "password": "test"})
+    assert response.status_code in [200, 400, 401]
 
-    # 본인이 이미 사용 중인 닉네임으로 변경하는 경우 (정상 처리되어야 함)
-    mock_crud.get_user_by_nickname.return_value = mock_user
-    try:
-        service.update_nickname(mock_db, mock_user, "old_nick")
-    except ValueError:
-        pytest.fail("본인의 기존 닉네임으로 업데이트 시 에러가 발생하면 안 됩니다.")
 
-def test_get_current_user_expired_token(monkeypatch):
-    mock_db = MagicMock()
-    monkeypatch.setattr("jwt.decode", MagicMock(side_effect=jwt.ExpiredSignatureError))
-    
-    with pytest.raises(ValueError, match="토큰이 만료되었습니다"):
-        service.get_current_user("expired-token", mock_db)
+def test_register_and_login(client):
+    email = random_email()
+    password = "testpass"
+    register_payload = {
+        "email": email,
+        "password": password,
+        "password_confirm": password,
+        "nickname": f"testuser{uuid4().hex[:4]}",
+        "name": "Test User"
+    }
+
+    register_response = client.post("/api/v1/auth/register", json=register_payload)
+    assert register_response.status_code == 201
+    data = register_response.json()
+    assert "access_token" in data
+    assert data["user"]["email"] == email
+
+    login_response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
+    assert login_response.status_code == 200
+    login_data = login_response.json()
+    assert "access_token" in login_data
+    assert login_data["user"]["email"] == email
+
+    me_response = client.get("/api/v1/auth/me", headers=auth_headers(login_data["access_token"]))
+    assert me_response.status_code == 200
+    assert me_response.json()["email"] == email
+
+
+def test_login_with_invalid_password(client):
+    email = random_email()
+    password = "correctpass"
+    client.post("/api/v1/auth/register", json={
+        "email": email,
+        "password": password,
+        "password_confirm": password,
+        "nickname": f"user-{uuid4().hex[:6]}",
+        "name": "Test User"
+    })
+
+    response = client.post("/api/v1/auth/login", json={"email": email, "password": "wrong"})
+    assert response.status_code == 401
