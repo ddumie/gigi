@@ -206,28 +206,29 @@ function initStep3() {
 
   submitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
-    const selected = [...document.querySelectorAll('.recommendation-card.active')]
-      .map((card) => {
-        const idx = parseInt(card.dataset.index);
-        const habit = habits[idx];
-        const days = [...card.querySelectorAll('[data-day].active')].map(b => b.dataset.day);
-        if (!days.length) return null;
-        let repeat_type = '매일';
-        if (days.length < 7) {
-          if (days.length === 5 && ['월','화','수','목','금'].every(d => days.includes(d))) repeat_type = '평일';
-          else if (days.length === 2 && ['토','일'].every(d => days.includes(d))) repeat_type = '주말';
-          else repeat_type = days.join('');
-        }
-        return { ...habit, repeat_type };
-      });
-
-    const filtered = selected.filter(Boolean);
-    if (!filtered.length) {
+    const activeCards = [...document.querySelectorAll('.recommendation-card.active')];
+    if (!activeCards.length) {
       showToast('습관을 하나 이상 선택해주세요.');
       return;
     }
+
+    const selected = activeCards.map((card) => {
+      const idx = parseInt(card.dataset.index);
+      const habit = habits[idx];
+      const days = [...card.querySelectorAll('[data-day].active')].map(b => b.dataset.day);
+      if (!days.length) return null;
+      let repeat_type = '매일';
+      if (days.length < 7) {
+        if (days.length === 5 && ['월','화','수','목','금'].every(d => days.includes(d))) repeat_type = '평일';
+        else if (days.length === 2 && ['토','일'].every(d => days.includes(d))) repeat_type = '주말';
+        else repeat_type = days.join('');
+      }
+      return { ...habit, repeat_type };
+    });
+
+    const filtered = selected.filter(Boolean);
     if (filtered.length < selected.length) {
-      showToast('선택한 습관의 요일을 하나 이상 선택해주세요.');
+      showToast('습관을 진행할 요일을 선택해주세요.');
       return;
     }
 
