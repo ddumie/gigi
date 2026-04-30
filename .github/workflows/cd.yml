@@ -28,6 +28,9 @@ jobs:
           script: |
             set -e
             cd ~/gigi
+            git fetch origin main
+            git checkout main
             git pull origin main
+            docker compose down
             docker compose up -d --build
             docker ps
