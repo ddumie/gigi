@@ -14,7 +14,7 @@ async function loadGroupSettings() {
       headers: { "Authorization": `Bearer ${token}` }
     });
     if (!res.ok) {
-      console.error("그룹 설정 불러오기 실패:", await res.text());
+      console.error("모임 설정 불러오기 실패:", await res.text());
       return;
     }
 

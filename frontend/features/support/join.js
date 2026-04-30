@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const $summaryBox = document.getElementById("group-summary");
   const $joinBtn = document.getElementById("join-group-btn");
 
-  // 코드 입력 후 포커스 아웃 시 그룹 정보 조회
+  // 코드 입력 후 포커스 아웃 시 모임 정보 조회
   $codeInput.addEventListener("blur", async () => {
     const code = $codeInput.value.trim();
     if (!code) return;
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (res.already_joined) {
         $joinBtn.disabled = true;
-        $joinBtn.textContent = "이미 가입한 그룹입니다";
+        $joinBtn.textContent = "이미 가입한 모임입니다";
       } else {
         $joinBtn.disabled = false;
         $joinBtn.textContent = "모임 가입하기";
