@@ -111,6 +111,14 @@ function initStep2() {
   });
 }
 
+function obToggleAll(btn) {
+  const picker = btn.closest('.day-picker');
+  const dayBtns = [...picker.querySelectorAll('[data-day]')];
+  const allActive = dayBtns.every(b => b.classList.contains('active'));
+  dayBtns.forEach(b => allActive ? b.classList.remove('active') : b.classList.add('active'));
+  btn.classList.toggle('active', !allActive);
+}
+
 // Step3: AI 추천 습관 선택
 function initStep3() {
   const stored = localStorage.getItem('gigi_ai_habits');
@@ -141,11 +149,18 @@ function initStep3() {
   }
 
   // localStorage에서 habits 꺼내서 카드 렌더링
+  const ALL_DAYS = ['월','화','수','목','금','토','일'];
   const list = document.querySelector('.recommendation-list');
   list.innerHTML = habits.map((h, i) => `
     <article class="recommendation-card" data-index="${i}">
       <strong>${h.title}</strong>
       <p class="meta-text">${h.description}</p>
+      <div class="day-picker" id="ob-days-${i}" style="margin-top:0.5rem;" onclick="event.stopPropagation()">
+        <button type="button" class="day-btn" data-all="true"
+          onclick="event.stopPropagation();obToggleAll(this)">매일</button>
+        ${ALL_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
+          onclick="event.stopPropagation();this.classList.toggle('active')">${d}</button>`).join('')}
+      </div>
     </article>
   `).join('');
 
@@ -192,10 +207,27 @@ function initStep3() {
   submitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const selected = [...document.querySelectorAll('.recommendation-card.active')]
-      .map((card) => habits[parseInt(card.dataset.index)]);
+      .map((card) => {
+        const idx = parseInt(card.dataset.index);
+        const habit = habits[idx];
+        const days = [...card.querySelectorAll('[data-day].active')].map(b => b.dataset.day);
+        if (!days.length) return null;
+        let repeat_type = '매일';
+        if (days.length < 7) {
+          if (days.length === 5 && ['월','화','수','목','금'].every(d => days.includes(d))) repeat_type = '평일';
+          else if (days.length === 2 && ['토','일'].every(d => days.includes(d))) repeat_type = '주말';
+          else repeat_type = days.join('');
+        }
+        return { ...habit, repeat_type };
+      });
 
-    if (!selected.length) {
+    const filtered = selected.filter(Boolean);
+    if (!filtered.length) {
       showToast('습관을 하나 이상 선택해주세요.');
+      return;
+    }
+    if (filtered.length < selected.length) {
+      showToast('선택한 습관의 요일을 하나 이상 선택해주세요.');
       return;
     }
 
@@ -203,7 +235,7 @@ function initStep3() {
     submitBtn.textContent = '등록 중...';
     
     try {
-      const res = await apiPost('/onboarding/ai-recommend/select', { selected_habits: selected });
+      const res = await apiPost('/onboarding/ai-recommend/select', { selected_habits: filtered });
       localStorage.removeItem('gigi_ai_habits');
       localStorage.removeItem('gigi_age_group');
 

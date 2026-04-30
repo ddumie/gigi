@@ -100,7 +100,7 @@ async def save_selected_habits(db: AsyncSession, user_id: int, selected: list[AI
                 title=item.title,
                 category=item.category,
                 description=item.description,
-                repeat_type="매일",
+                repeat_type=item.repeat_type,
                 is_ai_recommended=True
             ))
         result = await db.execute(select(User).filter(User.id == user_id))

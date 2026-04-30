@@ -80,6 +80,7 @@ async def get_today_dashboard(
                 category    = meta["category"],
                 time        = h.time,
                 repeat_type = meta["repeat_type"],
+                description = h.description or None,
                 is_checked  = h.id in checked_ids,
                 is_group    = h.group_id is not None,
             )
