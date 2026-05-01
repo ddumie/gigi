@@ -6,6 +6,7 @@ WORKDIR /app
 
 # 필요한 시스템 패키지 설치 (PostgreSQL 클라이언트 라이브러리 등)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
