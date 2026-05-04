@@ -21,6 +21,7 @@ class AIHabitItem(BaseModel):
     title: str = Field(..., min_length=1)
     category: str
     description: str = Field(..., min_length=1)
+    repeat_type: str = "매일"
 
     @field_validator("category")
     @classmethod

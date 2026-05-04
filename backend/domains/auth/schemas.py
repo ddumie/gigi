@@ -22,7 +22,7 @@ class RegisterRequest(BaseModel):
     password_confirm: str                # 비밀번호 확인용, DB에 저장 안 함
 
     # 2단계 필드
-    nickname: str                        # unique, 최대 50자
+    nickname: str                        # unique, 최대 12자
     name: str                            # 실명, 중복 허용
     profile_image: Optional[str] = None # 프로필 이미지 URL, 선택
 
@@ -44,11 +44,13 @@ class RegisterRequest(BaseModel):
     def validate_nickname(cls, v):
         """
         닉네임 유효성 검사
-        공백 제거 후 최대 12자
+        공백 제거 후 2자 이상 12자 이하
         """
         v = v.strip()
         if not v:
             raise ValueError("닉네임을 입력해주세요")
+        if len(v) < 2:
+            raise ValueError("닉네임은 2자 이상이어야 합니다")
         if len(v) > 12:
             raise ValueError("닉네임은 12자 이하여야 합니다")
         return v
@@ -75,28 +77,6 @@ class RegisterRequest(BaseModel):
             raise ValueError("비밀번호가 일치하지 않습니다")
         return self
 
-
-# ──────────────────────────────────────────
-# 중복 확인 (실시간 유효성 안내용)
-# 기획서: "이메일·닉네임 실시간 유효성 안내 제공"
-# ──────────────────────────────────────────
-
-class EmailCheckRequest(BaseModel):
-    """POST /auth/check/email 요청"""
-    email: EmailStr
-
-class NicknameCheckRequest(BaseModel):
-    nickname: str
-
-    @field_validator("nickname")
-    @classmethod
-    def validate_nickname(cls, v):
-        v = v.strip()
-        if not v:
-            raise ValueError("닉네임을 입력해주세요")
-        if len(v) > 12:
-            raise ValueError("닉네임은 12자 이하여야 합니다")
-        return v
 
 class CheckResponse(BaseModel):
     """
@@ -163,6 +143,8 @@ class NicknameUpdateRequest(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("닉네임을 입력해주세요")
+        if len(v) < 2:
+            raise ValueError("닉네임은 2자 이상이어야 합니다")
         if len(v) > 12:
             raise ValueError("닉네임은 12자 이하여야 합니다")
         return v

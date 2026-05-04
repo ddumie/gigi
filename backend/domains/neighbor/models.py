@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from backend.database import Base
-
+from sqlalchemy import UniqueConstraint
 
 class Post(Base):
     """공통 필드만 담는 부모 테이블"""
@@ -27,6 +27,7 @@ class FeedPost(Base):
     id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, unique=True)
     habit_id = Column(Integer, ForeignKey("habits_list.id", ondelete="SET NULL"), nullable=True)
+    original_group_id = Column(Integer, nullable=True)
     category = Column(String, nullable=False)  # 운동, 식단, 복약, 수면, 기타
     content = Column(String, nullable=True)    # 습관 완료 후 한마디
 
@@ -54,7 +55,7 @@ class Comment(Base):
     __tablename__ = "comments"
 
     id = Column(Integer, primary_key=True)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     content = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -66,6 +67,8 @@ class PostSupport(Base):
     __tablename__ = "post_supports"
 
     id = Column(Integer, primary_key=True, index=True)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, index=True)
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (UniqueConstraint('post_id', 'user_id', name='uq_post_support'),)

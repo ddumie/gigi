@@ -34,7 +34,7 @@
 
     const meta = document.createElement('p');
     meta.className = 'meta-text';
-    meta.textContent = `모임 구해요 · ${p.group_type} · ${p.habit_title}`;
+    meta.textContent = `모임 구해요 · ${p.group_type} · ${p.habit_title} · 참가자 ${p.member_count}명`;
 
     const editLink = document.createElement('a');
     editLink.href = `/pages/neighbor/group-search-edit.html?post_id=${p.post_id}`;

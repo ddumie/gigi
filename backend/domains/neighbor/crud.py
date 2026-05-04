@@ -1,14 +1,14 @@
 # TODO: DB CRUD 작성 (담당: 이영진)
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Comment, PostSupport
 from backend.domains.neighbor.schemas import GroupSearchCreate
 from backend.domains.habits.models import Habit, HabitCheck
 from backend.domains.auth.models import User
 from backend.domains.support.models import Group, GroupMember
 from sqlalchemy.exc import IntegrityError
-
+from datetime import date
 
 # 글쓰기 post
 async def create_post(author_id: int, post_type: str, db: AsyncSession) -> Post:
@@ -82,15 +82,22 @@ async def update_group_search(post_id: int, user_id: int, post: GroupSearchCreat
 async def delete_group_search(post_id: int, user_id: int, db: AsyncSession) -> Post | None:
     result = await db.execute(select(Post).filter(Post.id == post_id, Post.author_id == user_id))
     post = result.scalars().first() # 나중에 author_id를 current_user.id 로 교체
-    return post
+    if not post:
+        return False
+    await db.delete(post)
+    await db.commit()
+    return True
 
 # 내 글보기 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
 async def get_my_group_search(user_id: int, db: AsyncSession) -> list[tuple[GroupSearchPost, User]]: 
     result = await db.execute(
-        select(GroupSearchPost, Post, User)
+        select(GroupSearchPost, Post, User, func.count(GroupMember.id).label('member_count'))
         .join(Post, GroupSearchPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
-        .filter(Post.is_active == True, Post.author_id == user_id) 
+        .outerjoin(Group, Group.post_id == Post.id)
+        .outerjoin(GroupMember, GroupMember.group_id == Group.id)
+        .filter(Post.is_active == True, Post.author_id == user_id)
+        .group_by(GroupSearchPost.id, Post.id, User.id) 
         .order_by(Post.created_at.desc())
     )
     return result.all()
@@ -115,7 +122,7 @@ async def get_habit(habit_id: int, user_id: int, db: AsyncSession) -> Habit | No
     return result.scalars().first()
 
 # 피드 등록 
-async def create_habit_feed(habit_id: int, category: str, content: str, user_id: int, db: AsyncSession) -> dict:
+async def create_habit_feed(habit_id: int, category: str, content: str, user_id: int, db: AsyncSession, original_group_id: int | None = None) -> dict:
     db_post = Post(author_id=user_id, post_type="feed")
     db.add(db_post)
     await db.flush()
@@ -125,7 +132,8 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
         post_id=db_post.id,
         habit_id=habit_id,
         category=category,
-        content=content
+        content=content,
+        original_group_id=original_group_id,
     )
     db.add(db_feed)
     await db.flush()
@@ -134,16 +142,17 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
 
 
 # 피드 목록 조회 (category 파라미터로 필터)
-async def get_habit_feed(db: AsyncSession, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
+async def get_habit_feed(db: AsyncSession, category: str | None = None, user_id: int | None = None) -> list[tuple[FeedPost, User]]: # category = ("운동", "복약", "식단", "수면", "기타")
     stmt = (
-        select(FeedPost, Post, User, Habit, func.count(Comment.id).label("comment_count"), Group)
+        select(FeedPost, Post, User, Habit, func.count(Comment.id).label("comment_count"), Group, GroupMember)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .outerjoin(Habit, FeedPost.habit_id == Habit.id)
-        .outerjoin(Group, Habit.group_id == Group.id) 
+        .outerjoin(Group, Group.id == FeedPost.original_group_id) 
+        .outerjoin(GroupMember, and_(GroupMember.group_id == FeedPost.original_group_id, GroupMember.user_id == user_id))
         .outerjoin(Comment, Comment.post_id == Post.id)
         .filter(Post.is_active == True)
-        .group_by(FeedPost.id, Post.id, User.id, Habit.id, Group.id)
+        .group_by(FeedPost.id, Post.id, User.id, Habit.id, Group.id, GroupMember.id)
         .order_by(Post.created_at.desc())
     )
     if category:
@@ -175,7 +184,11 @@ async def update_habit_feed(post_id: int, user_id: int, content: str, db: AsyncS
 async def delete_habit_feed(post_id: int, user_id: int, db: AsyncSession) -> Post | None:
     result = await db.execute(select(Post).filter(Post.id == post_id, Post.author_id == user_id))  # 나중에 author_id를 current_user.id로 교체
     post = result.scalars().first()
-    return post
+    if not post:
+        return False
+    await db.delete(post)
+    await db.commit()
+    return True
 
 # 피드 단건 조회
 async def get_feed_detail(post_id: int, db: AsyncSession) -> tuple[FeedPost, Post, User] | None:
@@ -244,7 +257,12 @@ async def delete_feed_comment(comment_id: int, post_id: int, user_id: int, db: A
             Comment.author_id == user_id
         )
     )
-    return result.scalars().first()
+    comment = result.scalars().first()
+    if not comment:
+        return False
+    await db.delete(comment)
+    await db.commit()
+    return True
 
 # 지지하기 토글 (누르면 추가, 다시 누르면 취소)
 async def get_support(post_id: int, user_id: int, db: AsyncSession) -> PostSupport | None:
@@ -270,7 +288,6 @@ async def get_support_info(post_id: int, user_id: int, db: AsyncSession) -> dict
 
 # 오늘 습관 완료했는지 체크하는 함수(엔드포인트 아님)
 async def get_today_completion(user_id: int, db: AsyncSession) -> tuple[int, int]:
-    from datetime import date
     today = date.today()
 
     total_result = await db.execute(

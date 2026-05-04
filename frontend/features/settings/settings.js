@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
+  // 건강 관심사 표시 (user_preferences에서 가져옴)
+  apiGet('/auth/me').then((data) => {
+    const healthEl = document.getElementById('settings-health-interests');
+    if (healthEl) healthEl.textContent = data.health_interests?.length ? data.health_interests.join(', ') : '-';
+  }).catch(() => { showToast('건강 관심사를 불러오지 못했습니다.'); });
+
   // 닉네임 변경
   const nicknameEditBtn  = document.getElementById('nickname-edit-btn');
   const nicknameCancelBtn = document.getElementById('nickname-cancel-btn');
@@ -46,6 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!newNickname) {
       errEl.textContent = '닉네임을 입력해주세요';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (newNickname.length < 2) {
+      errEl.textContent = '닉네임은 2자 이상이어야 합니다';
       errEl.classList.remove('hidden');
       return;
     }
