@@ -164,6 +164,22 @@ async def delete_habit_feed_logic(post_id: int, user_id: int, db: AsyncSession):
     if not post:
         raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     try:
+        # 1. FeedPost 삭제
+        r = await db.execute(select(FeedPost).filter(FeedPost.post_id == post_id))
+        feed_post = r.scalars().first()
+        if feed_post:
+            await db.delete(feed_post)
+
+        # 2. 댓글 삭제
+        r = await db.execute(select(Comment).filter(Comment.post_id == post_id))
+        for comment in r.scalars().all():
+            await db.delete(comment)
+
+        # 3. 지지 삭제
+        r = await db.execute(select(PostSupport).filter(PostSupport.post_id == post_id))
+        for support in r.scalars().all():
+            await db.delete(support)
+        
         await db.delete(post)
         await db.commit()
     except IntegrityError:
