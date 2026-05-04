@@ -16,6 +16,7 @@ from backend.domains.neighbor.crud import (
    delete_feed_comment,
    get_support,
    get_today_completion,
+   get_support_info,
 
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -67,44 +68,22 @@ async def update_group_search_logic(post_id: int, user_id: int, post: GroupSearc
     return {"message": "수정 완료"}
 
 async def delete_group_search_logic(post_id: int, user_id: int, db: AsyncSession):
-    post = await delete_group_search(post_id, user_id, db)
-    if not post:
-        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     try:
-        # 1. GroupSearchPost 삭제
-        r = await db.execute(select(GroupSearchPost).filter(GroupSearchPost.post_id == post_id))
-        group_search = r.scalars().first()
-        if group_search:
-            await db.delete(group_search)
-
-        # 2. groups.post_id → NULL (nullable 컬럼이므로 SET NULL)
-        r = await db.execute(select(Group).filter(Group.post_id == post_id))
-        for group in r.scalars().all():
-            group.post_id = None
-
-        # 3. 댓글 삭제
-        r = await db.execute(select(Comment).filter(Comment.post_id == post_id))
-        for comment in r.scalars().all():
-            await db.delete(comment)
-
-        # 4. 지지 삭제
-        r = await db.execute(select(PostSupport).filter(PostSupport.post_id == post_id))
-        for support in r.scalars().all():
-            await db.delete(support)
-
-        await db.delete(post)
-        await db.commit()
+        deleted = await delete_group_search(post_id, user_id, db)
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=400, detail="삭제에 실패하였습니다.")
+    if not deleted:
+        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     return {"message": "삭제 완료"}
 
 async def get_my_group_search_logic(user_id: int, db: AsyncSession):
     result = []
     posts = await get_my_group_search(user_id=user_id, db=db)
-    for group_search, post, user in posts:
+    for group_search, post, user, member_count in posts:
         group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         group_search.created_at = post.created_at
+        group_search.member_count = member_count
         result.append(group_search)
 
     return result
@@ -135,9 +114,9 @@ async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db:
         raise HTTPException(status_code=400, detail="피드 등록에 실패했습니다.")
     return result
     
-async def get_habit_feed_logic(db: AsyncSession, category: str | None = None) -> list[FeedPost]:
+async def get_habit_feed_logic(db: AsyncSession, category: str | None = None, user_id: int = None) -> list[FeedPost]:
     result = []
-    rows = await get_habit_feed(category=category, db=db)
+    rows = await get_habit_feed(category=category, db=db, user_id=user_id)
     for feed, post, user, habit, comment_count, group, member in rows:
         feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         feed.created_at = post.created_at
@@ -160,34 +139,16 @@ async def update_habit_feed_logic(post_id: int, user_id: int, content: str, db: 
     return {"message": "수정 완료"}
 
 async def delete_habit_feed_logic(post_id: int, user_id: int, db: AsyncSession):
-    post = await delete_habit_feed(post_id=post_id, user_id=user_id, db=db)
-    if not post:
-        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     try:
-        # 1. FeedPost 삭제
-        r = await db.execute(select(FeedPost).filter(FeedPost.post_id == post_id))
-        feed_post = r.scalars().first()
-        if feed_post:
-            await db.delete(feed_post)
-
-        # 2. 댓글 삭제
-        r = await db.execute(select(Comment).filter(Comment.post_id == post_id))
-        for comment in r.scalars().all():
-            await db.delete(comment)
-
-        # 3. 지지 삭제
-        r = await db.execute(select(PostSupport).filter(PostSupport.post_id == post_id))
-        for support in r.scalars().all():
-            await db.delete(support)
-        
-        await db.delete(post)
-        await db.commit()
+        deleted = await delete_habit_feed(post_id=post_id, user_id=user_id, db=db)
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=400, detail="삭제에 실패했습니다.")
+    if not deleted:
+        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
     return {"message": "삭제 완료"}
 
-async def get_feed_detail_logic(post_id: int, db: AsyncSession):
+async def get_feed_detail_logic(post_id: int, user_id: int, db: AsyncSession):
     row = await get_feed_detail(post_id=post_id, db=db)
     if not row:
         raise HTTPException(status_code=404, detail="피드를 찾을 수 없습니다.")
@@ -196,6 +157,9 @@ async def get_feed_detail_logic(post_id: int, db: AsyncSession):
     feed.created_at = post.created_at
     feed.habit_title = habit.title if habit else None           # 추가
     feed.habit_description = habit.description if habit else None  # 추가
+    support_info = await get_support_info(post_id=post_id, user_id=user_id, db=db)
+    feed.support_count = support_info["support_count"]
+    feed.is_supported = support_info["is_supported"]
     return feed
 
 async def get_feed_comments_logic(post_id: int, db: AsyncSession):
@@ -232,15 +196,14 @@ async def update_feed_comment_logic(comment_id: int, post_id: int, user_id: int,
     return {"message": "댓글 수정 완료"}
 
 async def delete_feed_comment_logic(comment_id: int, post_id: int, user_id: int, db: AsyncSession):
-    comment = await delete_feed_comment(comment_id=comment_id, post_id=post_id, user_id=user_id, db=db)
-    if not comment:
-        raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
+    deleted = await delete_feed_comment(comment_id=comment_id, post_id=post_id, user_id=user_id, db=db)
     try:
-        await db.delete(comment)
-        await db.commit()
+        deleted = await delete_feed_comment(comment_id=comment_id, post_id=post_id, user_id=user_id, db=db)
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=400, detail="댓글 삭제에 실패했습니다.")
+    if not deleted:
+        raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
     return {"message": "댓글 삭제 완료"} 
 
 async def toggle_support_logic(post_id: int, user_id: int, db: AsyncSession):
@@ -256,4 +219,7 @@ async def toggle_support_logic(post_id: int, user_id: int, db: AsyncSession):
             return {"supported": True}
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(status_code=400, detail="요청에 실패했습니다.")   
+        raise HTTPException(status_code=400, detail="요청에 실패했습니다.")
+
+async def get_support_info_logic(post_id: int, user_id: int, db: AsyncSession):
+    return await get_support_info(post_id=post_id, user_id=user_id, db=db)

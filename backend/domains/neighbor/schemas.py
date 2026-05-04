@@ -39,7 +39,7 @@ class GroupSearchResponse(BaseModel):
 class FeedPostResponse(BaseModel):
     post_id: int # id 대신 post_id로
     category: Optional[str] = None
-    content: str | None = None
+    content: Optional[str] = None
     habit_title: Optional[str] = None
     habit_description: Optional[str] = None
     group_id: Optional[int] = None   
@@ -99,19 +99,4 @@ class MyFeedResponse(BaseModel):
     today_all_done: bool
 
 # =============================================================================
-# 게시글 목록 / 상세 응답 (안 쓰는 스키마)
-class PostListResponse(BaseModel):
-    id : int
-    title : str 
-    content : str 
-    view_count : Optional[int] = 0
-    support_count : Optional[int] = 0
-    comment_count : Optional[int] = 0
-    is_soft_deleted : bool
-    author : PostAuthorResponse
-    category_id : int
-    content_finished_at : datetime
-    created_at : datetime
-    updated_at : Optional[datetime] = None
-    is_finished : bool
 
