@@ -116,7 +116,7 @@ async function renderFeed(posts) {
     categoryComplete.textContent = `[${p.category ?? '기타'} 완료]`;
 
     const titleText = document.createElement('span');
-    titleText.textContent = p.habit_title ?? (p.category + ' 완료');
+    titleText.textContent = p.habit_title ?? (p.group_name + ' 습관');
 
     titleBox.append(titleIcon, categoryComplete, titleText);
 

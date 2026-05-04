@@ -15,7 +15,9 @@ const params = new URLSearchParams(location.search);
 const postId = params.get('post_id');
 
 async function loadDetail() {
-  const res = await fetch(`/api/v1/neighbor/feed/${postId}`);
+  const res = await fetch(`/api/v1/neighbor/feed/${postId}`, {
+  headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+  });
   if (!res.ok) return;
   const p = await res.json();
 
