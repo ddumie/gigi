@@ -23,7 +23,7 @@ async def create_unique_invitecode(db: AsyncSession, prefix="GIGI-", length=4, m
             return code
     raise ValueError("초대코드 생성 실패")
 
-# 그룹 생성
+# 모임 생성
 async def create_group(db: AsyncSession, group: schemas.GroupCreate, user_id: int):
     try:
         db_group = models.Group(
@@ -160,7 +160,7 @@ async def get_group_4_settings(db: AsyncSession, group_id: int, user_id: int, li
     return group, groupprofile, invite, members, habit_info, member_top_exp, member_nicknames
 
 
-# 초대코드로 그룹 ID 조회
+# 초대코드로 모임 ID 조회
 async def get_group_id_by_code(db: AsyncSession, invite_code: str):
     result = await db.execute(
         select(models.InviteCode).where(models.InviteCode.code == invite_code,
@@ -208,7 +208,7 @@ async def add_group_member(db: AsyncSession, group_id: int, user_id: int):
         result = await db.execute(select(models.Group).where(models.Group.id == group_id))
         group = result.scalars().first()
 
-        # 그룹에 post 엮여있으면 습관 생성
+        # 모임에 post 엮여있으면 습관 생성
         if group and group.post_id:
             result = await db.execute(select(GroupSearchPost).where(GroupSearchPost.post_id == group.post_id))
             post_info = result.scalars().first()
@@ -250,6 +250,8 @@ async def remove_group_member(db: AsyncSession, group_id: int, user_id: int):
             return None
         
         await db.delete(member)
+
+        await db.flush()
 
         # 남은 멤버 확인
         result = await db.execute(
@@ -361,7 +363,7 @@ async def create_notification(db: AsyncSession, user_id: int, type: str, content
         await db.rollback()
         raise e
 
-# 초대코드로 그룹 정보 가져오기
+# 초대코드로 모임 정보 가져오기
 async def get_group_summary(db: AsyncSession, invite_code: str, limit: int = 10, offset: int = 0):
     result = await db.execute(
         select(models.InviteCode).where(models.InviteCode.code == invite_code,
@@ -393,7 +395,7 @@ async def get_group_summary(db: AsyncSession, invite_code: str, limit: int = 10,
 
     return group, nicknames, member_ids
 
-# uid로 그룹 id 목록 및 내용물, 습관(post 연결 된 경우) 가져오기
+# uid로 모임 id 목록 및 내용물, 습관(post 연결 된 경우) 가져오기
 async def get_group_ids_by_uid(db: AsyncSession, user_id: int, limit: int = 3, offset: int = 0):
     result = await db.execute(
         select(
@@ -430,7 +432,7 @@ async def get_group_member(db: AsyncSession, group_id: int, user_id: int):
     return result.scalars().first()
 
 
-# 당일 내가 그룹에 지지한 리스트 반환
+# 당일 내가 모임에 지지한 리스트 반환
 async def check_my_support(db: AsyncSession, group_id: int, from_user_id: int):
     today = date.today()
     result = await db.execute(
@@ -442,7 +444,7 @@ async def check_my_support(db: AsyncSession, group_id: int, from_user_id: int):
     )
     return result.scalars().all()
 
-# 당일 그룹 내 지지 리스트 반환
+# 당일 모임 내 지지 리스트 반환
 async def check_group_support(db: AsyncSession, group_id: int):
     today = date.today()
     result = await db.execute(
@@ -453,7 +455,7 @@ async def check_group_support(db: AsyncSession, group_id: int):
     )
     return result.scalars().all()
 
-# 전일 그룹 지지 리스트 반환
+# 전일 모임 지지 리스트 반환
 async def check_group_support_yesterday(db: AsyncSession, group_id: int):
     today = date.today()
     yesterday = today - timedelta(days=1)

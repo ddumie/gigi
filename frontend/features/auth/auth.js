@@ -130,6 +130,9 @@ if (step2Submit) {
     if (!nickname) {
       showError('nickname-error', '닉네임을 입력해주세요');
       hasError = true;
+    } else if (nickname.length < 2) {
+      showError('nickname-error', '닉네임은 2자 이상이어야 합니다');
+      hasError = true;
     } else if (nickname.length > 12) {
       showError('nickname-error', '닉네임은 12자 이하여야 합니다');
       hasError = true;

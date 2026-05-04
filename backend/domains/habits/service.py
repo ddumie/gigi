@@ -126,7 +126,7 @@ async def save_ai_selected_habits(
                 title=item.title,
                 category=item.category,
                 description=item.description,
-                repeat_type="매일",
+                repeat_type=item.repeat_type if hasattr(item, 'repeat_type') and item.repeat_type else "매일",
                 is_ai_recommended=True,
             ))
         await db.commit()

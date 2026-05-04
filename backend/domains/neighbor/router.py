@@ -16,6 +16,7 @@ from backend.domains.neighbor.service import (
     update_feed_comment_logic,
     delete_feed_comment_logic,
     toggle_support_logic,
+    get_support_info_logic
 
 )
 from backend.domains.neighbor.schemas import (
@@ -27,7 +28,7 @@ from backend.domains.neighbor.schemas import (
 )
 from backend.domains.auth.router import get_current_user
 from backend.domains.auth.models import User
-from backend.domains.neighbor.crud import get_support_info
+
 
 router = APIRouter()
 
@@ -74,8 +75,8 @@ async def create_habit_feed_final(body: HabitFeedCreate, db: AsyncSession = Depe
 # 피드 목록 조회 (category 파라미터로 필터)
 # category 가 등록한 habit_id에 대응되는 category 문자열만 가능(운동, 복용, exercise 만 현재 가능)
 @router.get("/feed", response_model=list[FeedPostResponse])
-async def get_habit_feed_final(category: str = None, db: AsyncSession = Depends(get_async_db)): # category = ("운동", "복약", "식단", "수면", "기타")
-    return await get_habit_feed_logic(db=db, category=category)
+async def get_habit_feed_final(category: str = None, db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)): # category = ("운동", "복약", "식단", "수면", "기타")
+    return await get_habit_feed_logic(db=db, category=category, user_id=current_user.id)
 
 # 습관 피드 수정
 @router.put("/feed/{post_id}")
@@ -90,8 +91,8 @@ async def delete_habit_feed_final(post_id: int, db: AsyncSession = Depends(get_a
 
 # 피드 단건 조회
 @router.get("/feed/{post_id}", response_model=FeedDetailResponse)
-async def get_feed_detail_final(post_id: int, db: AsyncSession = Depends(get_async_db)):
-    return await get_feed_detail_logic(post_id=post_id, db=db)
+async def get_feed_detail_final(post_id: int, db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)):
+    return await get_feed_detail_logic(post_id=post_id, user_id=current_user.id, db=db)
 
 # 댓글 목록 조회
 @router.get("/feed/{post_id}/comments", response_model=list[NeighborCommentResponse])
@@ -121,7 +122,7 @@ async def update_feed_comment_final(
 
 # 댓글 삭제
 @router.delete("/feed/{post_id}/comments/{comment_id}")
-async def delte_feed_comment_final(
+async def delete_feed_comment_final(
     post_id: int,
     comment_id: int,
     db: AsyncSession = Depends(get_async_db),
@@ -145,4 +146,4 @@ async def feed_support_info(
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Depends(get_current_user)
 ):
-    return await get_support_info(post_id=post_id, user_id=current_user.id, db=db)
+    return await get_support_info_logic(post_id=post_id, user_id=current_user.id, db=db)

@@ -153,11 +153,29 @@ async function retryRecommendation() {
 // 선택한 습관 등록
 async function selectHabits() {
   const btn = document.getElementById('btn-select-habits');
-  const selected = [...document.querySelectorAll('.recommendation-card.active')]
-    .map((card) => currentHabits[parseInt(card.dataset.index)]);
-
-  if (!selected.length) {
+  const activeCards = [...document.querySelectorAll('.recommendation-card.active')];
+  if (!activeCards.length) {
     showToast('습관을 하나 이상 선택해주세요.');
+    return;
+  }
+
+  const selected = activeCards.map((card) => {
+    const idx = parseInt(card.dataset.index);
+    const habit = currentHabits[idx];
+    const days = [...card.querySelectorAll('[data-day].active')].map(b => b.dataset.day);
+    if (!days.length) return null;
+    let repeat_type = '매일';
+    if (days.length < 7) {
+      if (days.length === 5 && ['월','화','수','목','금'].every(d => days.includes(d))) repeat_type = '평일';
+      else if (days.length === 2 && ['토','일'].every(d => days.includes(d))) repeat_type = '주말';
+      else repeat_type = days.join('');
+    }
+    return { ...habit, repeat_type };
+  });
+
+  const filtered = selected.filter(Boolean);
+  if (filtered.length < selected.length) {
+    showToast('습관을 진행할 요일을 선택해주세요.');
     return;
   }
 
@@ -165,7 +183,7 @@ async function selectHabits() {
   btn.textContent = '등록 중...';
 
   try {
-    const res = await apiPost('/habits/ai-recommend/select', { selected_habits: selected });
+    const res = await apiPost('/habits/ai-recommend/select', { selected_habits: filtered });
     showToast('습관이 등록되었습니다.');
 
     // 서버가 판단한 첫 습관 여부 → 모달 플래그 저장 후 습관 탭에서 표시
@@ -186,19 +204,35 @@ function renderResult(habits) {
   const habitCountEl = document.getElementById('habit-count');
   if (habitCountEl) habitCountEl.textContent = habits.length;
 
+  const ALL_DAYS = ['월','화','수','목','금','토','일'];
   const list = document.getElementById('recommendation-list');
   list.innerHTML = habits.map((h, i) => `
     <article class="recommendation-card" data-index="${i}" style="cursor:pointer;">
       <strong>${h.title}</strong>
       <p class="meta-text">${h.description}</p>
+      <div class="day-picker" id="hab-days-${i}" style="margin-top:0.5rem;" onclick="event.stopPropagation()">
+        <button type="button" class="day-btn" data-all="true"
+          onclick="event.stopPropagation();habToggleAll(this)">매일</button>
+        ${ALL_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
+          onclick="event.stopPropagation();this.classList.toggle('active')">${d}</button>`).join('')}
+      </div>
     </article>
   `).join('');
 
   // 이벤트 위임: list에 한 번만 등록
   list.onclick = (e) => {
     const card = e.target.closest('.recommendation-card');
-    if (card) card.classList.toggle('active');
+    if (card && !e.target.closest('.day-picker')) card.classList.toggle('active');
   };
+}
+
+
+function habToggleAll(btn) {
+  const picker = btn.closest('.day-picker');
+  const dayBtns = [...picker.querySelectorAll('[data-day]')];
+  const allActive = dayBtns.every(b => b.classList.contains('active'));
+  dayBtns.forEach(b => allActive ? b.classList.remove('active') : b.classList.add('active'));
+  btn.classList.toggle('active', !allActive);
 }
 
 

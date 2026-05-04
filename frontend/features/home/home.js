@@ -16,6 +16,14 @@ let supportingKey = null; // `${groupId}:${userId}`
 
 document.addEventListener('DOMContentLoaded', () => {
   requireLogin();
+
+  // 신규 가입자(온보딩 미완료) → 온보딩으로 라우팅
+  const user = getCurrentUser();
+  if (user && user.is_first_login) {
+    window.location.href = PAGES.onboard1;
+    return;
+  }
+
   initGreeting();
   loadAll();
 });

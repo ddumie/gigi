@@ -1,5 +1,17 @@
 from datetime import date, timedelta
 
+DAY_MAP = {0: '월', 1: '화', 2: '수', 3: '목', 4: '금', 5: '토', 6: '일'}
+
+def _is_habit_for_today(repeat_type: str | None, today: date) -> bool:
+    if not repeat_type or repeat_type == '매일':
+        return True
+    today_day = DAY_MAP[today.weekday()]
+    if repeat_type == '평일':
+        return today.weekday() < 5
+    if repeat_type == '주말':
+        return today.weekday() >= 5
+    return today_day in repeat_type
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.domains.habits import crud as habits_crud
@@ -73,6 +85,8 @@ async def get_today_dashboard(
     habit_items = []
     for h in habits:
         meta = await habits_service.resolve_habit_meta(db, h)
+        if not _is_habit_for_today(meta["repeat_type"], today):
+            continue
         habit_items.append(
             TodayHabitItem(
                 id          = h.id,
@@ -80,6 +94,7 @@ async def get_today_dashboard(
                 category    = meta["category"],
                 time        = h.time,
                 repeat_type = meta["repeat_type"],
+                description = h.description or None,
                 is_checked  = h.id in checked_ids,
                 is_group    = h.group_id is not None,
             )
