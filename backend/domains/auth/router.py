@@ -5,8 +5,6 @@ from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-logger = logging.getLogger(__name__)
-
 from backend.database import get_async_db
 from backend.domains.auth import crud, service
 from backend.domains.auth.models import User
@@ -23,6 +21,7 @@ from backend.domains.auth.schemas import (
 
 router = APIRouter()
 bearer_scheme = HTTPBearer(auto_error=False)
+logger = logging.getLogger(__name__)
 
 
 # ──────────────────────────────────────────
@@ -121,7 +120,7 @@ async def check_email(email: EmailStr = Query(...), db: AsyncSession = Depends(g
 
 
 @router.get("/check/nickname", response_model=CheckResponse)
-async def check_nickname(nickname: str = Query(...), db: AsyncSession = Depends(get_async_db)):
+async def check_nickname(nickname: str = Query(..., min_length=2, max_length=12), db: AsyncSession = Depends(get_async_db)):
     """닉네임 중복 확인"""
     available = await service.check_nickname(db, nickname)
     message = "사용 가능한 닉네임입니다" if available else "이미 사용 중인 닉네임입니다"
