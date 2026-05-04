@@ -31,6 +31,7 @@ jobs:
             git fetch origin main
             git checkout main
             git pull origin main
-            docker compose down
+            docker compose down --volumes --remove-orphans
+            docker system prune -f
             docker compose up -d --build
             docker ps
