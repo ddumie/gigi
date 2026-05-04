@@ -1,7 +1,11 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from backend.database import get_async_db
 from backend.domains.auth import crud, service
@@ -109,7 +113,7 @@ async def get_me(current_user: User = Depends(get_current_user), db: AsyncSessio
 # ──────────────────────────────────────────
 
 @router.get("/check/email", response_model=CheckResponse)
-async def check_email(email: str = Query(...), db: AsyncSession = Depends(get_async_db)):
+async def check_email(email: EmailStr = Query(...), db: AsyncSession = Depends(get_async_db)):
     """이메일 중복 확인"""
     available = await service.check_email(db, email)
     message = "사용 가능한 이메일입니다" if available else "이미 사용 중인 이메일입니다"
@@ -172,6 +176,7 @@ async def delete_me(
     """회원탈퇴 (소프트 삭제 — is_active = False)"""
     try:
         await crud.deactivate_user(db, current_user)
-    except Exception:
+    except Exception as e:
+        logger.error(f"회원탈퇴 오류 user_id={current_user.id}: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="회원탈퇴 처리 중 오류가 발생했습니다.")
     return {"message": "회원탈퇴가 완료되었습니다."}
