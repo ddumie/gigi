@@ -251,6 +251,8 @@ async def remove_group_member(db: AsyncSession, group_id: int, user_id: int):
         
         await db.delete(member)
 
+        await db.flush()
+
         # 남은 멤버 확인
         result = await db.execute(
             select(func.count()).select_from(models.GroupMember).where(models.GroupMember.group_id == group_id)

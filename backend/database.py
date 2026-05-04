@@ -15,7 +15,7 @@ MODEL_MODULES = (
 )
 
 # 비동기 엔진
-async_database_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+async_database_url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
 async_engine = create_async_engine(async_database_url, echo=False)
 AsyncSessionLocal = async_sessionmaker(
     bind=async_engine,
