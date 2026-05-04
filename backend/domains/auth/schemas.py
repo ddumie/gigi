@@ -22,7 +22,7 @@ class RegisterRequest(BaseModel):
     password_confirm: str                # 비밀번호 확인용, DB에 저장 안 함
 
     # 2단계 필드
-    nickname: str                        # unique, 최대 50자
+    nickname: str                        # unique, 최대 12자
     name: str                            # 실명, 중복 허용
     profile_image: Optional[str] = None # 프로필 이미지 URL, 선택
 

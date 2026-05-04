@@ -43,7 +43,8 @@ class FeedPostResponse(BaseModel):
     habit_title: Optional[str] = None
     habit_description: Optional[str] = None
     group_id: Optional[int] = None   
-    group_name: Optional[str] = None 
+    group_name: Optional[str] = None
+    is_member: bool = False 
     author: Optional[PostAuthorResponse] = None
     created_at: Optional[datetime] = None
     comment_count: int = 0

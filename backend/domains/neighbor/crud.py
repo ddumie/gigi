@@ -1,7 +1,7 @@
 # TODO: DB CRUD 작성 (담당: 이영진)
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Comment, PostSupport
 from backend.domains.neighbor.schemas import GroupSearchCreate
 from backend.domains.habits.models import Habit, HabitCheck
@@ -115,7 +115,7 @@ async def get_habit(habit_id: int, user_id: int, db: AsyncSession) -> Habit | No
     return result.scalars().first()
 
 # 피드 등록 
-async def create_habit_feed(habit_id: int, category: str, content: str, user_id: int, db: AsyncSession) -> dict:
+async def create_habit_feed(habit_id: int, category: str, content: str, user_id: int, db: AsyncSession, original_group_id: int | None = None) -> dict:
     db_post = Post(author_id=user_id, post_type="feed")
     db.add(db_post)
     await db.flush()
@@ -125,7 +125,8 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
         post_id=db_post.id,
         habit_id=habit_id,
         category=category,
-        content=content
+        content=content,
+        original_group_id=original_group_id,
     )
     db.add(db_feed)
     await db.flush()
@@ -136,14 +137,15 @@ async def create_habit_feed(habit_id: int, category: str, content: str, user_id:
 # 피드 목록 조회 (category 파라미터로 필터)
 async def get_habit_feed(db: AsyncSession, category: str | None = None) -> list[FeedPost, User]: # category = ("운동", "복약", "식단", "수면", "기타")
     stmt = (
-        select(FeedPost, Post, User, Habit, func.count(Comment.id).label("comment_count"), Group)
+        select(FeedPost, Post, User, Habit, func.count(Comment.id).label("comment_count"), Group, GroupMember)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
         .outerjoin(Habit, FeedPost.habit_id == Habit.id)
-        .outerjoin(Group, Habit.group_id == Group.id) 
+        .outerjoin(Group, Group.id == FeedPost.original_group_id) 
+        .outerjoin(GroupMember, and_(GroupMember.group_id == FeedPost.original_group_id, GroupMember.user_id == Post.author_id))
         .outerjoin(Comment, Comment.post_id == Post.id)
         .filter(Post.is_active == True)
-        .group_by(FeedPost.id, Post.id, User.id, Habit.id, Group.id)
+        .group_by(FeedPost.id, Post.id, User.id, Habit.id, Group.id, GroupMember.id)
         .order_by(Post.created_at.desc())
     )
     if category:

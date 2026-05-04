@@ -142,6 +142,7 @@ function openCardEdit(id) {
 
 async function saveCardEdit(id) {
   const title      = document.getElementById(`edit-title-${id}`)?.value.trim();
+  const description = document.getElementById(`edit-desc-${id}`)?.value.trim() || null;
   const category   = document.getElementById(`edit-cat-${id}`)?.value;
   const time       = document.getElementById(`edit-time-${id}`)?.value || null;
   const repeatType = getRepeatFromDays(`edit-days-${id}`);
@@ -154,6 +155,7 @@ async function saveCardEdit(id) {
   try {
     await apiPut(`/habits/${id}`, {
       title,
+      description,
       category,
       time,
       repeat_type: repeatType,
@@ -243,6 +245,7 @@ function render() {
         <div class="habit-card-view">
           <div class="habit-info">
             <div class="habit-title">${h.title}</div>
+            ${h.description ? `<div class="habit-desc">${h.description}</div>` : ''}
             <div class="habit-sub">${h.repeat_type} ${h.time ? '· ' + h.time : ''} · ${h.category}${isGroup ? ' · 모임 연동' : ''}</div>
           </div>
           <div style="display:flex;align-items:center;gap:0.25rem;flex-wrap:wrap;">
@@ -258,6 +261,8 @@ function render() {
         <div class="habit-card-edit">
           <input type="text" class="input edit-input" id="edit-title-${h.id}"
                  value="${safeTitle}" placeholder="습관 이름">
+          <input type="text" class="input edit-input" id="edit-desc-${h.id}"
+                 value="${(h.description || '').replaceAll('"', '&quot;')}" placeholder="설명 (예: 매일 아침 7시, 10분 스트레칭)">
           <div class="edit-row">
             <select class="input" id="edit-cat-${h.id}">
               <option value="운동"  ${h.category==='운동'  ? 'selected':''}>운동</option>

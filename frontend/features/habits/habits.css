@@ -42,6 +42,14 @@
 }
 
 
+.habit-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-s);
+  margin-top: 0.15rem;
+  margin-bottom: 0.1rem;
+}
+
+
 /* ── 카드 뷰 ↔ 편집 모드 전환 ── */
 
 /* 기본: 뷰 보임, 편집 숨김 */
