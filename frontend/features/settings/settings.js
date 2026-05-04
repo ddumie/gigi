@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   apiGet('/auth/me').then((data) => {
     const healthEl = document.getElementById('settings-health-interests');
     if (healthEl) healthEl.textContent = data.health_interests?.length ? data.health_interests.join(', ') : '-';
-  }).catch(() => {});
+  }).catch(() => { showToast('건강 관심사를 불러오지 못했습니다.'); });
 
   // 닉네임 변경
   const nicknameEditBtn  = document.getElementById('nickname-edit-btn');
