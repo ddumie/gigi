@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 그룹 생성 API 호출
+      // 모임 생성 API 호출
       const res = await apiPost("/support/group/create", {
         name: name,
         group_type: selectedType
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       showToast("모임이 생성되었습니다.");
 
-      // 생성된 그룹 관리 페이지로 이동 (id 포함)
+      // 생성된 모임 관리 페이지로 이동 (id 포함)
       window.location.href = `/pages/support/manage.html?group_id=${res.id}`;
     } catch (err) {
       showToast(err.message || "모임 생성에 실패했습니다.");

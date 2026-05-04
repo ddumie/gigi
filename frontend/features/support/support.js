@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadGroups();
 });
 
-// =============그룹 리스트 출력===============
+// =============모임 목록 출력===============
 const groupList = document.querySelector(".group-list");
 let groupOffset = 0;
 const groupLimit = 3;
@@ -52,7 +52,7 @@ function getLevelInfo(exp) {
   } else if (exp < 200) {
     return { name: "열매", icon: "🍎", next: 200 - exp };
   } else {
-    return { name: "나무", icon: "🌳", next: null }; // 최대 레벨
+    return { name: "나무", icon: "🌳", next: null }; // 최대 단계
   }
 }
 
@@ -88,7 +88,7 @@ async function sendSupport(groupId, toUserId, button, card) {
       return;
     }
     
-    // 그룹 정보 갱신
+    // 모임 정보 갱신
     const groupData = await res.json();
     const groupInfo = groupData.group;
     const level = getLevelInfo(groupInfo.exp);
@@ -99,9 +99,9 @@ async function sendSupport(groupId, toUserId, button, card) {
       <span class="exp-count">${groupInfo.exp}회</span>`;
 
     if (level.next !== null) {
-      card.querySelector(".stat-sub").textContent = `다음 레벨까지 ${level.next}회 남음`;
+      card.querySelector(".stat-sub").textContent = `다음 단계까지 ${level.next}회 남음`;
     } else {
-      card.querySelector(".stat-sub").textContent = "최대 레벨입니다.";
+      card.querySelector(".stat-sub").textContent = "최대 단계입니다.";
     }
 
     // 스트릭/최고 기록
@@ -180,7 +180,7 @@ async function loadGroups() {
       }
     });
     if (!res.ok) {
-      console.error("그룹 불러오기 실패:", await res.text());
+      console.error("모임 불러오기 실패:", await res.text());
       return;
     }
     const data = await res.json();
@@ -193,7 +193,7 @@ async function loadGroups() {
         card.className = "card group-card";
         card.innerHTML = `
           <div class="group-card-header">
-            <div class="group-title"><strong>가입한 그룹이 없어요</strong></div>
+            <div class="group-title"><strong>가입한 모임이 없어요</strong></div>
           </div>
         `;
         groupList.appendChild(card);
@@ -201,7 +201,7 @@ async function loadGroups() {
       return;
     }
 
-    // 그룹 있을 때 카드 렌더링
+    // 모임 있을 때 카드 렌더링
     data.groups.forEach(item => {
       const group = item.group;
       const members = item.members;
@@ -229,7 +229,7 @@ async function loadGroups() {
         card.appendChild(habitBox);
       }
 
-      // 그룹 통계
+      // 모임 통계
       const stats = document.createElement("div");
       stats.className = "group-stats";
 
@@ -246,7 +246,7 @@ async function loadGroups() {
                 <span class="exp-count">${group.exp}회</span>
               </div>
               <div class="stat-sub">
-                ${level.next !== null ? `다음 레벨까지 ${level.next}회 남음` : "최대 레벨입니다."}
+                ${level.next !== null ? `다음 단계까지 ${level.next}회 남음` : "최대 단계입니다."}
               </div>
             </div>
           </div>
@@ -276,7 +276,7 @@ async function loadGroups() {
         // 멤버가 없을 때 안내 문구 표시
         const emptyRow = document.createElement("div");
         emptyRow.className = "member-row empty";
-        emptyRow.textContent = "이 그룹엔 나밖에 없어요";
+        emptyRow.textContent = "이 모임엔 나밖에 없어요";
         memberList.appendChild(emptyRow);
       } else {
         members.forEach(m => {
@@ -340,7 +340,7 @@ async function loadGroups() {
       hasMore = false;
     }    
   } catch (err) {
-    console.error("그룹 불러오기 실패:", err);
+    console.error("모임 불러오기 실패:", err);
   } finally {
     loading = false;
   }
