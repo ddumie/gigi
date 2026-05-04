@@ -44,11 +44,13 @@ class RegisterRequest(BaseModel):
     def validate_nickname(cls, v):
         """
         닉네임 유효성 검사
-        공백 제거 후 최대 12자
+        공백 제거 후 2자 이상 12자 이하
         """
         v = v.strip()
         if not v:
             raise ValueError("닉네임을 입력해주세요")
+        if len(v) < 2:
+            raise ValueError("닉네임은 2자 이상이어야 합니다")
         if len(v) > 12:
             raise ValueError("닉네임은 12자 이하여야 합니다")
         return v
@@ -94,6 +96,8 @@ class NicknameCheckRequest(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("닉네임을 입력해주세요")
+        if len(v) < 2:
+            raise ValueError("닉네임은 2자 이상이어야 합니다")
         if len(v) > 12:
             raise ValueError("닉네임은 12자 이하여야 합니다")
         return v
@@ -163,6 +167,8 @@ class NicknameUpdateRequest(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("닉네임을 입력해주세요")
+        if len(v) < 2:
+            raise ValueError("닉네임은 2자 이상이어야 합니다")
         if len(v) > 12:
             raise ValueError("닉네임은 12자 이하여야 합니다")
         return v
