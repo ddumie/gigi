@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
       errEl.classList.remove('hidden');
       return;
     }
+    if (newNickname.length < 2) {
+      errEl.textContent = '닉네임은 2자 이상이어야 합니다';
+      errEl.classList.remove('hidden');
+      return;
+    }
     if (newNickname.length > 12) {
       errEl.textContent = '닉네임은 12자 이하여야 합니다';
       errEl.classList.remove('hidden');

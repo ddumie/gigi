@@ -78,30 +78,6 @@ class RegisterRequest(BaseModel):
         return self
 
 
-# ──────────────────────────────────────────
-# 중복 확인 (실시간 유효성 안내용)
-# 기획서: "이메일·닉네임 실시간 유효성 안내 제공"
-# ──────────────────────────────────────────
-
-class EmailCheckRequest(BaseModel):
-    """POST /auth/check/email 요청"""
-    email: EmailStr
-
-class NicknameCheckRequest(BaseModel):
-    nickname: str
-
-    @field_validator("nickname")
-    @classmethod
-    def validate_nickname(cls, v):
-        v = v.strip()
-        if not v:
-            raise ValueError("닉네임을 입력해주세요")
-        if len(v) < 2:
-            raise ValueError("닉네임은 2자 이상이어야 합니다")
-        if len(v) > 12:
-            raise ValueError("닉네임은 12자 이하여야 합니다")
-        return v
-
 class CheckResponse(BaseModel):
     """
     중복 확인 공통 응답
