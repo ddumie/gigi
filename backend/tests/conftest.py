@@ -1,6 +1,8 @@
 import os
 import pathlib
 
+os.environ.setdefault("ENV_FILE", ".env.test")
+
 TEST_DB_PATH = pathlib.Path(__file__).resolve().parent / "test_ci.db"
 if TEST_DB_PATH.exists():
     TEST_DB_PATH.unlink()
