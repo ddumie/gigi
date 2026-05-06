@@ -22,8 +22,9 @@ class Habit(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    group_id = Column(Integer, ForeignKey("groups.id"), nullable=True, index=True)
+    group_id = Column(Integer, ForeignKey("groups.id", ondelete="SET NULL"), nullable=True, index=True)
     # group_id 있는 경우 title/category/repeat_type은 GroupSearchPost에서 가져와 보여주므로 nullable
+    # 모임 삭제 시 group_id만 NULL로 (기존 RESTRICT면 groups row 삭제 차단됨)
     title = Column(String, nullable=True)
     category = Column(String, nullable=True)             # 운동, 복약, 식단, 수면, 기타
     time = Column(String)                                # "07:00"

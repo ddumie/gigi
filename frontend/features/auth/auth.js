@@ -270,6 +270,6 @@ if (inviteCodeInput && inviteSignupBtn) {
     const code = inviteSignupBtn.dataset.inviteCode;
     if (!code) return;
     sessionStorage.setItem('gigi_invite_code', code);
-    window.location.href = '/pages/auth/signup-step1.html';
+    window.location.href = PAGES.signup1;
   });
 }
