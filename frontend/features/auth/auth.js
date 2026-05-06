@@ -98,8 +98,10 @@ if (step2Submit) {
   const nicknameInput = document.getElementById('signup-nickname');
   const preview       = document.getElementById('nickname-preview');
 
-  if (suggested && nicknameInput && !nicknameInput.value) {
-    nicknameInput.value = suggested;
+  let trimmedSuggested = suggested.slice(0, 12);
+  if (trimmedSuggested.length < 2) trimmedSuggested = trimmedSuggested + '1';
+  if (trimmedSuggested && nicknameInput && !nicknameInput.value) {
+    nicknameInput.value = trimmedSuggested;
   }
   if (preview) {
     preview.textContent = suggested
