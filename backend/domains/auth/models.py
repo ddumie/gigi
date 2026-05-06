@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
 from backend.database import Base
 
@@ -14,7 +15,7 @@ class User(Base):
 
     # 온보딩 정보
     age_group        = Column(String(20), nullable=True)                                      # 나이대 ("40대이하" | "50대" | "60대" | "70대이상")
-    health_interests = Column(JSON, nullable=True, default=list)                               # 건강 관심사 목록 (예: ["혈압·혈당", "관절·근력"])
+    health_interests = Column(ARRAY(String), nullable=True, default=list)                     # 건강 관심사 목록 (예: ["혈압·혈당", "관절·근력"])
 
     # 상태값
     is_first_login = Column(Boolean, default=True)                                            # True면 온보딩 미완료 상태
