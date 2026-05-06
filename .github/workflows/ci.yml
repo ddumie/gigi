@@ -38,5 +38,7 @@ jobs:
       - name: Install dotenv-cli locally
         run: npm install dotenv-cli
       - name: Run Tests with .env.test
+        env:
+          PYTHONPATH: .
         run: |
           npx dotenv -f .env.test pytest
