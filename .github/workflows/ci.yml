@@ -35,8 +35,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest httpx pytest-asyncio
-      - name: Install dotenv-cli
-        run: npm install -g dotenv-cli
+      - name: Install dotenv-cli locally
+        run: npm install dotenv-cli
       - name: Run Tests with .env.test
         run: |
           dotenv -f .env.test pytest
