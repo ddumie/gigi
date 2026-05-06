@@ -534,6 +534,9 @@ async def mark_all_notifications_read(db: AsyncSession, user_id: int):
 # 지지탭용 개인별 습관 리스트 가져오기
 async def get_personal_habits(db: AsyncSession, user_id: int):
     today = date.today()
+
+    weekday_str = ["월", "화", "수", "목", "금", "토", "일"][today.weekday()]
+
     result = await db.execute(
         select(
             Habit.id,
@@ -542,7 +545,12 @@ async def get_personal_habits(db: AsyncSession, user_id: int):
             (HabitCheck.id.isnot(None).label("is_checked"))
         )
         .outerjoin(HabitCheck, (Habit.id == HabitCheck.habit_id) & (HabitCheck.checked_date == today))
-        .where(Habit.user_id == user_id , Habit.is_active == True, Habit.is_hidden_from_group == False)
+        .where(
+            Habit.user_id == user_id,
+            Habit.is_active == True,
+            Habit.is_hidden_from_group == False,
+            Habit.repeat_type.contains(weekday_str)
+        )
     )
     return result.mappings().all()
 
