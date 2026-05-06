@@ -1,8 +1,4 @@
 import pytest
-from datetime import date, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
-from backend.domains.onboarding import crud, service
-import pytest
 
 
 def test_onboarding_preferences_requires_auth(client):
