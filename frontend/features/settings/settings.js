@@ -171,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById('new-password-confirm-error');
       el.textContent = '새 비밀번호가 일치하지 않습니다';
       el.classList.remove('hidden');
+      document.getElementById('new-password').value = '';
+      document.getElementById('new-password-confirm').value = '';
       hasError = true;
     }
 
