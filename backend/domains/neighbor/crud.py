@@ -52,6 +52,18 @@ async def get_group_search(db: AsyncSession) -> list[tuple[GroupSearchPost, User
     )
     return result.all()
 
+async def get_group_search_detail(post_id: int, db: AsyncSession):
+    result = await db.execute(
+        select(GroupSearchPost, Post, User, func.count(GroupMember.id).label('member_count'))
+        .join(Post, GroupSearchPost.post_id == Post.id)
+        .join(User, Post.author_id == User.id)
+        .outerjoin(Group, Group.post_id == Post.id)
+        .outerjoin(GroupMember, GroupMember.group_id == Group.id)
+        .filter(Post.is_active == True, GroupSearchPost.post_id == post_id)
+        .group_by(GroupSearchPost.id, Post.id, User.id)
+    )
+    return result.first()
+
 # 모임글 업데이트
 async def update_group_search(post_id: int, user_id: int, post: GroupSearchCreate, db: AsyncSession) -> GroupSearchPost | None:
     result = await db.execute(select(Post).filter(Post.id == post_id, Post.author_id == user_id))
@@ -272,7 +284,43 @@ async def get_support(post_id: int, user_id: int, db: AsyncSession) -> PostSuppo
         PostSupport.user_id == user_id)
     )
     return result.scalars().first()
-    
+
+async def get_support_info_batch(post_ids: list[int], user_id: int, db: AsyncSession) -> dict:
+    count_result = await db.execute(
+        select(PostSupport.post_id, func.count().label('support_count'))
+        .filter(PostSupport.post_id.in_(post_ids))
+        .group_by(PostSupport.post_id)
+    )
+    counts = {row.post_id: row.support_count for row in count_result}
+
+    supported_result = await db.execute(
+        select(PostSupport.post_id)
+        .filter(PostSupport.post_id.in_(post_ids), PostSupport.user_id == user_id)
+    )
+    supported_ids = {row.post_id for row in supported_result}
+
+    return {
+        post_id: {
+            'support_count': counts.get(post_id, 0),
+            'is_supported': post_id in supported_ids
+        }
+        for post_id in post_ids
+    }
+
+async def get_my_comment_today_batch(post_ids: list[int], user_id: int, db: AsyncSession) -> set:
+    today = date.today()
+    result = await db.execute(
+        select(Comment.post_id)
+        .filter(
+            Comment.post_id.in_(post_ids),
+            Comment.author_id == user_id,
+            func.date(Comment.created_at) == today
+        )
+        .distinct()
+    )
+    return {row.post_id for row in result}
+
+
 # 지지 횟수 + 내가 눌렀는지 조회
 async def get_support_info(post_id: int, user_id: int, db: AsyncSession) -> dict[str, int]:
     count_result = await db.execute(

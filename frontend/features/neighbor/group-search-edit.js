@@ -1,11 +1,16 @@
 (async () => {
-  requireLogin();
   const postId = new URLSearchParams(location.search).get('post_id');
   if (!postId) { location.href = PAGES.groupSearch; return; }
 
   // 전체 목록에서 해당 글 찾아 폼에 채우기
-  const posts = await apiGet('/neighbor/group-search');
-  const post = posts.find(p => String(p.post_id) === postId);
+  let post;
+  try {
+  post = await apiGet(`/neighbor/group-search/${postId}`);
+  } catch {
+    alert('글을 불러오는 중 오류가 발생했습니다.');
+    location.href = PAGES.groupSearch;
+    return;
+  }
   if (!post) { alert('글을 찾을 수 없습니다.'); location.href = PAGES.groupSearch; return; }
 
   document.getElementById('group_type').value = post.group_type;

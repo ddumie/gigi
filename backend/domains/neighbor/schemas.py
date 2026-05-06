@@ -48,7 +48,9 @@ class FeedPostResponse(BaseModel):
     author: Optional[PostAuthorResponse] = None
     created_at: Optional[datetime] = None
     comment_count: int = 0
-
+    support_count: int = 0           # ← 추가
+    is_supported: bool = False       # ← 추가
+    has_my_comment_today: bool = False  # ← 추가
     class Config:
         from_attributes = True
 # 습관 피드 생성
