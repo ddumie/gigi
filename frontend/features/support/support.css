@@ -1,5 +1,5 @@
 /* 페이지 헤더 (support 전용) */
-body[data-section="support"] .page-header {
+.page-header {
   display: flex;
   flex-direction: row;              /* 기본은 가로 배치 */
   justify-content: space-between;
@@ -9,7 +9,7 @@ body[data-section="support"] .page-header {
 
 /* 모바일 화면 대응 */
 @media (max-width: 768px) {
-  body[data-section="support"] .page-header {
+  .page-header {
     flex-direction: column;         /* 세로 배치 */
     align-items: flex-start;
   }
