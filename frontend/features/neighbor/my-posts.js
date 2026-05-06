@@ -1,12 +1,22 @@
 // my-posts 용 자바스크립트
 (async () => {
-  requireLogin();
-  const [groupPosts, feedResult] = await Promise.all([
+  let groupPosts, feedResult;
+  try {
+  [groupPosts, feedResult] = await Promise.all([
     apiGet('/neighbor/group-search/my'),
     apiGet('/neighbor/feed/my')
   ]);
+} catch {
+  alert('데이터를 불러오는 중 오류가 발생했습니다.');
+  return;
+}
+
+if (!groupPosts || !feedResult) {
+  alert('데이터를 불러올 수 없습니다.');
+  return;
+}
   // 오늘 습관 완료 여부 전달
-  const feedPosts = feedResult.posts;
+  const feedPosts = feedResult.posts ?? [];
   const allHabitsDone = feedResult.today_all_done;
   const todayStr = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -47,7 +57,7 @@
   });
 
   // feed 글 렌더링
-  const list_f = document.getElementById('my-posts-list-fd')
+  const list_f = document.getElementById('my-posts-list-fd');
   let lastDateFd = null;
   feedPosts.forEach(p => {
     const article = document.createElement('article');

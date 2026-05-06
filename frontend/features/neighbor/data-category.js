@@ -8,14 +8,6 @@ function formatTimeAgo(date) {
 }
 
 let allPosts = [];  // 전체 피드 캐시
-function getCurrentUserId() {
-  const token = localStorage.getItem('gigi_token');
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return parseInt(payload.sub, 10);
-  } catch { return null; }
-}
 
 // 피드 카드 렌더링
 async function renderFeed(posts) {
@@ -134,25 +126,25 @@ async function renderFeed(posts) {
 
     const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\.$/,'') : '';
     // 초기 지지 상태 로드
-    const res = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    })
-    const data = res.ok ? await res.json() : null;
-    let is_supported = data.is_supported;
-    btn.textContent = `🔥 지지 ${data.support_count}`;
-    if (data.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
+    let is_supported = p.is_supported ?? false;
+    btn.textContent = `🔥 지지 ${p.support_count ?? 0}`;
+    if (p.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
    
   btn.addEventListener('click', async () => {
-    const r = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    });
-    if (r.status === 401) { alert('로그인이 필요합니다.'); location.href = '/pages/auth/login.html'; return; }
-    if (!r.ok) return;
-    const current = parseInt(btn.textContent.replace(/[^0-9]/g, '')) || 0;
-    is_supported = !is_supported;
-    btn.textContent = `🔥 지지 ${is_supported ? current + 1 : current - 1}`;
-    is_supported ? btn.classList.replace('btn-outline', 'btn-primary') : btn.classList.replace('btn-primary', 'btn-outline');
+    try {
+      const r = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+      });
+      if (r.status === 401) { alert('로그인이 필요합니다.'); location.href = '/pages/auth/login.html'; return; }
+      if (!r.ok) return;
+      const data = await r.json();
+      is_supported = data.is_supported;
+      btn.textContent = `🔥 지지 ${data.support_count}`;
+      is_supported ? btn.classList.replace('btn-outline', 'btn-primary') : btn.classList.replace('btn-primary', 'btn-outline');
+    } catch {
+      alert('네트워크 오류가 발생했습니다.');
+    }
   });
 
   // 댓글수와 오늘 단 댓글 있는 경우 여부 표시  
@@ -161,20 +153,10 @@ async function renderFeed(posts) {
     commentBtn.className = 'btn btn-outline btn-sm';
     commentBtn.textContent = `💬 댓글 ${p.comment_count ?? 0}`;
     
-    const currentUserId = getCurrentUserId();
-    if (currentUserId) {
-      const commentsRes = await fetch(`/api/v1/neighbor/feed/${p.post_id}/comments`);
-      if (commentsRes.ok) {
-        const comments = await commentsRes.json();
-        const today = new Date().toLocaleDateString('ko-KR');
-        const hasMyCommentToday = comments
-          .filter(c => c.author_id === currentUserId)
-          .some(c => c.created_at && new Date(c.created_at).toLocaleDateString('ko-KR') === today);
-        if (hasMyCommentToday) {
-          commentBtn.classList.replace('btn-outline', 'btn-primary');
-        }
-      }
+    if (p.has_my_comment_today) {
+      commentBtn.classList.replace('btn-outline', 'btn-primary');
     }
+
     commentBtn.addEventListener('click', () => {
     location.href = `/pages/neighbor/feed-detail.html?post_id=${p.post_id}`;
     });
@@ -208,11 +190,15 @@ function initCategoryFilter() {
 
 // 초기 로드
 (async () => {
-  const res = await fetch('/api/v1/neighbor/feed', { 
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-  });
-  if (!res.ok) return;
-  allPosts = await res.json();
-  renderFeed(allPosts);
-  initCategoryFilter();
+  try {
+    const res = await fetch('/api/v1/neighbor/feed', { 
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
+    });
+    if (!res.ok) return;
+    allPosts = await res.json();
+    renderFeed(allPosts);
+    initCategoryFilter();
+  } catch {
+    alert('피드를 불러오는 중 오류가 발생했습니다.');
+  }
 })();

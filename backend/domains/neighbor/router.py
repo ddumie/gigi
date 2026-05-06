@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.database import get_async_db
 from backend.domains.neighbor.service import (
     create_group_search_logic,
-    get_group_search_logic,
+    get_group_search_logic, get_group_search_detail_logic,
     update_group_search_logic,
     delete_group_search_logic,
     get_my_group_search_logic,
@@ -46,6 +46,7 @@ async def create_group_search_final(post: GroupSearchCreate, db: AsyncSession = 
 async def get_group_search_final(db: AsyncSession = Depends(get_async_db)):
     return await get_group_search_logic(db=db)
 
+# 글쓰기 수정
 @router.put("/group-search/{post_id}")
 async def update_group_search_final(post_id: int, post: GroupSearchCreate, db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)):
     return await update_group_search_logic(post_id=post_id, user_id=current_user.id, post=post, db=db)
@@ -59,6 +60,10 @@ async def delete_group_search_final(post_id: int, db: AsyncSession = Depends(get
 @router.get("/group-search/my", response_model=list[GroupSearchResponse])
 async def get_my_group_search_final(db: AsyncSession = Depends(get_async_db),  current_user: User = Depends(get_current_user)): 
     return await get_my_group_search_logic(user_id=current_user.id, db=db)
+
+@router.get("/group-search/{post_id}", response_model=GroupSearchResponse)
+async def get_group_search_detail_final(post_id: int, db: AsyncSession = Depends(get_async_db)):
+    return await get_group_search_detail_logic(post_id=post_id, db=db)
 
 #my posts 페이지에서 내가 쓴 습관도 보여주기
 @router.get("/feed/my", response_model=MyFeedResponse)

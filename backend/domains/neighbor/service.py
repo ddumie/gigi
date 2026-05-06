@@ -2,7 +2,7 @@
 # service.py
 from backend.domains.neighbor.crud import (
    create_post, create_group_search,
-   get_group_search,
+   get_group_search,get_group_search_detail,
    update_group_search,
    delete_group_search,
    get_my_group_search,
@@ -17,6 +17,8 @@ from backend.domains.neighbor.crud import (
    get_support,
    get_today_completion,
    get_support_info,
+   get_support_info_batch,        # ← 추가
+   get_my_comment_today_batch,    # ← 추가
 
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,6 +59,17 @@ async def get_group_search_logic(db: AsyncSession):
         result.append(group_search)
     
     return result
+
+async def get_group_search_detail_logic(post_id: int, db: AsyncSession):
+    row = await get_group_search_detail(post_id=post_id, db=db)
+    if not row:
+        raise HTTPException(status_code=404, detail="글을 찾을 수 없습니다.")
+    group_search, post, user, member_count = row
+    group_search.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
+    group_search.member_count = member_count
+    group_search.updated_at = post.updated_at
+    group_search.created_at = post.created_at
+    return group_search
 
 async def update_group_search_logic(post_id: int, user_id: int, post: GroupSearchCreate, db: AsyncSession):
     try:
@@ -127,6 +140,17 @@ async def get_habit_feed_logic(db: AsyncSession, category: str | None = None, us
         feed.is_member = member is not None
         feed.comment_count = comment_count
         result.append(feed)
+    
+    post_ids = [f.post_id for f in result]
+    if post_ids:
+        support_map = await get_support_info_batch(post_ids, user_id, db)
+        my_comment_set = await get_my_comment_today_batch(post_ids, user_id, db)
+        for feed in result:
+            info = support_map.get(feed.post_id, {})
+            feed.support_count = info.get('support_count', 0)
+            feed.is_supported = info.get('is_supported', False)
+            feed.has_my_comment_today = feed.post_id in my_comment_set
+    
     return result
 
 async def update_habit_feed_logic(post_id: int, user_id: int, content: str, db: AsyncSession):
@@ -212,11 +236,10 @@ async def toggle_support_logic(post_id: int, user_id: int, db: AsyncSession):
         if existing:
             await db.delete(existing)
             await db.commit()
-            return {"supported": False}
         else:
             db.add(PostSupport(post_id=post_id, user_id=user_id))
             await db.commit()
-            return {"supported": True}
+        return await get_support_info(post_id=post_id, user_id=user_id, db=db)
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=400, detail="요청에 실패했습니다.")
