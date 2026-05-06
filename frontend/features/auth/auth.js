@@ -59,6 +59,8 @@ if (step1Next) {
       hasError = true;
     } else if (password !== confirm) {
       showError('password-confirm-error', '비밀번호가 일치하지 않습니다');
+      document.getElementById('signup-password').value = '';
+      document.getElementById('signup-password-confirm').value = '';
       hasError = true;
     }
 
