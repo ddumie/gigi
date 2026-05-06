@@ -35,11 +35,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest httpx pytest-asyncio
-      - name: Run Tests
+      - name: Install dotenv-cli locally
+        run: npm install dotenv-cli
+      - name: Run Tests with .env.test
         env:
-          DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/gigi_test
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          GEMINI_API_KEY: "dummy-key-for-testing"
           PYTHONPATH: .
         run: |
-          pytest
+          npx dotenv -f .env.test pytest
