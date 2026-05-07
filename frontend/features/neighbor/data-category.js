@@ -179,9 +179,15 @@ function initCategoryFilter() {
       chip.classList.add('active');
 
       const category = chip.dataset.category;
-      const filtered = category === 'all'
-        ? allPosts
-        : allPosts.filter(p => p.category === category);
+      let filtered;
+      if (category === 'all') {
+        filtered = allPosts;
+      } else if (category === 'my') {
+        const me = getCurrentUser();
+        filtered = me ? allPosts.filter(p => p.author?.id === me.id) : [];
+      } else {
+        filtered = allPosts.filter(p => p.category === category);
+      }
 
       renderFeed(filtered);
     });

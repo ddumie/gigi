@@ -118,9 +118,11 @@ async def get_my_group_search(user_id: int, db: AsyncSession) -> list[tuple[Grou
 #내 글보기 페이지에서 내가 쓴 습관도 보여주기
 async def get_my_habits(user_id: int, db: AsyncSession) -> list[tuple[FeedPost, User]]: 
     result = await db.execute(
-        select(FeedPost, Post, User)
+        select(FeedPost, Post, User, Habit, Group)
         .join(Post, FeedPost.post_id == Post.id)
         .join(User, Post.author_id == User.id)
+        .outerjoin(Habit, FeedPost.habit_id == Habit.id)
+        .outerjoin(Group, Group.id == FeedPost.original_group_id)
         .filter(Post.is_active == True, Post.author_id == user_id)
         .order_by(Post.created_at.desc())
     )
@@ -285,6 +287,7 @@ async def get_support(post_id: int, user_id: int, db: AsyncSession) -> PostSuppo
     )
     return result.scalars().first()
 
+# 지지 배치(batch) 지지정보 한꺼번에 조회
 async def get_support_info_batch(post_ids: list[int], user_id: int, db: AsyncSession) -> dict:
     count_result = await db.execute(
         select(PostSupport.post_id, func.count().label('support_count'))
@@ -307,6 +310,7 @@ async def get_support_info_batch(post_ids: list[int], user_id: int, db: AsyncSes
         for post_id in post_ids
     }
 
+# 댓글 배치(batch) 게시글 한꺼번에 조회
 async def get_my_comment_today_batch(post_ids: list[int], user_id: int, db: AsyncSession) -> set:
     today = date.today()
     result = await db.execute(

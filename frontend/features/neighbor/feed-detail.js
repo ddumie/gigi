@@ -17,7 +17,10 @@ async function loadDetail() {
     const el = document.getElementById('feed-detail-content');
     el.innerHTML = '';
 
-    // 상단 행: 카테고리 뱃지 + 작성자
+    const nickname = p.author?.nickname ?? '알 수 없음';
+    const firstChar = nickname.charAt(0);
+
+    // 상단 행: 카테고리 뱃지
     const header = document.createElement('div');
     header.style.cssText = 'display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;';
 
@@ -25,18 +28,34 @@ async function loadDetail() {
     badge.className = 'badge badge-blue';
     badge.textContent = p.category;
 
-    const author = document.createElement('span');
-    author.className = 'meta-text';
-    author.textContent = p.author?.nickname ?? '알 수 없음';
+    header.append(badge);
 
-    header.append(badge, author);
+    // 아바타 + 닉네임 행
+    const memberRow = document.createElement('div');
+    memberRow.className = 'member-row';
+    memberRow.style.cssText = 'padding:0; background:none; margin-bottom:0.75rem;';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'member-avatar';
+    avatar.textContent = firstChar;
+
+    const memberInfo = document.createElement('div');
+    memberInfo.className = 'member-info';
+
+    const memberName = document.createElement('div');
+    memberName.className = 'member-name';
+    memberName.textContent = nickname;
+
+    memberInfo.appendChild(memberName);
+    memberRow.append(avatar, memberInfo);
+
 
     // 본문
     const body = document.createElement('p');
     body.style.cssText = 'font-size:1.05rem; line-height:1.7; margin:0;';
     body.textContent = p.content ?? '';
 
-    el.append(header, body);
+    el.append(header, memberRow, body);
     } catch (e) {
     console.error('피드 로드 실패', e);
     alert('피드를 불러오는 중 오류가 발생했습니다.');
@@ -65,20 +84,38 @@ async function loadComments() {
       const card = document.createElement('div');
       card.className = 'feed-card';
 
-      const nick = document.createElement('strong');
-      nick.textContent = c.author_nickname ?? '알 수 없음';
+      const commentNickname = c.author_nickname ?? '알 수 없음';
+      const commentFirstChar = commentNickname.charAt(0);
 
-      const content = document.createElement('p');
-      content.style.marginTop = '0.25rem';
-      content.textContent = c.content;
-      
+      const memberRow = document.createElement('div');
+      memberRow.className = 'member-row';
+      memberRow.style.cssText = 'padding:0; background:none; margin-bottom:0.5rem;';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'member-avatar';
+      avatar.textContent = commentFirstChar;
+
+      const memberInfo = document.createElement('div');
+      memberInfo.className = 'member-info';
+
+      const memberName = document.createElement('div');
+      memberName.className = 'member-name';
+      memberName.textContent = commentNickname;
+
       const createdAt = document.createElement('span');
       createdAt.className = 'meta-text';
       createdAt.textContent = c.created_at
         ? new Date(c.created_at).toLocaleDateString('ko-KR').replace(/\.$/, '')
         : '';
 
-      card.append(nick, content, createdAt);
+      memberInfo.append(memberName, createdAt);
+      memberRow.append(avatar, memberInfo);
+
+      const content = document.createElement('p');
+      content.style.marginTop = '0.25rem';
+      content.textContent = c.content;
+
+      card.append(memberRow, content);
         // 내 댓글일 때만 수정 버튼 표시
       if (c.author_id === currentUserId) {
         const editRow = document.createElement('div');
