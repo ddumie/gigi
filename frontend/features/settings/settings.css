@@ -76,9 +76,39 @@
 .btn-danger {
   color: red;
   border-color: red;
+}
+
 #settings-nickname,
 #settings-health-interests,
 #settings-age-group {
   font-size: 1rem;
   color: var(--color-text);
+}
+
+#password-change-form .input-field {
+  margin-bottom: 0.4rem;
+}
+
+.pw-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.pw-input-wrap .input-field {
+  flex: 1;
+  margin-bottom: 0;
+  padding-right: 3rem;
+}
+
+.pw-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--color-text-s);
+  cursor: pointer;
+  padding: 0.25rem;
 }
