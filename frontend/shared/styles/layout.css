@@ -70,13 +70,13 @@
 /* 작은 변형 — 닉네임 옆 로그아웃 등 */
 .gnb-btn-mini {
   min-height: 0;
-  padding: 0.2rem 0.55rem;
-  font-size: var(--font-size-sm);          /* .gnb-user와 동일 */
-  font-weight: 500;                         /* .gnb-user와 동일 */
+  padding: 0.16rem 0.44rem;                 /* 직전 대비 80% */
+  font-size: var(--font-size-xs);           /* 텍스트도 한 단계 축소 */
+  font-weight: 500;
   line-height: 1;                           /* span과 시각적 베이스라인 정렬 */
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
   cursor: pointer;
 }
