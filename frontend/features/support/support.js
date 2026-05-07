@@ -109,45 +109,6 @@ async function sendSupport(groupId, toUserId, button, card) {
   }
 }
 
-function formatLastActivity(lastActivityStr) {
-  if (!lastActivityStr) return "기록 없음";
-
-  const lastActivity = new Date(lastActivityStr);
-  const now = new Date();
-  const diffMs = now - lastActivity;
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-  // 1시간 내
-  if (diffMinutes < 60) {
-    return `${diffMinutes}분 전`;
-  }
-  // 6시간 내
-  if (diffHours < 6) {
-    return `${diffHours}시간 전`;
-  }
-
-  // 오늘 기록
-  if (lastActivity.toDateString() === now.toDateString()) {
-    const hours = lastActivity.getHours();
-    return hours < 12 ? "오늘 오전" : "오늘 오후";
-  }
-
-  // 어제 기록
-  const yesterday = new Date();
-  yesterday.setDate(now.getDate() - 1);
-  if (lastActivity.toDateString() === yesterday.toDateString()) {
-    return "어제";
-  }
-
-  // 그제나 그 이전
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays >= 365) {
-    return "1년 이상 전";
-  }
-  return `${lastActivity.getMonth() + 1}/${lastActivity.getDate()}`;
-}
-
 function getActivityStatus(rate) {
   if (rate === 0) return "조용함";
   if (rate < 100) return "활동 중";
@@ -193,7 +154,7 @@ async function loadGroups() {
           <div class="group-title"><strong>${group.name}</strong></div>
           <div class="group-actions">
             <span class="group-type badge">${group.group_type}</span>
-            <a href="/pages/support/manage.html?group_id=${group.id}" 
+            <a href="${PAGES.supportManage}?group_id=${group.id}" 
               class="btn btn-outline btn-sm">모임 관리</a>
           </div>
         </div>

@@ -83,7 +83,7 @@ async function loadGroupSettings() {
       try {
         await apiDelete(`/support/group/${groupId}/leave`);
         showToast("모임에서 탈퇴했습니다.");
-        window.location.href = "/pages/support/index.html";
+        window.location.href = PAGES.support;
       } catch (err) {
         showToast(err.message || "탈퇴 실패");
       }
