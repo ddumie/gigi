@@ -23,3 +23,25 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
+
+.pw-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pw-input-wrap .input-field {
+  flex: 1;
+  padding-right: 3rem;
+}
+
+.pw-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--color-text-s);
+  cursor: pointer;
+  padding: 0.25rem;
+}
