@@ -34,7 +34,7 @@
         <section class="card">
           <strong>표시 설정</strong>
           <div class="settings-row"><span>글씨 크기</span>
-            <div style="display:flex;gap:0.5rem;">
+            <div class="font-size-group">
               <button type="button" class="btn btn-outline btn-sm js-font-size" data-font-step="2">보통</button>
               <button type="button" class="btn btn-outline btn-sm js-font-size" data-font-step="4">큼</button>
               <button type="button" class="btn btn-outline btn-sm js-font-size" data-font-step="6">아주큼</button>
@@ -45,14 +45,14 @@
           <strong>프로필 설정</strong>
           <div class="settings-row">
             <span>닉네임</span>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
+            <div class="settings-value-row">
               <span id="settings-nickname" class="meta-text">-</span>
               <button type="button" id="nickname-edit-btn" class="btn btn-outline btn-sm">변경</button>
             </div>
           </div>
           <div class="settings-row">
             <span>나이대</span>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
+            <div class="settings-value-row">
               <span id="settings-age-group" class="meta-text">-</span>
               <button type="button" id="age-group-edit-btn" class="btn btn-outline btn-sm">변경</button>
             </div>
@@ -75,18 +75,19 @@
             </div>
           </div>
           <div class="settings-row"><span>로그아웃</span><button type="button" class="btn btn-outline btn-sm js-logout">로그아웃</button></div>
-          <div class="settings-row"><span>회원탈퇴</span><button type="button" id="delete-account-btn" class="btn btn-outline btn-sm" style="color:red;border-color:red;">탈퇴하기</button></div>
+          <div class="settings-row"><span>회원탈퇴</span><button type="button" id="delete-account-btn" class="btn btn-outline btn-sm btn-danger">탈퇴하기</button></div>
         </section>
       </div>
     </div>
   </main>
+
   <!-- 닉네임 변경 모달 -->
-  <div id="nickname-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;padding:1.5rem;width:90%;max-width:360px;">
-      <h3 style="margin:0 0 1rem;font-size:1rem;font-weight:700;">닉네임 변경</h3>
+  <div id="nickname-modal" class="settings-modal-overlay">
+    <div class="settings-modal-box">
+      <h3 class="settings-modal-title">닉네임 변경</h3>
       <input id="new-nickname" class="input-field" type="text" placeholder="새 닉네임 (2자 이상 12자 이하)">
       <div id="nickname-error" class="input-error hidden"></div>
-      <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:1.5rem;">
+      <div class="settings-modal-actions">
         <button type="button" id="nickname-cancel-btn" class="btn btn-outline">취소</button>
         <button type="button" id="nickname-save-btn" class="btn btn-primary">확인</button>
       </div>
@@ -94,17 +95,17 @@
   </div>
 
   <!-- 나이대 변경 모달 -->
-  <div id="age-group-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;padding:1.5rem;width:90%;max-width:360px;">
-      <h3 style="margin:0 0 1rem;font-size:1rem;font-weight:700;">나이대 선택</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem;">
+  <div id="age-group-modal" class="settings-modal-overlay">
+    <div class="settings-modal-box">
+      <h3 class="settings-modal-title">나이대 선택</h3>
+      <div class="age-chip-grid">
         <button type="button" class="btn btn-outline js-age-chip" data-value="40대 이하">40대 이하</button>
         <button type="button" class="btn btn-outline js-age-chip" data-value="50대">50대</button>
         <button type="button" class="btn btn-outline js-age-chip" data-value="60대">60대</button>
         <button type="button" class="btn btn-outline js-age-chip" data-value="70대 이상">70대 이상</button>
       </div>
       <div id="age-group-error" class="input-error hidden"></div>
-      <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:1.5rem;">
+      <div class="settings-modal-actions">
         <button type="button" id="age-group-cancel-btn" class="btn btn-outline">취소</button>
         <button type="button" id="age-group-save-btn" class="btn btn-primary">확인</button>
       </div>
