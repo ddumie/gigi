@@ -61,6 +61,7 @@ async def delete_group_search_final(post_id: int, db: AsyncSession = Depends(get
 async def get_my_group_search_final(db: AsyncSession = Depends(get_async_db),  current_user: User = Depends(get_current_user)): 
     return await get_my_group_search_logic(user_id=current_user.id, db=db)
 
+# 모임 정보 단건 조회
 @router.get("/group-search/{post_id}", response_model=GroupSearchResponse)
 async def get_group_search_detail_final(post_id: int, db: AsyncSession = Depends(get_async_db)):
     return await get_group_search_detail_logic(post_id=post_id, db=db)
