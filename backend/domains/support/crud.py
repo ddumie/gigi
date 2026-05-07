@@ -86,6 +86,10 @@ async def get_group_members(db: AsyncSession, group_id: int, limit: int, offset:
 
 # 멤버 달성률
 async def get_members_achievement(db: AsyncSession, members: list[models.GroupMember]):
+    today = date.today()
+
+    weekday_str = ["월", "화", "수", "목", "금", "토", "일"][today.weekday()]
+
     complete_rates = {}
 
     target_date = date.today()
@@ -93,7 +97,11 @@ async def get_members_achievement(db: AsyncSession, members: list[models.GroupMe
 
     habit_count_q = (
         select(Habit.user_id, func.count(Habit.id).label("habit_count"))
-        .where(Habit.user_id.in_(user_ids), Habit.is_active == True)
+        .where(
+            Habit.user_id.in_(user_ids),
+            Habit.is_active == True,
+            Habit.repeat_type.contains(weekday_str)
+        )
         .group_by(Habit.user_id)
     )
     checked_count_q = (
@@ -102,6 +110,7 @@ async def get_members_achievement(db: AsyncSession, members: list[models.GroupMe
         .where(
             Habit.user_id.in_(user_ids),
             Habit.is_active == True,
+            Habit.repeat_type.contains(weekday_str),
             HabitCheck.checked_date == target_date
         )
         .group_by(Habit.user_id)
