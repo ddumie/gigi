@@ -24,10 +24,16 @@
         <input id="signup-email" class="input-field" type="email" placeholder="gigi@example.com">
         <div id="email-error" class="input-error hidden"></div>
         <label class="input-label" for="signup-password">비밀번호</label>
-        <input id="signup-password" class="input-field" type="password" placeholder="6자 이상 18자 이하">
+        <div class="pw-input-wrap">
+          <input id="signup-password" class="input-field" type="password" placeholder="6자 이상 18자 이하">
+          <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('signup-password', this)">보기</button>
+        </div>
         <div id="password-error" class="input-error hidden"></div>
         <label class="input-label" for="signup-password-confirm">비밀번호 확인</label>
-        <input id="signup-password-confirm" class="input-field" type="password" placeholder="비밀번호를 다시 입력하세요">
+        <div class="pw-input-wrap">
+          <input id="signup-password-confirm" class="input-field" type="password" placeholder="비밀번호를 다시 입력하세요">
+          <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('signup-password-confirm', this)">보기</button>
+        </div>
         <div id="password-confirm-error" class="input-error hidden"></div>
         <div class="page-actions">
           <button id="step1-next" class="btn btn-primary btn-full">다음으로</button>

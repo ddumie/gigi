@@ -1,3 +1,15 @@
+// ── 비밀번호 보기/숨기기 ──
+function togglePwVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '숨기기';
+  } else {
+    input.type = 'password';
+    btn.textContent = '보기';
+  }
+}
+
 // ── 로그인 상태에서 auth 페이지 접근 차단 ──
 if (isLoggedIn()) {
   window.location.href = PAGES.home;
@@ -59,8 +71,13 @@ if (step1Next) {
       hasError = true;
     } else if (password !== confirm) {
       showError('password-confirm-error', '비밀번호가 일치하지 않습니다');
-      document.getElementById('signup-password').value = '';
-      document.getElementById('signup-password-confirm').value = '';
+      const pwInput = document.getElementById('signup-password');
+      const pwConfirmInput = document.getElementById('signup-password-confirm');
+      pwInput.value = '';
+      pwConfirmInput.value = '';
+      pwInput.type = 'password';
+      pwConfirmInput.type = 'password';
+      document.querySelectorAll('.pw-toggle-btn').forEach(btn => btn.textContent = '보기');
       hasError = true;
     }
 
