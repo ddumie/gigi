@@ -16,6 +16,66 @@
   border-bottom: none;
 }
 
+/* 모달 공통 */
+.settings-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 360px;
+}
+
+.settings-modal-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.settings-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* 나이대 칩 그리드 */
+.age-chip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* 글씨 크기 버튼 그룹 */
+.font-size-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* 닉네임/나이대 표시 행 */
+.settings-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 탈퇴 버튼 */
+.btn-danger {
+  color: red;
+  border-color: red;
 #settings-nickname,
 #settings-health-interests,
 #settings-age-group {
