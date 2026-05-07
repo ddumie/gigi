@@ -15,3 +15,10 @@
 .settings-row:last-child {
   border-bottom: none;
 }
+
+#settings-nickname,
+#settings-health-interests,
+#settings-age-group {
+  font-size: 1rem;
+  color: var(--color-text);
+}
