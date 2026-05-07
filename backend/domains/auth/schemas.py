@@ -130,6 +130,23 @@ class TokenResponse(BaseModel):
 
 
 # ──────────────────────────────────────────
+# 나이대 변경
+# ──────────────────────────────────────────
+
+class AgeGroupUpdateRequest(BaseModel):
+    """PATCH /auth/age-group 요청 바디"""
+    age_group: str
+
+    @field_validator("age_group")
+    @classmethod
+    def validate_age_group(cls, v):
+        valid = ["40대 이하", "50대", "60대", "70대 이상"]
+        if v not in valid:
+            raise ValueError("유효하지 않은 나이대입니다")
+        return v
+
+
+# ──────────────────────────────────────────
 # 닉네임 변경
 # ──────────────────────────────────────────
 
