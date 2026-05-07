@@ -155,7 +155,7 @@ function initStep3() {
     <article class="recommendation-card" data-index="${i}">
       <strong>${h.title}</strong>
       <p class="meta-text">${h.description}</p>
-      <div class="day-picker" id="ob-days-${i}" style="margin-top:0.5rem;" onclick="event.stopPropagation()">
+      <div class="day-picker" id="ob-days-${i}" style="margin-top:0.5rem;">
         <button type="button" class="day-btn" data-all="true"
           onclick="event.stopPropagation();obToggleAll(this)">매일</button>
         ${ALL_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"

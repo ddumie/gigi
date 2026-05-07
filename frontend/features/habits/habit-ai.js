@@ -210,7 +210,7 @@ function renderResult(habits) {
     <article class="recommendation-card" data-index="${i}" style="cursor:pointer;">
       <strong>${h.title}</strong>
       <p class="meta-text">${h.description}</p>
-      <div class="day-picker" id="hab-days-${i}" style="margin-top:0.5rem;" onclick="event.stopPropagation()">
+      <div class="day-picker" id="hab-days-${i}" style="margin-top:0.5rem;">
         <button type="button" class="day-btn" data-all="true"
           onclick="event.stopPropagation();habToggleAll(this)">매일</button>
         ${ALL_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
