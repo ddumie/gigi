@@ -233,6 +233,7 @@ function initGnb() {
     </nav>
     <div class="gnb-right">
       <span id="gnb-username" class="gnb-user">${nickname}</span>
+      ${user ? '<button type="button" class="gnb-btn" onclick="logout()">로그아웃</button>' : ''}
       <div class="gnb-noti">
         <span id="noti-count" class="gnb-noti-badge"></span>
       </div>
