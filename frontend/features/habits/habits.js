@@ -92,7 +92,6 @@ function openAddForm() {
       <option value="기타">기타</option>
     </select>
     ${dayPickerHtml('add-days', '')}
-    <input type="time" class="input" id="add-time" style="margin-top:0.5rem;margin-bottom:0.5rem;">
     <div class="edit-actions">
       <button type="button" class="btn btn-primary btn-sm" onclick="submitAddForm()">저장</button>
       <button type="button" class="btn btn-outline btn-sm"  onclick="closeAddForm()">취소</button>
@@ -109,13 +108,12 @@ function closeAddForm() {
 async function submitAddForm() {
   const title      = document.getElementById('add-title')?.value.trim();
   const category   = document.getElementById('add-cat')?.value;
-  const time       = document.getElementById('add-time')?.value || null;
   const repeatType = getRepeatFromDays('add-days');
 
   if (!title) { showToast('습관 이름을 입력해주세요.'); return; }
 
   try {
-    const res = await apiPost('/habits/', { title, category, time, repeat_type: repeatType });
+    const res = await apiPost('/habits/', { title, category, repeat_type: repeatType });
     showToast('습관이 추가되었습니다.');
     if (res && res.is_first_habit) localStorage.setItem('gigi_show_first_habit_modal', 'true');
     closeAddForm();
@@ -144,7 +142,6 @@ async function saveCardEdit(id) {
   const title      = document.getElementById(`edit-title-${id}`)?.value.trim();
   const description = document.getElementById(`edit-desc-${id}`)?.value.trim() || null;
   const category   = document.getElementById(`edit-cat-${id}`)?.value;
-  const time       = document.getElementById(`edit-time-${id}`)?.value || null;
   const repeatType = getRepeatFromDays(`edit-days-${id}`);
 
   if (!title) {
@@ -157,7 +154,6 @@ async function saveCardEdit(id) {
       title,
       description,
       category,
-      time,
       repeat_type: repeatType,
     });
     showToast('습관이 수정되었습니다.');
@@ -246,7 +242,7 @@ function render() {
           <div class="habit-info">
             <div class="habit-title">${h.title}</div>
             ${h.description ? `<div class="habit-desc">${h.description}</div>` : ''}
-            <div class="habit-sub">${h.repeat_type} ${h.time ? '· ' + h.time : ''} · ${h.category}${isGroup ? ' · 모임 연동' : ''}</div>
+            <div class="habit-sub">${h.repeat_type} · ${h.category}${isGroup ? ' · 모임 연동' : ''}</div>
           </div>
           <div style="display:flex;align-items:center;gap:0.25rem;flex-wrap:wrap;">
             ${badges.join('')}
@@ -262,17 +258,15 @@ function render() {
           <input type="text" class="input edit-input" id="edit-title-${h.id}"
                  value="${safeTitle}" placeholder="습관 이름">
           <input type="text" class="input edit-input" id="edit-desc-${h.id}"
-                 value="${(h.description || '').replaceAll('"', '&quot;')}" placeholder="설명 (예: 매일 아침 7시, 10분 스트레칭)">
-          <div class="edit-row">
-            <select class="input" id="edit-cat-${h.id}">
-              <option value="운동"  ${h.category==='운동'  ? 'selected':''}>운동</option>
-              <option value="복약"  ${h.category==='복약'  ? 'selected':''}>복약</option>
-              <option value="식단"  ${h.category==='식단'  ? 'selected':''}>식단</option>
-              <option value="수면"  ${h.category==='수면'  ? 'selected':''}>수면</option>
-              <option value="기타"  ${h.category==='기타'  ? 'selected':''}>기타</option>
-            </select>
-            <input type="time" class="input" id="edit-time-${h.id}" value="${h.time || ''}">
-          </div>
+                 value="${(h.description || '').replaceAll('"', '&quot;')}" placeholder="설명 (예: 매일 아침 7시, 10분 스트레칭)"
+                 ${h.is_ai_recommended ? 'readonly' : ''}>
+          <select class="input" id="edit-cat-${h.id}">
+            <option value="운동"  ${h.category==='운동'  ? 'selected':''}>운동</option>
+            <option value="복약"  ${h.category==='복약'  ? 'selected':''}>복약</option>
+            <option value="식단"  ${h.category==='식단'  ? 'selected':''}>식단</option>
+            <option value="수면"  ${h.category==='수면'  ? 'selected':''}>수면</option>
+            <option value="기타"  ${h.category==='기타'  ? 'selected':''}>기타</option>
+          </select>
           ${dayPickerHtml(`edit-days-${h.id}`, h.repeat_type)}
           <div class="edit-actions">
             <button class="btn btn-primary btn-sm" onclick="saveCardEdit(${h.id})">저장</button>

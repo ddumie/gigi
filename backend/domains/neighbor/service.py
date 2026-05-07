@@ -104,9 +104,11 @@ async def get_my_group_search_logic(user_id: int, db: AsyncSession):
 async def get_my_habits_logic(user_id: int, db: AsyncSession):
     result = []
     posts = await get_my_habits(user_id=user_id, db=db)
-    for habits_feed, post, user in posts:
+    for habits_feed, post, user, habit, group in posts:
         habits_feed.author = PostAuthorResponse(id=user.id, nickname=user.nickname)
         habits_feed.created_at = post.created_at
+        habits_feed.habit_title = habit.title if habit else None
+        habits_feed.group_name = group.name if group else None
         result.append(habits_feed)
 
     checked_count, total_count = await get_today_completion(user_id=user_id, db=db)

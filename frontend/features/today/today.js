@@ -154,7 +154,6 @@ function renderChecklist(habits, stats) {
     const habitTitle = escapeHtml(h.title);
     const category = escapeHtml(h.category);
     const repeatType = escapeHtml(h.repeat_type);
-    const timeText = h.time ? ' · ' + escapeHtml(h.time) : '';
 
     return `
       <div class="today-habit-block" data-habit-id="${h.id}">
@@ -162,7 +161,7 @@ function renderChecklist(habits, stats) {
           <div class="check-box">${checked ? '✓' : ''}</div>
           <div style="flex:1;">
             <strong>${habitTitle}${groupTag}</strong>
-            <p class="meta-text">${category} · ${repeatType}${timeText}</p>
+            <p class="meta-text">${category} · ${repeatType}</p>
           </div>
           <span class="badge ${badgeCls}">${badgeText}</span>
         </div>
@@ -197,16 +196,17 @@ function renderShareComposer(habit) {
   const draft = openShareComposer?.habitId === habit.id ? openShareComposer.draft : '';
 
   return `
-    <div class="share-composer card">
+    <div class="share-composer">
       <strong class="share-composer-title">이웃에 공유</strong>
-      <p class="meta-text">한줄 코멘트를 남기거나 건너뛸 수 있어요.</p>
-      <textarea
-        class="share-composer-input"
-        rows="2"
-        placeholder="한줄 코멘트 (선택)"
-        oninput="updateShareDraft(${habit.id}, this.value)"
-      >${escapeHtml(draft)}</textarea>
-      <div class="share-composer-actions">
+      <p class="meta-text" style="margin-top:-0.2rem;">내가 한 습관을 남겨서 공유하거나 건너뛸 수 있어요.</p>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <textarea
+          class="share-composer-input"
+          rows="1"
+          placeholder="(예시)시원한 물한잔 오늘도 완료!"
+          oninput="updateShareDraft(${habit.id}, this.value)"
+          style="flex:1;min-height:unset;height:2rem;font-size:0.8rem;padding:0.25rem 0.5rem;resize:none;"
+        >${escapeHtml(draft)}</textarea>
         <button type="button" class="btn btn-primary btn-sm" onclick="submitNeighborShare(event, ${habit.id})">공유</button>
         <button type="button" class="btn btn-outline btn-sm" onclick="skipNeighborShare(event, ${habit.id})">건너뛰기</button>
       </div>
@@ -223,12 +223,21 @@ async function submitNeighborShare(event, habitId) {
   if (openShareComposer?.habitId !== habitId) return;
 
   try {
-    await apiPost('/today/share', {
+    const result = await apiPost('/today/share', {
       habit_id: habitId,
       content: openShareComposer.draft.trim(),
     });
     openShareComposer = null;
-    showToast('이웃에 공유되었습니다.');
+    const postId = result && result.id;
+    showToast('이웃에 공유되었어요', {
+      duration: 5000,
+      action: postId ? {
+        label: '확인하기',
+        onClick: () => {
+          window.location.href = `${PAGES.feedDetail}?post_id=${postId}`;
+        },
+      } : null,
+    });
     await loadDashboard();
   } catch (e) {
     showToast(e.message || '공유에 실패했습니다.');

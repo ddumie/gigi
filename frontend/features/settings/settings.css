@@ -76,4 +76,9 @@
 .btn-danger {
   color: red;
   border-color: red;
+#settings-nickname,
+#settings-health-interests,
+#settings-age-group {
+  font-size: 1rem;
+  color: var(--color-text);
 }

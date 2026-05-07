@@ -26,6 +26,7 @@ if (!groupPosts || !feedResult) {
   groupPosts.forEach(p => {
     const article = document.createElement('article');
     article.className = 'group-search-card';
+    article.hidden = true;
 
     // 아래 블록 추가
     const postDate = p.created_at
@@ -34,7 +35,21 @@ if (!groupPosts || !feedResult) {
     if (postDate && postDate !== lastDateGs) {
       const sep = document.createElement('div');
       sep.className = 'feed-date-separator';
+      sep.style.cursor = 'pointer';
       sep.textContent = postDate;
+      const arrow = document.createElement('span');
+      arrow.textContent = ' ▶';
+      sep.appendChild(arrow);
+      sep.addEventListener('click', () => {
+        let el = sep.nextElementSibling;
+        let collapsed = false;
+        while (el && !el.classList.contains('feed-date-separator')) {
+          el.hidden = !el.hidden;
+          collapsed = el.hidden;
+          el = el.nextElementSibling;
+        }
+        arrow.textContent = collapsed ? ' ▶' : ' ▼';
+      });
       list_gs.appendChild(sep);
       lastDateGs = postDate;
     }
@@ -60,13 +75,15 @@ if (!groupPosts || !feedResult) {
   const list_f = document.getElementById('my-posts-list-fd');
   let lastDateFd = null;
   feedPosts.forEach(p => {
-    const article = document.createElement('article');
-    article.className = 'feed-card';
-
     // 아래 블록 추가
     const postDate = p.created_at
       ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
       : '';
+
+    const article = document.createElement('article');
+    article.className = 'feed-card';
+    article.hidden = postDate !== todayStr;
+
     if (postDate && postDate !== lastDateFd) {
       const sep = document.createElement('div');
       sep.className = 'feed-date-separator';
@@ -74,20 +91,37 @@ if (!groupPosts || !feedResult) {
       dateSpan.textContent = postDate;
       sep.appendChild(dateSpan);
 
+      const arrow = document.createElement('span');
+      arrow.className = 'date-arrow';
+      arrow.textContent = postDate === todayStr ? ' ▼' : ' ▶'; 
+      sep.appendChild(arrow);
+
+
       if (postDate === todayStr && allHabitsDone) {
         const badge = document.createElement('span');
         badge.className = 'all-done-badge';
         badge.textContent = '모두 완료';
         sep.appendChild(badge);
       }
-
+      sep.style.cursor = 'pointer';
+      sep.addEventListener('click', () => {
+        let el = sep.nextElementSibling;
+        let collapsed = false;
+        while (el && !el.classList.contains('feed-date-separator')) {
+          el.hidden = !el.hidden;
+          collapsed = el.hidden;
+          el = el.nextElementSibling;
+        }
+        const arrow = sep.querySelector('.date-arrow');
+        if (arrow) arrow.textContent = collapsed ? ' ▶' : ' ▼';
+      });
       list_f.appendChild(sep);
       lastDateFd = postDate;
     }
     // 여기까지 추가
     
     const title = document.createElement('strong');
-    title.textContent = `${p.category} 완료`;
+    title.textContent = `${p.category} 완료 · ${p.habit_title ?? (p.group_name ? p.group_name + ' 습관' : '')}`;
 
     const body = document.createElement('p');
     body.textContent = p.content ?? '';

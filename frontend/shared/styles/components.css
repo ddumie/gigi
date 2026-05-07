@@ -272,6 +272,31 @@
   transform: translateX(-50%) translateY(0);
 }
 
+/* 액션 버튼이 붙은 토스트 — 클릭 가능해야 하므로 pointer-events 활성 */
+.toast.toast-with-action {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
+  pointer-events: auto;
+}
+
+.toast .toast-action {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toast .toast-action:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 .page-actions {
   display: flex;
   gap: 0.75rem;
