@@ -154,7 +154,6 @@ function renderChecklist(habits, stats) {
     const habitTitle = escapeHtml(h.title);
     const category = escapeHtml(h.category);
     const repeatType = escapeHtml(h.repeat_type);
-    const timeText = h.time ? ' · ' + escapeHtml(h.time) : '';
 
     return `
       <div class="today-habit-block" data-habit-id="${h.id}">
@@ -162,7 +161,7 @@ function renderChecklist(habits, stats) {
           <div class="check-box">${checked ? '✓' : ''}</div>
           <div style="flex:1;">
             <strong>${habitTitle}${groupTag}</strong>
-            <p class="meta-text">${category} · ${repeatType}${timeText}</p>
+            <p class="meta-text">${category} · ${repeatType}</p>
           </div>
           <span class="badge ${badgeCls}">${badgeText}</span>
         </div>
