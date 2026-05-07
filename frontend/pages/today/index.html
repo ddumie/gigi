@@ -15,23 +15,23 @@
   <main>
     <div class="container page-shell">
       <header class="page-header">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="today-header-row">
           <div>
-            <div id="today-greeting" style="font-size:1.1rem;font-weight:500;">안녕하세요</div>
-            <div style="font-size:0.8rem;color:var(--color-text-s);">오늘의 내 습관</div>
+            <div id="today-greeting" class="today-greeting">안녕하세요</div>
+            <div class="today-subtitle">오늘의 내 습관</div>
           </div>
           <span id="today-date" class="badge badge-blue"></span>
         </div>
       </header>
 
       <!-- 받은 지지 알림 (support 도메인 연동 후 동적 전환 예정) -->
-      <section id="notification-section" class="card" style="margin-bottom:0.75rem;display:none;">
+      <section id="notification-section" class="card today-section hidden">
         <strong>👍 받은 지지</strong>
         <div id="notification-list"></div>
       </section>
 
       <!-- 나의 현황 -->
-      <section class="card today-status" style="margin-bottom:0.75rem;">
+      <section class="card today-status today-section">
         <strong>📊 나의 현황</strong>
         <div class="status-body">
           <!-- 좌: 4지표 2×2 -->
@@ -39,7 +39,7 @@
             <div class="stat-card"><div id="stat-rate"   class="stat-value">—</div><div class="stat-label">오늘 달성률</div></div>
             <div class="stat-card"><div id="stat-weekly" class="stat-value">—</div><div class="stat-label">주간 달성률</div></div>
             <div class="stat-card"><div id="stat-streak" class="stat-value">—</div><div class="stat-label">연속 달성</div></div>
-            <div class="stat-card"><div id="stat-badge"  class="stat-value" style="font-size:1rem;">🌱 씨앗</div><div class="stat-label">내 칭호</div></div>
+            <div class="stat-card"><div id="stat-badge"  class="stat-value stat-badge-text">🌱 씨앗</div><div class="stat-label">내 칭호</div></div>
           </div>
           <!-- 우: 달력 -->
           <div class="status-calendar">
@@ -51,27 +51,27 @@
       </section>
 
       <!-- 오늘의 습관 체크리스트 -->
-      <section class="card" style="margin-bottom:0.75rem;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
+      <section class="card today-section">
+        <div class="today-checklist-header">
           <strong>✅ 오늘의 습관</strong>
           <span id="today-pill" class="badge badge-blue"></span>
         </div>
         <div id="today-checklist"></div>
-        <button id="btn-add-habit-today" class="btn btn-outline btn-full btn-sm" style="margin-top:0.5rem;">습관 설정</button>
+        <button id="btn-add-habit-today" class="btn btn-outline btn-full btn-sm today-add-habit-btn">습관 설정</button>
       </section>
 
       <!-- 첫 진입 모달 (화면 8: 습관 등록 후 모임 유도) -->
       <div id="first-login-overlay" class="first-login-overlay">
         <section id="first-login-modal" class="card first-login-modal-card">
-          <div style="font-size:1.5rem;margin-bottom:0.5rem;">🎉</div>
-          <div style="font-size:1rem;font-weight:500;margin-bottom:0.4rem;">습관이 등록됐어요!</div>
-          <div style="font-size:0.85rem;color:var(--color-text-s);margin-bottom:1.2rem;line-height:1.7;">
+          <div class="first-habit-emoji">🎉</div>
+          <div class="first-habit-title">습관이 등록됐어요!</div>
+          <div class="first-habit-desc">
             함께하면 더 오래 지속돼요.<br>가족이나 친구를 초대해 모임을 만들어볼까요?
           </div>
-          <div style="background:var(--color-success-light);border-radius:var(--r-md);padding:0.75rem;margin-bottom:1rem;font-size:0.8rem;color:#0D6B4F;">
+          <div class="first-habit-tip">
             모임을 만들면 서로의 습관을 응원하고,<br>함께할수록 칭호와 레벨이 올라가요 🌱
           </div>
-          <a href="/pages/support/create.html" class="btn btn-primary btn-full" style="margin-bottom:0.4rem;">모임 만들기</a>
+          <a href="/pages/support/create.html" class="btn btn-primary btn-full first-habit-cta">모임 만들기</a>
           <button id="dismiss-first-login-modal" class="btn btn-outline btn-full btn-sm" type="button">나중에 할게요</button>
         </section>
       </div>

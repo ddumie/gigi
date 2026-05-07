@@ -82,9 +82,9 @@ function openAddForm() {
   formEl.className = 'card habit-add-form';
   formEl.id = 'habit-add-form';
   formEl.innerHTML = `
-    <div style="font-size:0.9rem;font-weight:600;margin-bottom:0.75rem;">새 습관 추가</div>
+    <div class="habit-add-form-title">새 습관 추가</div>
     <input type="text" class="input edit-input" id="add-title" placeholder="습관 이름" maxlength="100">
-    <select class="input" id="add-cat" style="margin-bottom:0.5rem;">
+    <select class="input" id="add-cat">
       <option value="운동">운동</option>
       <option value="복약">복약</option>
       <option value="식단">식단</option>
@@ -213,9 +213,9 @@ function render() {
 
   if (habits.length === 0) {
     $list.innerHTML = `
-      <div class="card" style="text-align:center;padding:2rem 1rem;">
-        <div style="font-size:1.5rem;margin-bottom:0.5rem;">🌱</div>
-        <div style="font-size:0.9rem;font-weight:500;margin-bottom:0.4rem;">첫 습관을 추가해보세요</div>
+      <div class="card habit-empty">
+        <div class="habit-empty-emoji">🌱</div>
+        <div class="habit-empty-title">첫 습관을 추가해보세요</div>
         <p class="meta-text">건강한 습관 하나가 건강한 하루를 만들어요</p>
       </div>`;
     return;
@@ -235,7 +235,7 @@ function render() {
     const safeTitle = h.title.replaceAll('"', '&quot;');
 
     return `
-      <article class="card habit-row" data-id="${h.id}" ${isGroup ? 'style="border-color:var(--color-success);"' : ''}>
+      <article class="card habit-row${isGroup ? ' is-group' : ''}" data-id="${h.id}">
 
         <!-- 뷰 모드 -->
         <div class="habit-card-view">
@@ -244,7 +244,7 @@ function render() {
             ${h.description ? `<div class="habit-desc">${h.description}</div>` : ''}
             <div class="habit-sub">${h.repeat_type} · ${h.category}${isGroup ? ' · 모임 연동' : ''}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:0.25rem;flex-wrap:wrap;">
+          <div class="habit-actions">
             ${badges.join('')}
             ${visibilityBtn}
             ${!isGroup ? `<button class="btn btn-outline btn-sm" onclick="openCardEdit(${h.id})">수정</button>

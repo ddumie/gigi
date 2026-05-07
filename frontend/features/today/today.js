@@ -96,15 +96,15 @@ async function loadNotifications() {
     const items = data.notifications || [];
 
     if (items.length === 0) {
-      $notifSection.style.display = 'none';
+      $notifSection.classList.add('hidden');
       return;
     }
 
-    $notifSection.style.display = '';
+    $notifSection.classList.remove('hidden');
     $notifList.innerHTML = items.map(n => `
-      <div class="notification-item" style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;padding:0.5rem 0;border-top:1px solid var(--color-border, #eee);">
-        <span style="font-size:0.9rem;">${escapeHtml(n.content)}</span>
-        <span class="meta-text" style="font-size:0.75rem;white-space:nowrap;">${formatRelativeTime(n.created_at)}</span>
+      <div class="notification-item notification-row">
+        <span class="notification-content">${escapeHtml(n.content)}</span>
+        <span class="meta-text notification-time">${formatRelativeTime(n.created_at)}</span>
       </div>
     `).join('');
 
@@ -114,7 +114,7 @@ async function loadNotifications() {
       } catch (_) {}
     }
   } catch (e) {
-    $notifSection.style.display = 'none';
+    $notifSection.classList.add('hidden');
   }
 }
 
@@ -126,10 +126,10 @@ function renderChecklist(habits, stats) {
 
   if (habits.length === 0) {
     $checklist.innerHTML = `
-      <div style="text-align:center;padding:2rem 1rem;">
-        <div style="font-size:1.5rem;margin-bottom:0.5rem;">🌱</div>
-        <div style="font-size:0.9rem;font-weight:500;margin-bottom:0.4rem;">첫 습관을 추가해보세요</div>
-        <div style="font-size:0.8rem;color:var(--color-text-s);line-height:1.7;">
+      <div class="today-empty">
+        <div class="today-empty-emoji">🌱</div>
+        <div class="today-empty-title">첫 습관을 추가해보세요</div>
+        <div class="today-empty-sub">
           건강한 습관 하나가<br>건강한 하루를 만들어요
         </div>
       </div>`;
@@ -138,7 +138,7 @@ function renderChecklist(habits, stats) {
 
   $checklist.innerHTML = habits.map(h => {
     const checked   = h.is_checked;
-    const groupTag  = h.is_group ? '<span class="badge badge-green" style="margin-left:4px;">모임</span>' : '';
+    const groupTag  = h.is_group ? '<span class="badge badge-green checklist-group-tag">모임</span>' : '';
     const badgeText = checked ? '완료' : '미완료';
     const badgeCls  = checked ? 'badge-green' : 'badge-amber';
     const isShareOpen = openShareComposer?.habitId === h.id && checked;
@@ -150,7 +150,7 @@ function renderChecklist(habits, stats) {
       <div class="today-habit-block" data-habit-id="${h.id}">
         <div class="checklist-item ${checked ? 'checked' : ''}" onclick="toggleCheck(${h.id})">
           <div class="check-box">${checked ? '✓' : ''}</div>
-          <div style="flex:1;">
+          <div class="checklist-content">
             <strong>${habitTitle}${groupTag}</strong>
             <p class="meta-text">${category} · ${repeatType}</p>
           </div>
@@ -189,14 +189,13 @@ function renderShareComposer(habit) {
   return `
     <div class="share-composer">
       <strong class="share-composer-title">이웃에 공유</strong>
-      <p class="meta-text" style="margin-top:-0.2rem;">내가 한 습관을 남겨서 공유하거나 건너뛸 수 있어요.</p>
-      <div style="display:flex;gap:0.5rem;align-items:center;">
+      <p class="meta-text share-composer-hint">내가 한 습관을 남겨서 공유하거나 건너뛸 수 있어요.</p>
+      <div class="share-composer-row">
         <textarea
           class="share-composer-input"
           rows="1"
           placeholder="(예시)시원한 물한잔 오늘도 완료!"
           oninput="updateShareDraft(${habit.id}, this.value)"
-          style="flex:1;min-height:unset;height:2rem;font-size:0.8rem;padding:0.25rem 0.5rem;resize:none;"
         >${escapeHtml(draft)}</textarea>
         <button type="button" class="btn btn-primary btn-sm" onclick="submitNeighborShare(event, ${habit.id})">공유</button>
         <button type="button" class="btn btn-outline btn-sm" onclick="skipNeighborShare(event, ${habit.id})">건너뛰기</button>

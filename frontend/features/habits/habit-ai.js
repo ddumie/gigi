@@ -73,9 +73,9 @@ function addCustomInterest() {
 function renderCustomTags() {
   const container = document.getElementById('custom-tags');
   container.innerHTML = customInterests.map((tag, i) => `
-    <span class="chip active" style="display:inline-flex;align-items:center;gap:0.25rem;">
+    <span class="chip active tag-chip">
       ${tag}
-      <button onclick="removeCustomTag(${i})" style="background:none;border:none;cursor:pointer;font-size:0.9rem;line-height:1;">✕</button>
+      <button class="tag-chip-remove" onclick="removeCustomTag(${i})">✕</button>
     </span>
   `).join('');
 }
@@ -99,7 +99,7 @@ async function getRecommendations() {
     return;
   }
 
-  btn.style.pointerEvents = 'none';
+  btn.classList.add('is-busy');
   let dotCount = 1;
   const dotInterval = setInterval(() => {
     btn.textContent = '추천 받는 중' + '.'.repeat(dotCount);
@@ -120,7 +120,7 @@ async function getRecommendations() {
       return;
     }
     showToast(err.message);
-    btn.style.pointerEvents = '';
+    btn.classList.remove('is-busy');
     btn.textContent = '맞춤 습관 추천받기';
   }
 }
@@ -129,7 +129,7 @@ async function getRecommendations() {
 // 다시 추천받기
 async function retryRecommendation() {
   const btn = document.getElementById('btn-retry');
-  btn.style.pointerEvents = 'none';
+  btn.classList.add('is-busy');
   let dotCount = 1;
   const dotInterval = setInterval(() => {
     btn.textContent = '추천 받는 중' + '.'.repeat(dotCount);
@@ -144,7 +144,7 @@ async function retryRecommendation() {
     showToast(err.message);
   } finally {
     clearInterval(dotInterval);
-    btn.style.pointerEvents = '';
+    btn.classList.remove('is-busy');
     btn.textContent = '다시 추천받기';
   }
 }
@@ -207,10 +207,10 @@ function renderResult(habits) {
   const ALL_DAYS = ['월','화','수','목','금','토','일'];
   const list = document.getElementById('recommendation-list');
   list.innerHTML = habits.map((h, i) => `
-    <article class="recommendation-card" data-index="${i}" style="cursor:pointer;">
+    <article class="recommendation-card" data-index="${i}">
       <strong>${h.title}</strong>
       <p class="meta-text">${h.description}</p>
-      <div class="day-picker" id="hab-days-${i}" style="margin-top:0.5rem;">
+      <div class="day-picker" id="hab-days-${i}">
         <button type="button" class="day-btn" data-all="true"
           onclick="event.stopPropagation();habToggleAll(this)">매일</button>
         ${ALL_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
@@ -238,8 +238,8 @@ function habToggleAll(btn) {
 
 // step 전환
 function showStep(step) {
-  document.getElementById('step-interests').style.display = step === 'interests' ? '' : 'none';
-  document.getElementById('step-result').style.display = step === 'result' ? '' : 'none';
+  document.getElementById('step-interests').classList.toggle('hidden', step !== 'interests');
+  document.getElementById('step-result').classList.toggle('hidden', step !== 'result');
 
   if (step === 'interests') {
     const btn = document.getElementById('btn-get-recommend');
