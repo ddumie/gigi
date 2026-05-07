@@ -67,6 +67,18 @@
 .gnb-btn-solid { background: var(--color-primary); color: #fff !important; }
 .gnb-btn-solid:hover { background: var(--color-primary-hover); }
 
+/* 작은 변형 — 닉네임 옆 로그아웃 등 */
+.gnb-btn-mini {
+  min-height: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--font-size-xs);
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.gnb-btn-mini:hover { background: var(--color-bg); color: var(--color-text); }
+
 .gnb-user {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
