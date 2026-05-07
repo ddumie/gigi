@@ -1,3 +1,14 @@
+function togglePwVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '숨기기';
+  } else {
+    input.type = 'password';
+    btn.textContent = '보기';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   requireLogin();
 
