@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("모임이 생성되었습니다.");
 
       // 생성된 모임 관리 페이지로 이동 (id 포함)
-      window.location.href = `/pages/support/manage.html?group_id=${res.id}`;
+      window.location.href = `${PAGES.supportManage}?group_id=${res.id}`;
     } catch (err) {
       showToast(err.message || "모임 생성에 실패했습니다.");
     }

@@ -9,17 +9,8 @@ const groupId = params.get("group_id");
 
 async function loadGroupSettings() {
   try {
-    const token = localStorage.getItem("gigi_token");
-    const res = await fetch(`/api/v1/support/group/${groupId}/settings`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    if (!res.ok) {
-      console.error("모임 설정 불러오기 실패:", await res.text());
-      return;
-    }
-
-    const data = await res.json();
-    console.log("group settings 응답:", data);
+    // 모임 설정 불러오기
+    const data = await apiGet(`/support/group/${groupId}/settings`);
 
     const group = data.group;
     const members = data.members;
@@ -40,7 +31,7 @@ async function loadGroupSettings() {
       });
     });
 
-    // 함께하는 습관 표시 (habit, frequency가 있을 때만)
+    // 함께하는 습관 표시
     if (group.habit && group.frequency) {
       const habitBox = document.createElement("div");
       habitBox.style.marginTop = "0.75rem";
@@ -50,7 +41,7 @@ async function loadGroupSettings() {
       `;
       const groupInfoBox = document.querySelector(".group-info-box");
       const saveBtnBox = groupInfoBox.querySelector(".page-actions");
-      groupInfoBox.insertBefore(habitBox, saveBtnBox); // 저장 버튼 위에 삽입
+      groupInfoBox.insertBefore(habitBox, saveBtnBox);
     }
 
     // 저장 버튼 이벤트 (모임 정보 수정)
@@ -64,19 +55,11 @@ async function loadGroupSettings() {
         return;
       }
 
-      const res = await fetch(`/api/v1/support/group/${groupId}/profile`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name: newName, group_type: newType })
-      });
-
-      if (res.ok) {
+      try {
+        await apiPut(`/support/group/${groupId}/profile`, { name: newName, group_type: newType });
         showToast("모임 정보가 저장되었습니다.");
-      } else {
-        showToast("저장 실패");
+      } catch (err) {
+        showToast(err.message || "저장 실패");
       }
     });
 
@@ -97,19 +80,17 @@ async function loadGroupSettings() {
     const leaveBtn = document.querySelector(".page-actions .btn-outline");
     leaveBtn.addEventListener("click", async () => {
       if (!confirm("정말 탈퇴하시겠습니까?")) return;
-      const leaveRes = await fetch(`/api/v1/support/group/${groupId}/leave`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (leaveRes.ok) {
+      try {
+        await apiDelete(`/support/group/${groupId}/leave`);
         showToast("모임에서 탈퇴했습니다.");
-        window.location.href = "/pages/support/index.html";
-      } else {
-        showToast("탈퇴 실패");
+        window.location.href = PAGES.support;
+      } catch (err) {
+        showToast(err.message || "탈퇴 실패");
       }
     });
 
   } catch (err) {
-    console.error("manage.js 오류:", err);
+    showToast(err.message || "모임 설정 불러오기 실패");
   }
 }
+
