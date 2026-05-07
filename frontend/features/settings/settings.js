@@ -8,40 +8,113 @@ document.addEventListener('DOMContentLoaded', () => {
     nicknameEl.textContent = user.nickname;
   }
 
-  // 나이대 드롭다운 — localStorage에서 불러와 초기값 세팅
-  const ageSelect = document.getElementById('settings-age-group');
-  if (ageSelect) {
-    const saved = localStorage.getItem('gigi_age_group') || '';
-    ageSelect.value = saved;
-    ageSelect.addEventListener('change', () => {
-      localStorage.setItem('gigi_age_group', ageSelect.value);
-    });
-  }
-
-
-  // 건강 관심사 표시 (user_preferences에서 가져옴)
+  // 나이대 + 건강관심사 API에서 가져오기
+  const ageEl = document.getElementById('settings-age-group');
   apiGet('/auth/me').then((data) => {
+    if (!data) return;
+    if (ageEl) {
+      ageEl.textContent = data.age_group || '-';
+      if (data.age_group) localStorage.setItem('gigi_age_group', data.age_group);
+    }
     const healthEl = document.getElementById('settings-health-interests');
     if (healthEl) healthEl.textContent = data.health_interests?.length ? data.health_interests.join(', ') : '-';
-  }).catch(() => { showToast('건강 관심사를 불러오지 못했습니다.'); });
+  }).catch(() => { showToast('프로필 정보를 불러오지 못했습니다.'); });
 
-  // 닉네임 변경
-  const nicknameEditBtn  = document.getElementById('nickname-edit-btn');
-  const nicknameCancelBtn = document.getElementById('nickname-cancel-btn');
-  const nicknameEditForm = document.getElementById('nickname-edit-form');
+  // 나이대 변경 모달
+  const ageEditBtn   = document.getElementById('age-group-edit-btn');
+  const ageCancelBtn = document.getElementById('age-group-cancel-btn');
+  const ageModal     = document.getElementById('age-group-modal');
+  let selectedAge    = null;
 
-  nicknameEditBtn.addEventListener('click', () => {
-    nicknameEditForm.classList.remove('hidden');
-    nicknameEditBtn.classList.add('hidden');
+  function openAgeModal() {
+    selectedAge = null;
+    document.querySelectorAll('.js-age-chip').forEach(c => {
+      c.classList.remove('btn-primary');
+      c.classList.add('btn-outline');
+    });
+    const errEl = document.getElementById('age-group-error');
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+    ageModal.style.display = 'flex';
+  }
+
+  function closeAgeModal() {
+    ageModal.style.display = 'none';
+    selectedAge = null;
+  }
+
+  ageEditBtn.addEventListener('click', openAgeModal);
+  ageCancelBtn.addEventListener('click', closeAgeModal);
+
+  // 모달 바깥 클릭 시 닫기
+  ageModal.addEventListener('click', (e) => {
+    if (e.target === ageModal) closeAgeModal();
   });
 
-  nicknameCancelBtn.addEventListener('click', () => {
-    nicknameEditForm.classList.add('hidden');
-    nicknameEditBtn.classList.remove('hidden');
+  document.querySelectorAll('.js-age-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.js-age-chip').forEach(c => {
+        c.classList.remove('btn-primary');
+        c.classList.add('btn-outline');
+      });
+      chip.classList.remove('btn-outline');
+      chip.classList.add('btn-primary');
+      selectedAge = chip.dataset.value;
+    });
+  });
+
+  document.getElementById('age-group-save-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('age-group-error');
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+
+    if (!selectedAge) {
+      errEl.textContent = '나이대를 선택해주세요';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    const saveBtn = document.getElementById('age-group-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '저장 중...';
+
+    try {
+      const res = await apiPatch('/auth/age-group', { age_group: selectedAge });
+      if (ageEl) ageEl.textContent = res.age_group;
+      localStorage.setItem('gigi_age_group', res.age_group);
+      showToast('나이대가 변경되었습니다.');
+      closeAgeModal();
+    } catch (e) {
+      errEl.textContent = e.message || '나이대 변경에 실패했습니다.';
+      errEl.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '확인';
+    }
+  });
+
+  // 닉네임 변경 모달
+  const nicknameEditBtn   = document.getElementById('nickname-edit-btn');
+  const nicknameCancelBtn = document.getElementById('nickname-cancel-btn');
+  const nicknameModal     = document.getElementById('nickname-modal');
+
+  function openNicknameModal() {
     document.getElementById('new-nickname').value = '';
     const errEl = document.getElementById('nickname-error');
     errEl.textContent = '';
     errEl.classList.add('hidden');
+    nicknameModal.style.display = 'flex';
+  }
+
+  function closeNicknameModal() {
+    nicknameModal.style.display = 'none';
+  }
+
+  nicknameEditBtn.addEventListener('click', openNicknameModal);
+  nicknameCancelBtn.addEventListener('click', closeNicknameModal);
+
+  nicknameModal.addEventListener('click', (e) => {
+    if (e.target === nicknameModal) closeNicknameModal();
   });
 
   document.getElementById('nickname-save-btn').addEventListener('click', async () => {
@@ -79,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setCurrentUser(storedUser);
       }
       showToast('닉네임이 변경되었습니다.');
-      nicknameCancelBtn.click();
+      closeNicknameModal();
     } catch (e) {
       errEl.textContent = e.message || '닉네임 변경에 실패했습니다.';
       errEl.classList.remove('hidden');

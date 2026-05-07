@@ -17,6 +17,7 @@ from backend.domains.auth.schemas import (
     UserResponse,
     PasswordChangeRequest,
     NicknameUpdateRequest,
+    AgeGroupUpdateRequest,
 )
 
 router = APIRouter()
@@ -104,6 +105,8 @@ async def get_me(current_user: User = Depends(get_current_user), db: AsyncSessio
     pref = (await db.execute(select(UserPreference).where(UserPreference.user_id == current_user.id))).scalar_one_or_none()
     if pref:
         user_data.health_interests = pref.health_interests
+        if pref.age_group:
+            user_data.age_group = pref.age_group
     return user_data
 
 
@@ -125,6 +128,30 @@ async def check_nickname(nickname: str = Query(..., min_length=2, max_length=12)
     available = await service.check_nickname(db, nickname)
     message = "사용 가능한 닉네임입니다" if available else "이미 사용 중인 닉네임입니다"
     return CheckResponse(available=available, message=message)
+
+
+# ──────────────────────────────────────────
+# 나이대 변경
+# ──────────────────────────────────────────
+
+@router.patch("/age-group")
+async def update_age_group(
+    data: AgeGroupUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """나이대 변경 (로그인 필요)"""
+    await crud.update_profile(db, current_user, age_group=data.age_group)
+    pref = (await db.execute(select(UserPreference).where(UserPreference.user_id == current_user.id))).scalar_one_or_none()
+    if pref:
+        try:
+            pref.age_group = data.age_group
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            logger.error(f"나이대 변경 오류 user_id={current_user.id}: {e}", exc_info=True)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="나이대 변경 중 오류가 발생했습니다.")
+    return {"message": "나이대가 변경되었습니다.", "age_group": data.age_group}
 
 
 # ──────────────────────────────────────────

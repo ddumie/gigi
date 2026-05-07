@@ -50,15 +50,13 @@
               <button type="button" id="nickname-edit-btn" class="btn btn-outline btn-sm">변경</button>
             </div>
           </div>
-          <div id="nickname-edit-form" class="hidden">
-            <input id="new-nickname" class="input-field" type="text" placeholder="새 닉네임 (2자 이상 12자 이하)">
-            <div id="nickname-error" class="input-error hidden"></div>
-            <div class="page-actions">
-              <button type="button" id="nickname-save-btn" class="btn btn-primary btn-sm">저장</button>
-              <button type="button" id="nickname-cancel-btn" class="btn btn-outline btn-sm">취소</button>
+          <div class="settings-row">
+            <span>나이대</span>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span id="settings-age-group" class="meta-text">-</span>
+              <button type="button" id="age-group-edit-btn" class="btn btn-outline btn-sm">변경</button>
             </div>
           </div>
-          <div class="settings-row"><span>나이대</span><select id="settings-age-group" class="meta-text"><option value="">선택 안 함</option><option value="40대 이하">40대 이하</option><option value="50대">50대</option><option value="60대">60대</option><option value="70대 이상">70대 이상</option></select></div>
           <div class="settings-row"><span>건강 관심사</span><span id="settings-health-interests" class="meta-text">-</span></div>
         </section>
         <section class="card">
@@ -82,6 +80,37 @@
       </div>
     </div>
   </main>
+  <!-- 닉네임 변경 모달 -->
+  <div id="nickname-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;width:90%;max-width:360px;">
+      <h3 style="margin:0 0 1rem;font-size:1rem;font-weight:700;">닉네임 변경</h3>
+      <input id="new-nickname" class="input-field" type="text" placeholder="새 닉네임 (2자 이상 12자 이하)">
+      <div id="nickname-error" class="input-error hidden"></div>
+      <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:1.5rem;">
+        <button type="button" id="nickname-cancel-btn" class="btn btn-outline">취소</button>
+        <button type="button" id="nickname-save-btn" class="btn btn-primary">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 나이대 변경 모달 -->
+  <div id="age-group-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;width:90%;max-width:360px;">
+      <h3 style="margin:0 0 1rem;font-size:1rem;font-weight:700;">나이대 선택</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem;">
+        <button type="button" class="btn btn-outline js-age-chip" data-value="40대 이하">40대 이하</button>
+        <button type="button" class="btn btn-outline js-age-chip" data-value="50대">50대</button>
+        <button type="button" class="btn btn-outline js-age-chip" data-value="60대">60대</button>
+        <button type="button" class="btn btn-outline js-age-chip" data-value="70대 이상">70대 이상</button>
+      </div>
+      <div id="age-group-error" class="input-error hidden"></div>
+      <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:1.5rem;">
+        <button type="button" id="age-group-cancel-btn" class="btn btn-outline">취소</button>
+        <button type="button" id="age-group-save-btn" class="btn btn-primary">확인</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/shared/lib/api.js"></script>
   <script src="/shared/lib/common.js"></script>
   <script src="/features/settings/settings.js"></script>
