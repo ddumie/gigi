@@ -197,16 +197,17 @@ function renderShareComposer(habit) {
   const draft = openShareComposer?.habitId === habit.id ? openShareComposer.draft : '';
 
   return `
-    <div class="share-composer card">
+    <div class="share-composer">
       <strong class="share-composer-title">이웃에 공유</strong>
-      <p class="meta-text">한줄 코멘트를 남기거나 건너뛸 수 있어요.</p>
-      <textarea
-        class="share-composer-input"
-        rows="2"
-        placeholder="한줄 코멘트 (선택)"
-        oninput="updateShareDraft(${habit.id}, this.value)"
-      >${escapeHtml(draft)}</textarea>
-      <div class="share-composer-actions">
+      <p class="meta-text" style="margin-top:-0.2rem;">내가 한 습관을 남겨서 공유하거나 건너뛸 수 있어요.</p>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <textarea
+          class="share-composer-input"
+          rows="1"
+          placeholder="(예시)시원한 물한잔 오늘도 완료!"
+          oninput="updateShareDraft(${habit.id}, this.value)"
+          style="flex:1;min-height:unset;height:2rem;font-size:0.8rem;padding:0.25rem 0.5rem;resize:none;"
+        >${escapeHtml(draft)}</textarea>
         <button type="button" class="btn btn-primary btn-sm" onclick="submitNeighborShare(event, ${habit.id})">공유</button>
         <button type="button" class="btn btn-outline btn-sm" onclick="skipNeighborShare(event, ${habit.id})">건너뛰기</button>
       </div>
