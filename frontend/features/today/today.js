@@ -86,16 +86,7 @@ async function loadDashboard() {
 
 
 // ── 받은 지지 알림 ──
-
-function formatRelativeTime(isoString) {
-  if (!isoString) return '';
-  const then = new Date(isoString);
-  const diffSec = Math.floor((Date.now() - then.getTime()) / 1000);
-  if (diffSec < 60) return '방금 전';
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
-  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
-  return `${Math.floor(diffSec / 86400)}일 전`;
-}
+// 시간 포맷은 common.js의 formatRelativeTime() 사용
 
 async function loadNotifications() {
   if (!$notifSection || !$notifList) return;

@@ -204,16 +204,7 @@ async function sendHomeSupport(groupId, toUserId) {
 }
 
 // ── 유틸 ──
-
-function formatRelativeTime(isoString) {
-  if (!isoString) return '';
-  const then = new Date(isoString);
-  const diffSec = Math.floor((Date.now() - then.getTime()) / 1000);
-  if (diffSec < 60)    return '방금 전';
-  if (diffSec < 3600)  return `${Math.floor(diffSec / 60)}분 전`;
-  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
-  return `${Math.floor(diffSec / 86400)}일 전`;
-}
+// 시간 포맷은 common.js의 formatRelativeTime() / formatLastActivity() 사용
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -222,30 +213,4 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
-}
-
-// support.js의 formatLastActivity 패턴을 가볍게 복제
-function formatLastActivity(lastActivityStr) {
-  if (!lastActivityStr) return '활동 기록 없음';
-
-  const last = new Date(lastActivityStr);
-  const now  = new Date();
-  const diffMs = now - last;
-  const diffMin  = Math.floor(diffMs / 60000);
-  const diffHour = Math.floor(diffMs / 3600000);
-
-  if (diffMin < 60)  return `${diffMin}분 전`;
-  if (diffHour < 6)  return `${diffHour}시간 전`;
-
-  if (last.toDateString() === now.toDateString()) {
-    return last.getHours() < 12 ? '오늘 오전' : '오늘 오후';
-  }
-
-  const yesterday = new Date();
-  yesterday.setDate(now.getDate() - 1);
-  if (last.toDateString() === yesterday.toDateString()) return '어제';
-
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffDays >= 365) return '1년 이상 전';
-  return `${last.getMonth() + 1}/${last.getDate()}`;
 }
