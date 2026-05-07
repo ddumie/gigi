@@ -11,6 +11,7 @@ const PAGES = {
   signup1:   '/pages/auth/signup-step1.html',
   signup2:   '/pages/auth/signup-step2.html',
   signupDone:'/pages/auth/signup-done.html',
+  inviteSignup: '/pages/auth/invite-signup.html',
   onboard1:  '/pages/onboarding/step1-age.html',
   onboard2:  '/pages/onboarding/step2-fontsize.html',
   onboard3:  '/pages/onboarding/step3-interests.html',
@@ -18,13 +19,16 @@ const PAGES = {
   home:      '/pages/home/index.html',
   today:     '/pages/today/index.html',
   habits:    '/pages/habits/index.html',
+  habitsAi:  '/pages/habits/ai-recommend.html',
   support:   '/pages/support/index.html',
   supportCreate: '/pages/support/create.html',
   supportManage: '/pages/support/manage.html',
+  supportJoin:   '/pages/support/join.html',
   feed:      '/pages/neighbor/feed.html',
   feedDetail:'/pages/neighbor/feed-detail.html',
   groupSearch: '/pages/neighbor/group-search.html',
   groupSearchWrite: '/pages/neighbor/group-search-write.html',
+  groupSearchEdit:  '/pages/neighbor/group-search-edit.html',
   groupSearchJoin:  '/pages/neighbor/group-search-join.html',
   myPosts:   '/pages/neighbor/my-posts.html',
   settings:  '/pages/settings/index.html',
@@ -121,6 +125,39 @@ async function checkNotifications() {
   }
 }
 
+// ── 시간 포맷 공용 유틸 ──
+// 단순 상대시간: "방금 전 / N분 전 / N시간 전 / N일 전"
+function formatRelativeTime(isoString) {
+  if (!isoString) return '';
+  const then = new Date(isoString);
+  const diffSec = Math.floor((Date.now() - then.getTime()) / 1000);
+  if (diffSec < 60)    return '방금 전';
+  if (diffSec < 3600)  return `${Math.floor(diffSec / 60)}분 전`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
+  return `${Math.floor(diffSec / 86400)}일 전`;
+}
+
+// 마지막 활동: 분/시간/오늘 오전·오후/어제/M월D일/1년 이상 전
+function formatLastActivity(isoString) {
+  if (!isoString) return '활동 기록 없음';
+  const last = new Date(isoString);
+  const now  = new Date();
+  const diffMs = now - last;
+  const diffMin  = Math.floor(diffMs / 60000);
+  const diffHour = Math.floor(diffMs / 3600000);
+  if (diffMin < 60)  return `${diffMin}분 전`;
+  if (diffHour < 6)  return `${diffHour}시간 전`;
+  if (last.toDateString() === now.toDateString()) {
+    return last.getHours() < 12 ? '오늘 오전' : '오늘 오후';
+  }
+  const yesterday = new Date();
+  yesterday.setDate(now.getDate() - 1);
+  if (last.toDateString() === yesterday.toDateString()) return '어제';
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays >= 365) return '1년 이상 전';
+  return `${last.getMonth() + 1}/${last.getDate()}`;
+}
+
 // ── 토스트 알림 ──
 // showToast(msg)                              ─ 기본 3초
 // showToast(msg, 5000)                        ─ 지속시간 ms (하위호환)
@@ -190,7 +227,7 @@ function initGnb() {
       ${nav('home',     'home',     '홈')}
       ${nav('today',    'today',    '오늘')}
       ${nav('habits',   'habits',   '습관')}
-      ${nav('support',  'support',  '지지')}
+      ${nav('support',  'support',  '모임')}
       ${nav('feed',     'neighbor', '이웃')}
       ${nav('settings', 'settings', '설정')}
     </nav>
