@@ -75,21 +75,8 @@ function getCurrentUserId() {
 
 async function sendSupport(groupId, toUserId, button, card) {
   try {
-    const token = localStorage.getItem("gigi_token");
-    const res = await fetch(`/api/v1/support/group/${groupId}/support/${toUserId}`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      showToast(err.detail || "지지 실패");
-      return;
-    }
-    
     // 모임 정보 갱신
-    const groupData = await res.json();
+    const groupData = await apiPost(`/support/group/${groupId}/support/${toUserId}`);
     const groupInfo = groupData.group;
     const level = getLevelInfo(groupInfo.exp);
 
@@ -118,6 +105,7 @@ async function sendSupport(groupId, toUserId, button, card) {
 
   } catch (error) {
     console.error("지지하기 요청 실패:", error);
+    showToast(error.message || "지지하기 요청 실패")
   }
 }
 
@@ -173,17 +161,7 @@ async function loadGroups() {
     if (groupOffset === 0) {
       groupList.innerHTML = ""; 
     }
-    const token = localStorage.getItem("gigi_token");
-    const res = await fetch(`/api/v1/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      console.error("모임 불러오기 실패:", await res.text());
-      return;
-    }
-    const data = await res.json();
+    const data = await apiGet(`/api/v1/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`)
 
     // 데이터 없으면 기본 카드 표시
     if (!data.groups || data.groups.length === 0) {
@@ -341,6 +319,7 @@ async function loadGroups() {
     }    
   } catch (err) {
     console.error("모임 불러오기 실패:", err);
+    showToast(err.message || "모임 불러오기 실패");
   } finally {
     loading = false;
   }
@@ -358,15 +337,7 @@ function attachMemberClick(row, userId) {
     }
 
     try {
-      const token = localStorage.getItem("gigi_token");
-      const res = await fetch(`/api/v1/support/habits/${userId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        showToast("습관 불러오기 실패");
-        return;
-      }
-      const data = await res.json();
+      const data = await apiGet(`/support/habits/${userId}`);
 
       dropdown = document.createElement("div");
       dropdown.className = "habit-dropdown open";
@@ -389,6 +360,7 @@ function attachMemberClick(row, userId) {
       row.insertAdjacentElement("afterend", dropdown);
     } catch (err) {
       console.error("습관 불러오기 실패:", err);
+      showToast(err.message || "습관 불러오기 실패");
     }
   });
 }
