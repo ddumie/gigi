@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       await apiPost(`/support/group/invite/${code}`);
       showToast("모임에 가입했습니다.");
-      window.location.href = "/pages/support/index.html";
+      window.location.href = PAGES.support;
     } catch (err) {
       showToast(err.message || "가입 실패");
     }

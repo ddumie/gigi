@@ -75,21 +75,8 @@ function getCurrentUserId() {
 
 async function sendSupport(groupId, toUserId, button, card) {
   try {
-    const token = localStorage.getItem("gigi_token");
-    const res = await fetch(`/api/v1/support/group/${groupId}/support/${toUserId}`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      showToast(err.detail || "지지 실패");
-      return;
-    }
-    
     // 모임 정보 갱신
-    const groupData = await res.json();
+    const groupData = await apiPost(`/support/group/${groupId}/support/${toUserId}`);
     const groupInfo = groupData.group;
     const level = getLevelInfo(groupInfo.exp);
 
@@ -118,46 +105,8 @@ async function sendSupport(groupId, toUserId, button, card) {
 
   } catch (error) {
     console.error("지지하기 요청 실패:", error);
+    showToast(error.message || "지지하기 요청 실패")
   }
-}
-
-function formatLastActivity(lastActivityStr) {
-  if (!lastActivityStr) return "기록 없음";
-
-  const lastActivity = new Date(lastActivityStr);
-  const now = new Date();
-  const diffMs = now - lastActivity;
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-  // 1시간 내
-  if (diffMinutes < 60) {
-    return `${diffMinutes}분 전`;
-  }
-  // 6시간 내
-  if (diffHours < 6) {
-    return `${diffHours}시간 전`;
-  }
-
-  // 오늘 기록
-  if (lastActivity.toDateString() === now.toDateString()) {
-    const hours = lastActivity.getHours();
-    return hours < 12 ? "오늘 오전" : "오늘 오후";
-  }
-
-  // 어제 기록
-  const yesterday = new Date();
-  yesterday.setDate(now.getDate() - 1);
-  if (lastActivity.toDateString() === yesterday.toDateString()) {
-    return "어제";
-  }
-
-  // 그제나 그 이전
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays >= 365) {
-    return "1년 이상 전";
-  }
-  return `${lastActivity.getMonth() + 1}/${lastActivity.getDate()}`;
 }
 
 function getActivityStatus(rate) {
@@ -173,17 +122,7 @@ async function loadGroups() {
     if (groupOffset === 0) {
       groupList.innerHTML = ""; 
     }
-    const token = localStorage.getItem("gigi_token");
-    const res = await fetch(`/api/v1/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      console.error("모임 불러오기 실패:", await res.text());
-      return;
-    }
-    const data = await res.json();
+    const data = await apiGet(`/api/v1/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`)
 
     // 데이터 없으면 기본 카드 표시
     if (!data.groups || data.groups.length === 0) {
@@ -215,7 +154,7 @@ async function loadGroups() {
           <div class="group-title"><strong>${group.name}</strong></div>
           <div class="group-actions">
             <span class="group-type badge">${group.group_type}</span>
-            <a href="/pages/support/manage.html?group_id=${group.id}" 
+            <a href="${PAGES.supportManage}?group_id=${group.id}" 
               class="btn btn-outline btn-sm">모임 관리</a>
           </div>
         </div>
@@ -341,6 +280,7 @@ async function loadGroups() {
     }    
   } catch (err) {
     console.error("모임 불러오기 실패:", err);
+    showToast(err.message || "모임 불러오기 실패");
   } finally {
     loading = false;
   }
@@ -358,15 +298,7 @@ function attachMemberClick(row, userId) {
     }
 
     try {
-      const token = localStorage.getItem("gigi_token");
-      const res = await fetch(`/api/v1/support/habits/${userId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        showToast("습관 불러오기 실패");
-        return;
-      }
-      const data = await res.json();
+      const data = await apiGet(`/support/habits/${userId}`);
 
       dropdown = document.createElement("div");
       dropdown.className = "habit-dropdown open";
@@ -389,6 +321,7 @@ function attachMemberClick(row, userId) {
       row.insertAdjacentElement("afterend", dropdown);
     } catch (err) {
       console.error("습관 불러오기 실패:", err);
+      showToast(err.message || "습관 불러오기 실패");
     }
   });
 }
