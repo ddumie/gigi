@@ -22,6 +22,7 @@ const PAGES = {
   supportCreate: '/pages/support/create.html',
   supportManage: '/pages/support/manage.html',
   feed:      '/pages/neighbor/feed.html',
+  feedDetail:'/pages/neighbor/feed-detail.html',
   groupSearch: '/pages/neighbor/group-search.html',
   groupSearchWrite: '/pages/neighbor/group-search-write.html',
   groupSearchJoin:  '/pages/neighbor/group-search-join.html',
@@ -121,7 +122,16 @@ async function checkNotifications() {
 }
 
 // ── 토스트 알림 ──
-function showToast(message, duration = 3000) {
+// showToast(msg)                              ─ 기본 3초
+// showToast(msg, 5000)                        ─ 지속시간 ms (하위호환)
+// showToast(msg, { duration, action: {label, onClick} }) ─ 액션 버튼 부착
+function showToast(message, durationOrOpts = 3000) {
+  const opts = typeof durationOrOpts === 'number'
+    ? { duration: durationOrOpts }
+    : (durationOrOpts || {});
+  const duration = opts.duration ?? 3000;
+  const action   = opts.action || null;
+
   let toast = document.getElementById('gigi-toast');
   if (!toast) {
     toast = document.createElement('div');
@@ -130,10 +140,30 @@ function showToast(message, duration = 3000) {
     document.body.appendChild(toast);
   }
 
-  toast.textContent = message;
-  toast.classList.add('show');
+  // 기존 내용/타이머 초기화
+  if (toast._timer) clearTimeout(toast._timer);
+  toast.innerHTML = '';
+  toast.classList.toggle('toast-with-action', !!action);
 
-  setTimeout(() => {
+  const span = document.createElement('span');
+  span.className = 'toast-message';
+  span.textContent = message;
+  toast.appendChild(span);
+
+  if (action && typeof action.onClick === 'function') {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-action';
+    btn.textContent = action.label || '확인';
+    btn.addEventListener('click', () => {
+      try { action.onClick(); } catch (_) {}
+      toast.classList.remove('show');
+    });
+    toast.appendChild(btn);
+  }
+
+  toast.classList.add('show');
+  toast._timer = setTimeout(() => {
     toast.classList.remove('show');
   }, duration);
 }
