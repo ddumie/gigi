@@ -223,12 +223,21 @@ async function submitNeighborShare(event, habitId) {
   if (openShareComposer?.habitId !== habitId) return;
 
   try {
-    await apiPost('/today/share', {
+    const result = await apiPost('/today/share', {
       habit_id: habitId,
       content: openShareComposer.draft.trim(),
     });
     openShareComposer = null;
-    showToast('이웃에 공유되었습니다.');
+    const postId = result && result.id;
+    showToast('이웃에 공유되었어요', {
+      duration: 5000,
+      action: postId ? {
+        label: '확인하기',
+        onClick: () => {
+          window.location.href = `${PAGES.feedDetail}?post_id=${postId}`;
+        },
+      } : null,
+    });
     await loadDashboard();
   } catch (e) {
     showToast(e.message || '공유에 실패했습니다.');
