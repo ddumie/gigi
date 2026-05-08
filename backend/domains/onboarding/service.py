@@ -32,7 +32,7 @@ async def get_ai_recommendations(age_group: str | None, health_interests: list[s
     interests_str = ", ".join(health_interests) if health_interests else "일반 건강 관리"
     interest_count = len(health_interests) if health_interests else 0
     num_habits = 3 if interest_count <= 1 else (4 if interest_count == 2 else 5)
-    exclude_str = f"\n    이미 등록된 습관이므로 추천하지 마세요: {', '.join(existing_titles)}" if existing_titles else ""
+    exclude_str = f"\n    이미 등록된 습관이므로 추천하지 마세요: {', '.join(t for t in existing_titles if t)}" if existing_titles else ""
     prompt = f"""
     사용자의 나이대: {age_group if age_group else "미입력"}
     사용자의 관심사: {interests_str}{exclude_str}
