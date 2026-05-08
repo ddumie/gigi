@@ -4,7 +4,7 @@
   try {
     posts = await apiGet('/neighbor/group-search');
   } catch {
-    alert('목록을 불러오는 중 오류가 발생했습니다.');
+    showToast('목록을 불러오는 중 오류가 발생했습니다.');
     return;
   }
 const list = document.getElementById('group-search-list');

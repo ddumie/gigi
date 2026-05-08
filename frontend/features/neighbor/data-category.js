@@ -1,12 +1,4 @@
 // data-category.js
-function formatTimeAgo(date) {
-  const diff = Math.floor((Date.now() - date) / 1000 / 60);
-  if (diff < 1) return '방금 전';
-  if (diff < 60) return `${diff}분 전`;
-  if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
-  return `${Math.floor(diff / 1440)}일 전`;
-}
-
 let allPosts = [];  // 전체 피드 캐시
 
 // 피드 카드 렌더링
@@ -41,7 +33,7 @@ async function renderFeed(posts) {
     //여기까지 추가
     const nickname = p.author?.nickname ?? '알 수 없음';
     const firstChar = nickname.charAt(0);
-    const timeAgo = p.created_at ? formatTimeAgo(new Date(p.created_at)) : '';
+    const timeAgo = formatRelativeTime(p.created_at);
 
       // 1. 상단: 아바타 + 닉네임 + 시간 / 카테고리 뱃지
     const header = document.createElement('div');
@@ -131,18 +123,12 @@ async function renderFeed(posts) {
    
   btn.addEventListener('click', async () => {
     try {
-      const r = await fetch(`/api/v1/neighbor/feed/${p.post_id}/support`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-      });
-      if (r.status === 401) { alert('로그인이 필요합니다.'); location.href = '/pages/auth/login.html'; return; }
-      if (!r.ok) return;
-      const data = await r.json();
+      const data = await apiPost(`/neighbor/feed/${p.post_id}/support`);
       is_supported = data.is_supported;
       btn.textContent = `🔥 지지 ${data.support_count}`;
       is_supported ? btn.classList.replace('btn-outline', 'btn-primary') : btn.classList.replace('btn-primary', 'btn-outline');
     } catch {
-      alert('네트워크 오류가 발생했습니다.');
+      showToast('네트워크 오류가 발생했습니다.');
     }
   });
 
@@ -196,14 +182,10 @@ function initCategoryFilter() {
 // 초기 로드
 (async () => {
   try {
-    const res = await fetch('/api/v1/neighbor/feed', { 
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    });
-    if (!res.ok) return;
-    allPosts = await res.json();
+    allPosts = await apiGet('/neighbor/feed');
     renderFeed(allPosts);
     initCategoryFilter();
   } catch {
-    alert('피드를 불러오는 중 오류가 발생했습니다.');
+    showToast('피드를 불러오는 중 오류가 발생했습니다.');
   }
 })();

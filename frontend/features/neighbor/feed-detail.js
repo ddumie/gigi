@@ -8,11 +8,7 @@ if (!postId) { location.href = '/pages/neighbor/feed.html'; }
 
 async function loadDetail() {
   try {
-    const res = await fetch(`/api/v1/neighbor/feed/${postId}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    });
-    if (!res.ok) return;
-    const p = await res.json();
+    const p = await apiGet(`/neighbor/feed/${postId}`);
 
     const el = document.getElementById('feed-detail-content');
     el.innerHTML = '';
@@ -57,15 +53,13 @@ async function loadDetail() {
     el.append(header, memberRow, body);
     } catch (e) {
     console.error('피드 로드 실패', e);
-    alert('피드를 불러오는 중 오류가 발생했습니다.');
+    showToast('피드를 불러오는 중 오류가 발생했습니다.');
   }
 }
 
 async function loadComments() {
   try {
-    const res = await fetch(`/api/v1/neighbor/feed/${postId}/comments`);
-    if (!res.ok) return;
-    const comments = await res.json();
+    const comments = await apiGet(`/neighbor/feed/${postId}/comments`);
 
     const list = document.getElementById('comment-list');
     list.innerHTML = '';
@@ -132,17 +126,10 @@ async function loadComments() {
     deleteBtn.addEventListener('click', async () => {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
     try {
-      const r = await fetch(`/api/v1/neighbor/feed/${postId}/comments/${c.id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` },
-      });
-      if (r.ok) {
-        await loadComments();
-      } else {
-        alert('삭제에 실패했습니다.');
-      }
+      await apiDelete(`/neighbor/feed/${postId}/comments/${c.id}`);
+      await loadComments();
     } catch (e) {
-      alert('네트워크 오류가 발생했습니다.');
+      showToast('네트워크 오류가 발생했습니다.');
     }
     });
 
@@ -173,22 +160,11 @@ async function loadComments() {
         const newContent = document.getElementById('comment-input').value.trim();
         if (!newContent) return;
         try {
-          const res = await fetch(`/api/v1/neighbor/feed/${postId}/comments/${c.id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('gigi_token')}`,
-            },
-            body: JSON.stringify({ content: newContent }),
-          });
-          if (res.ok) {
-            resetCommentInput();
-            await loadComments();
-          } else {
-            alert('수정에 실패했습니다.');
-          }
+          await apiPut(`/neighbor/feed/${postId}/comments/${c.id}`,{ content: newContent });
+          resetCommentInput();
+          await loadComments();
         } catch {
-          alert('네트워크 오류가 발생했습니다.');
+          showToast('네트워크 오류가 발생했습니다.');
         }
       });
     });
@@ -201,16 +177,12 @@ async function loadComments() {
     });
   } catch(e) {
     console.error('댓글 로드 실패', e);
-    alert('댓글을 불러오는 중 오류가 발생했습니다.');
+    showToast('댓글을 불러오는 중 오류가 발생했습니다.');
   }
 }
 async function loadSupport() {
   try {
-    const res = await fetch(`/api/v1/neighbor/feed/${postId}/support`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    });
-    if (!res.ok) return;
-    const data = await res.json();
+    const data = await apiGet(`/neighbor/feed/${postId}/support`);
 
     document.getElementById('support-count').textContent = data.support_count;
     const btn = document.getElementById('support-btn');
@@ -218,7 +190,7 @@ async function loadSupport() {
     btn.classList.toggle('btn-outline', !data.is_supported);
   } catch (e) {
     console.error('지지 정보 로드 실패', e);
-    alert('지지 정보를 불러오는 중 오류가 발생했습니다.');
+    showToast('지지 정보를 불러오는 중 오류가 발생했습니다.');
   }
 }
 
@@ -237,26 +209,11 @@ document.getElementById('comment-submit').addEventListener('click', async () => 
   const content = document.getElementById('comment-input').value.trim();
   if (!content) return;
   try {
-    const res = await fetch(`/api/v1/neighbor/feed/${postId}/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('gigi_token')}`,
-      },
-      body: JSON.stringify({ content }),
-    });
-
-    if (res.ok) {
-      document.getElementById('comment-input').value = '';
-      await loadComments();
-    } else if (res.status === 401) {
-      alert('로그인이 필요합니다.');
-      location.href = '/pages/auth/login.html';
-    } else {
-      alert('댓글 등록에 실패했습니다. 다시 시도해주세요.');
-    }
+    await apiPost(`/neighbor/feed/${postId}/comments`, { content });
+    document.getElementById('comment-input').value = '';
+    await loadComments();
   } catch (e) {
-    alert('네트워크 오류가 발생했습니다.');
+    showToast('네트워크 오류가 발생했습니다.');
   }
 });
 
@@ -264,18 +221,11 @@ document.getElementById('comment-submit').addEventListener('click', async () => 
 
 document.getElementById('support-btn').addEventListener('click', async () => {
   try {
-    const res = await fetch(`/api/v1/neighbor/feed/${postId}/support`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('gigi_token')}` }
-    });
-    if (res.ok) {
-      await loadSupport();
-    } else if (res.status === 401) {
-      alert('로그인이 필요합니다.');
-      location.href = '/pages/auth/login.html';
-    }
+    await apiPost(`/neighbor/feed/${postId}/support`);
+    await loadSupport();
+
   } catch (e) {
-    alert('네트워크 오류가 발생했습니다.');
+    showToast('네트워크 오류가 발생했습니다.');
   }
 });
 

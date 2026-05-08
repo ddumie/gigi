@@ -7,11 +7,11 @@
   try {
   post = await apiGet(`/neighbor/group-search/${postId}`);
   } catch {
-    alert('글을 불러오는 중 오류가 발생했습니다.');
+    showToast('글을 불러오는 중 오류가 발생했습니다.');
     location.href = PAGES.groupSearch;
     return;
   }
-  if (!post) { alert('글을 찾을 수 없습니다.'); location.href = PAGES.groupSearch; return; }
+  if (!post) { showToast('글을 찾을 수 없습니다.'); location.href = PAGES.groupSearch; return; }
 
   document.getElementById('group_type').value = post.group_type;
   document.getElementById('title').value = post.title;
@@ -39,7 +39,7 @@
       await apiPut(`/neighbor/group-search/${postId}`, body);
       location.href = PAGES.myPosts;
     } catch (err) {
-      alert(err.message || '수정에 실패했습니다.');
+      showToast(err.message || '수정에 실패했습니다.');
     }
   });
 })();
