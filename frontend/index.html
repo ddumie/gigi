@@ -28,12 +28,14 @@
           나이에 맞는 건강 습관을 기록하고<br>
           가족, 친구, 이웃과 서로 지지하는 웰니스 커뮤니티
         </p>
-        <div class="page-actions" style="justify-content:center;margin-bottom:2rem;">
-          <a href="/pages/auth/signup-step1.html" class="btn btn-primary">회원가입 시작하기</a>
-          <a href="/pages/auth/login.html" class="btn btn-outline">로그인</a>
+        <div id="landing-auth-buttons">
+          <div class="page-actions" style="justify-content:center;margin-bottom:2rem;">
+            <a href="/pages/auth/signup-step1.html" class="btn btn-primary">회원가입 시작하기</a>
+            <a href="/pages/auth/login.html" class="btn btn-outline">로그인</a>
+          </div>
         </div>
         <div style="text-align:center;margin-bottom:1rem;">
-          <a href="/pages/auth/invite-signup.html" class="btn btn-outline btn-sm">초대코드로 시작하기</a>
+          <a id="invite-btn" href="/pages/auth/invite-signup.html" class="btn btn-outline btn-sm">초대코드로 시작하기</a>
         </div>
         <div style="display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
           <span class="meta-text" style="display:flex;align-items:center;gap:0.4rem;">
@@ -52,5 +54,11 @@
 
   <script src="/shared/lib/api.js"></script>
   <script src="/shared/lib/common.js"></script>
+  <script>
+    if (isLoggedIn()) {
+      document.getElementById('landing-auth-buttons').style.display = 'none';
+      document.getElementById('invite-btn').href = '/pages/support/join.html';
+    }
+  </script>
 </body>
 </html>
