@@ -122,7 +122,7 @@ async function loadGroups() {
     if (groupOffset === 0) {
       groupList.innerHTML = ""; 
     }
-    const data = await apiGet(`/api/v1/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`)
+    const data = await apiGet(`/support/groups?group_limit=${groupLimit}&group_offset=${groupOffset}`)
 
     // 데이터 없으면 기본 카드 표시
     if (!data.groups || data.groups.length === 0) {
