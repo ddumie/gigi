@@ -125,6 +125,61 @@ async function checkNotifications() {
   }
 }
 
+// ── 요일 변환 공용 유틸 ──
+// habits / neighbor(group-search) 양쪽에서 day picker UI를 공유하기 위한 변환기.
+const KOREAN_DAYS  = ['월','화','수','목','금','토','일'];
+const WEEKDAY_DAYS = ['월','화','수','목','금'];
+const WEEKEND_DAYS = ['토','일'];
+
+// 프리셋/임의 요일 문자열 → ['월','화',...] 배열
+// 입력 예: '매일', '평일', '주말', '주1회', '주3회', '월수금', '월, 수, 금'
+function parseRepeatToDays(repeat) {
+  if (!repeat || repeat === '매일') return [...KOREAN_DAYS];
+  if (repeat === '평일') return [...WEEKDAY_DAYS];
+  if (repeat === '주말') return [...WEEKEND_DAYS];
+  if (repeat === '주1회') return ['월'];
+  if (repeat === '주3회') return ['월','수','금'];
+  // 콤마/공백 등 구분자 제거 후 KOREAN_DAYS 필터
+  const cleaned = repeat.replace(/[\s,]+/g, '');
+  return KOREAN_DAYS.filter(d => cleaned.includes(d));
+}
+
+// ['월','화',...] → 프리셋 문자열 또는 붙은 형태('월수금')
+function daysToPreset(days) {
+  if (!days || days.length === 0 || days.length === 7) return '매일';
+  if (days.length === 5 && WEEKDAY_DAYS.every(d => days.includes(d))) return '평일';
+  if (days.length === 2 && WEEKEND_DAYS.every(d => days.includes(d))) return '주말';
+  // KOREAN_DAYS 순서로 정렬해 join
+  return KOREAN_DAYS.filter(d => days.includes(d)).join('');
+}
+
+// 7개 요일 토글 버튼 HTML 렌더
+function dayPickerHtml(containerId, currentRepeat) {
+  const selected = parseRepeatToDays(currentRepeat);
+  return `<div class="day-picker" id="${containerId}">${
+    KOREAN_DAYS.map(d =>
+      `<button type="button" class="day-btn${selected.includes(d) ? ' active' : ''}"
+               data-day="${d}" onclick="toggleDay(this)">${d}</button>`
+    ).join('')
+  }</div>`;
+}
+
+// day-btn 클릭 토글
+function toggleDay(btn) {
+  btn.classList.toggle('active');
+}
+
+// 컨테이너 안 active 버튼 → 요일 배열 (포맷 자유)
+function getActiveDays(containerId) {
+  return [...document.querySelectorAll(`#${containerId} .day-btn.active`)]
+    .map(b => b.dataset.day);
+}
+
+// 컨테이너 → habits 포맷 (프리셋 또는 '월수금')
+function getRepeatFromDays(containerId) {
+  return daysToPreset(getActiveDays(containerId));
+}
+
 // ── 시간 포맷 공용 유틸 ──
 // 단순 상대시간: "방금 전 / N분 전 / N시간 전 / N일 전"
 function formatRelativeTime(isoString) {

@@ -13,8 +13,8 @@ const $list   = document.getElementById('habit-list');
 const $count  = document.getElementById('habit-count');
 const $btnAdd = document.getElementById('btn-add-habit');
 
-// ── 요일 관련 상수 ──
-const ALL_DAYS = ['월','화','수','목','금','토','일'];
+// ── 요일 변환은 shared/lib/common.js의 KOREAN_DAYS / parseRepeatToDays / dayPickerHtml /
+//    toggleDay / getActiveDays / getRepeatFromDays 사용 ──
 
 
 // ── API 호출 ──
@@ -30,41 +30,6 @@ async function loadHabits() {
     $list.innerHTML = '<p class="meta-text">습관을 불러오지 못했습니다.</p>';
   }
 }
-
-// ── 요일 피커 헬퍼 ──
-
-function parseRepeatToDays(repeat) {
-  if (!repeat || repeat === '매일') return [...ALL_DAYS];
-  if (repeat === '평일') return ['월','화','수','목','금'];
-  if (repeat === '주말') return ['토','일'];
-  if (repeat === '주1회') return ['월'];
-  if (repeat === '주3회') return ['월','수','금'];
-  return ALL_DAYS.filter(d => repeat.includes(d));
-}
-
-function dayPickerHtml(containerId, currentRepeat) {
-  const selected = parseRepeatToDays(currentRepeat);
-  return `<div class="day-picker" id="${containerId}">${
-    ALL_DAYS.map(d =>
-      `<button type="button" class="day-btn${selected.includes(d) ? ' active' : ''}"
-               data-day="${d}" onclick="toggleDay(this)">${d}</button>`
-    ).join('')
-  }</div>`;
-}
-
-function toggleDay(btn) {
-  btn.classList.toggle('active');
-}
-
-function getRepeatFromDays(containerId) {
-  const selected = [...document.querySelectorAll(`#${containerId} .day-btn.active`)]
-    .map(b => b.dataset.day);
-  if (selected.length === 0 || selected.length === 7) return '매일';
-  if (selected.length === 5 && ['월','화','수','목','금'].every(d => selected.includes(d))) return '평일';
-  if (selected.length === 2 && ['토','일'].every(d => selected.includes(d))) return '주말';
-  return selected.join('') || '매일';
-}
-
 
 // ── 인라인 습관 추가 폼 ──
 
