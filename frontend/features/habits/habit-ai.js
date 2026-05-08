@@ -205,9 +205,9 @@ function renderResult(habits) {
       <p class="meta-text">${h.description}</p>
       <div class="day-picker" id="hab-days-${i}">
         <button type="button" class="day-btn" data-all="true"
-          onclick="event.stopPropagation();habToggleAll(this)">매일</button>
+          onclick="event.stopPropagation();toggleAllDays(this)">매일</button>
         ${KOREAN_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
-          onclick="event.stopPropagation();this.classList.toggle('active')">${d}</button>`).join('')}
+          onclick="event.stopPropagation();toggleDayBtn(this)">${d}</button>`).join('')}
       </div>
     </article>
   `).join('');
@@ -215,18 +215,11 @@ function renderResult(habits) {
   // 이벤트 위임: list에 한 번만 등록
   list.onclick = (e) => {
     const card = e.target.closest('.recommendation-card');
-    if (card && !e.target.closest('.day-picker')) card.classList.toggle('active');
+    if (card) card.classList.toggle('active');
   };
 }
 
 
-function habToggleAll(btn) {
-  const picker = btn.closest('.day-picker');
-  const dayBtns = [...picker.querySelectorAll('[data-day]')];
-  const allActive = dayBtns.every(b => b.classList.contains('active'));
-  dayBtns.forEach(b => allActive ? b.classList.remove('active') : b.classList.add('active'));
-  btn.classList.toggle('active', !allActive);
-}
 
 
 // step 전환

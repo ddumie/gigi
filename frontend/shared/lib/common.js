@@ -180,6 +180,24 @@ function getRepeatFromDays(containerId) {
   return daysToPreset(getActiveDays(containerId));
 }
 
+// 요일 피커 — 매일 버튼 클릭 시 전체 토글
+function toggleAllDays(btn) {
+  const picker = btn.closest('.day-picker');
+  const dayBtns = [...picker.querySelectorAll('[data-day]')];
+  const allActive = dayBtns.every(b => b.classList.contains('active'));
+  dayBtns.forEach(b => allActive ? b.classList.remove('active') : b.classList.add('active'));
+  btn.classList.toggle('active', !allActive);
+}
+
+// 요일 피커 — 개별 요일 토글 시 매일 버튼 상태 동기화
+function toggleDayBtn(btn) {
+  btn.classList.toggle('active');
+  const picker = btn.closest('.day-picker');
+  const dayBtns = [...picker.querySelectorAll('[data-day]')];
+  const allBtn = picker.querySelector('[data-all]');
+  if (allBtn) allBtn.classList.toggle('active', dayBtns.every(b => b.classList.contains('active')));
+}
+
 // ── 시간 포맷 공용 유틸 ──
 // 단순 상대시간: "방금 전 / N분 전 / N시간 전 / N일 전"
 function formatRelativeTime(isoString) {
