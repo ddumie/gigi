@@ -125,6 +125,9 @@ async def check_email(email: EmailStr = Query(...), db: AsyncSession = Depends(g
 @router.get("/check/nickname", response_model=CheckResponse)
 async def check_nickname(nickname: str = Query(..., min_length=2, max_length=12), db: AsyncSession = Depends(get_async_db)):
     """닉네임 중복 확인"""
+    nickname = nickname.strip()
+    if len(nickname) < 2:
+        return CheckResponse(available=False, message="닉네임은 2자 이상이어야 합니다")
     available = await service.check_nickname(db, nickname)
     message = "사용 가능한 닉네임입니다" if available else "이미 사용 중인 닉네임입니다"
     return CheckResponse(available=available, message=message)
