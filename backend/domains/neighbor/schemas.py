@@ -17,6 +17,7 @@ class GroupSearchCreate(BaseModel):
     frequency: str
     category: Optional[str] = None
 
+# 게시글 반응 필드
 class GroupSearchResponse(BaseModel):
     id: int
     post_id: int

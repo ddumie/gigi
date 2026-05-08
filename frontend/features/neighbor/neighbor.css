@@ -142,8 +142,6 @@
 .comment-textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-shadow);
-  background: var(--color-success-light);
-  color: var(--color-success);
 }
 
 .comment-textarea::placeholder {
