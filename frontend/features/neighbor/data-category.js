@@ -48,8 +48,7 @@ async function renderFeed(posts) {
     header.className = 'feed-card-header';
 
     const memberRow = document.createElement('div');
-    memberRow.className = 'member-row';
-    memberRow.style.cssText = 'padding:0; background:none;';
+    memberRow.className = 'member-row detail-row';
 
     const avatar = document.createElement('div');
     avatar.className = 'member-avatar';
@@ -81,7 +80,7 @@ async function renderFeed(posts) {
 
         // titleBox 아래에 개인/모임 뱃지
     const groupLabel = document.createElement('div');
-    groupLabel.style.cssText = 'margin: 0.25rem 0 0.5rem 0;';
+    groupLabel.className = 'group-label detail-group-label';
 
     const groupBadge = document.createElement('span');
     if (p.group_id && p.group_name && p.is_member) {

@@ -44,8 +44,7 @@ const list = document.getElementById('group-search-list');
     header.className = 'feed-card-header';
 
     const memberRow = document.createElement('div');
-    memberRow.className = 'member-row';
-    memberRow.style.cssText = 'padding:0; background:none;';
+    memberRow.className = 'member-row detail-row';
 
     const avatar = document.createElement('div');
     avatar.className = 'member-avatar';
@@ -81,8 +80,7 @@ const list = document.getElementById('group-search-list');
 
     // 세부 정보 (모임유형, 카테고리, 습관, 빈도)
     const meta = document.createElement('p');
-    meta.className = 'meta-text';
-    meta.style.marginTop = '0.5rem';
+    meta.className = 'meta-text detail-meta-text';
     const categoryLabel = p.category ? ` · #${p.category}` : '';
     meta.textContent = `${p.group_type}${categoryLabel} · 함께할 습관: ${p.habit_title} · ${p.frequency}`;
 
@@ -100,7 +98,7 @@ const list = document.getElementById('group-search-list');
     memberCount.textContent = `참여자 ${p.member_count}명`;
 
     const btnGroup = document.createElement('div');
-    btnGroup.style.cssText = 'margin-left:auto; display:flex; gap:0.5rem;';
+    btnGroup.className = 'btn-group btn-group-detail';
 
     const link = document.createElement('a');
     link.href = `/pages/neighbor/group-search-join.html?post_id=${p.post_id}&habit_title=${encodeURIComponent(p.habit_title)}&frequency=${encodeURIComponent(p.frequency)}`;

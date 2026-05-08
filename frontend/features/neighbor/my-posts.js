@@ -34,8 +34,7 @@ if (!groupPosts || !feedResult) {
       : '';
     if (postDate && postDate !== lastDateGs) {
       const sep = document.createElement('div');
-      sep.className = 'feed-date-separator';
-      sep.style.cursor = 'pointer';
+      sep.className = 'feed-date-separator detail-feed-date-separator';
       sep.textContent = postDate;
       const arrow = document.createElement('span');
       arrow.textContent = ' ▶';
@@ -63,8 +62,7 @@ if (!groupPosts || !feedResult) {
 
     const editLink = document.createElement('a');
     editLink.href = `/pages/neighbor/group-search-edit.html?post_id=${p.post_id}`;
-    editLink.className = 'btn btn-outline btn-sm';
-    editLink.style.marginTop = '0.75rem';
+    editLink.className = 'btn btn-outline btn-sm edit-link';
     editLink.textContent = '수정하기';
 
     article.append(title, meta, editLink);
@@ -103,7 +101,7 @@ if (!groupPosts || !feedResult) {
         badge.textContent = '모두 완료';
         sep.appendChild(badge);
       }
-      sep.style.cursor = 'pointer';
+      sep.className = 'feed-date-separator detail-feed-date-separator';
       sep.addEventListener('click', () => {
         let el = sep.nextElementSibling;
         let collapsed = false;
