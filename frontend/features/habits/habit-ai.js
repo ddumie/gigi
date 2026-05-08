@@ -164,13 +164,7 @@ async function selectHabits() {
     const habit = currentHabits[idx];
     const days = [...card.querySelectorAll('[data-day].active')].map(b => b.dataset.day);
     if (!days.length) return null;
-    let repeat_type = '매일';
-    if (days.length < 7) {
-      if (days.length === 5 && ['월','화','수','목','금'].every(d => days.includes(d))) repeat_type = '평일';
-      else if (days.length === 2 && ['토','일'].every(d => days.includes(d))) repeat_type = '주말';
-      else repeat_type = days.join('');
-    }
-    return { ...habit, repeat_type };
+    return { ...habit, repeat_type: daysToPreset(days) };
   });
 
   const filtered = selected.filter(Boolean);
@@ -204,7 +198,6 @@ function renderResult(habits) {
   const habitCountEl = document.getElementById('habit-count');
   if (habitCountEl) habitCountEl.textContent = habits.length;
 
-  const ALL_DAYS = ['월','화','수','목','금','토','일'];
   const list = document.getElementById('recommendation-list');
   list.innerHTML = habits.map((h, i) => `
     <article class="recommendation-card" data-index="${i}">
@@ -213,7 +206,7 @@ function renderResult(habits) {
       <div class="day-picker" id="hab-days-${i}">
         <button type="button" class="day-btn" data-all="true"
           onclick="event.stopPropagation();habToggleAll(this)">매일</button>
-        ${ALL_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
+        ${KOREAN_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
           onclick="event.stopPropagation();this.classList.toggle('active')">${d}</button>`).join('')}
       </div>
     </article>
