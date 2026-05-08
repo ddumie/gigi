@@ -130,6 +130,25 @@ class TokenResponse(BaseModel):
 
 
 # ──────────────────────────────────────────
+# 공통 응답
+# ──────────────────────────────────────────
+
+class MessageResponse(BaseModel):
+    """단순 메시지 응답"""
+    message: str
+
+class NicknameResponse(BaseModel):
+    """닉네임 변경 응답"""
+    message: str
+    nickname: str
+
+class AgeGroupResponse(BaseModel):
+    """나이대 변경 응답"""
+    message: str
+    age_group: str
+
+
+# ──────────────────────────────────────────
 # 나이대 변경
 # ──────────────────────────────────────────
 
