@@ -6,7 +6,7 @@ const body = {
     title: document.getElementById('title').value,
     description: document.getElementById('description').value,
     habit_title: document.getElementById('habit_title').value,
-    frequency: Array.from(document.querySelectorAll('input[name="frequency"]:checked')).map(cb => cb.value).join(', '),
+    frequency: getActiveDays('freq-days').join(', '),
     category: document.getElementById('category').value || null,
 };
 // current_user.id로 교체
