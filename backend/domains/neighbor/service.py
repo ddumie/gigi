@@ -25,11 +25,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.neighbor.schemas import GroupSearchCreate, PostAuthorResponse
 from fastapi import HTTPException
 from backend.domains.neighbor.models import Comment, FeedPost, PostSupport, GroupSearchPost
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
 from backend.domains.habits.service import resolve_habit_meta
 from backend.domains.support.models import Group
-
+from backend.domains.today.service import _is_habit_for_today
+from backend.domains.habits import crud as habits_crud
+from datetime import date
+from backend.domains.habits.models import HabitCheck
 
 async def create_group_search_logic(post: GroupSearchCreate, user_id: int, db: AsyncSession):
     # 비즈니스 규칙: 제목이 비어있으면 거절
@@ -111,8 +114,25 @@ async def get_my_habits_logic(user_id: int, db: AsyncSession):
         habits_feed.group_name = group.name if group else None
         result.append(habits_feed)
 
-    checked_count, total_count = await get_today_completion(user_id=user_id, db=db)
-    today_all_done = total_count > 0 and checked_count >= total_count    
+    today = date.today()
+    all_habits = await habits_crud.get_habits(db, user_id)
+    today_habit_ids = []
+    for h in all_habits:
+        meta = await resolve_habit_meta(db, h)
+        if _is_habit_for_today(meta["repeat_type"], today):
+            today_habit_ids.append(h.id)
+
+    total_count = len(today_habit_ids)
+    if total_count > 0:
+        checked_result = await db.execute(
+            select(func.count()).select_from(HabitCheck)
+            .where(HabitCheck.habit_id.in_(today_habit_ids), HabitCheck.checked_date == today)
+        )
+        checked_count = checked_result.scalar()
+        today_all_done = checked_count >= total_count
+    else:
+        today_all_done = False
+    
     return {"posts": result, "today_all_done": today_all_done}
 
 async def create_habit_feed_logic(habit_id: int, content: str, user_id: int, db: AsyncSession) -> dict:

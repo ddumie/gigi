@@ -22,7 +22,7 @@ async function loadDetail() {
 
     // 상단 행: 카테고리 뱃지
     const header = document.createElement('div');
-    header.style.cssText = 'display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;';
+    header.className = 'detail-header';
 
     const badge = document.createElement('span');
     badge.className = 'badge badge-blue';
@@ -32,8 +32,7 @@ async function loadDetail() {
 
     // 아바타 + 닉네임 행
     const memberRow = document.createElement('div');
-    memberRow.className = 'member-row';
-    memberRow.style.cssText = 'padding:0; background:none; margin-bottom:0.75rem;';
+    memberRow.className = 'member-row detail-member-row';
 
     const avatar = document.createElement('div');
     avatar.className = 'member-avatar';
@@ -52,7 +51,7 @@ async function loadDetail() {
 
     // 본문
     const body = document.createElement('p');
-    body.style.cssText = 'font-size:1.05rem; line-height:1.7; margin:0;';
+    body.className = 'detail-body';
     body.textContent = p.content ?? '';
 
     el.append(header, memberRow, body);
@@ -88,8 +87,7 @@ async function loadComments() {
       const commentFirstChar = commentNickname.charAt(0);
 
       const memberRow = document.createElement('div');
-      memberRow.className = 'member-row';
-      memberRow.style.cssText = 'padding:0; background:none; margin-bottom:0.5rem;';
+      memberRow.className = 'member-row detail-detail-member-row';
 
       const avatar = document.createElement('div');
       avatar.className = 'member-avatar';
@@ -112,14 +110,14 @@ async function loadComments() {
       memberRow.append(avatar, memberInfo);
 
       const content = document.createElement('p');
-      content.style.marginTop = '0.25rem';
+      content.className = 'comment-content';
       content.textContent = c.content;
 
       card.append(memberRow, content);
         // 내 댓글일 때만 수정 버튼 표시
       if (c.author_id === currentUserId) {
         const editRow = document.createElement('div');
-        editRow.style.cssText = 'display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem;';
+        editRow.className = 'comment-edit-row';
 
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
@@ -162,9 +160,9 @@ async function loadComments() {
       document.getElementById('comment-input').value = c.content;
       document.getElementById('comment-input').focus();
 
-      document.getElementById('comment-submit').style.display = 'none';
-      document.getElementById('comment-edit-submit').style.display = '';
-      document.getElementById('comment-edit-cancel').style.display = '';
+      document.getElementById('comment-submit').classList.add('hidden');
+      document.getElementById('comment-edit-submit').classList.remove('hidden');
+      document.getElementById('comment-edit-cancel').classList.remove('hidden');
 
       // 이전에 등록된 이벤트 리스너를 교체하기 위해 복제
       const oldSave = document.getElementById('comment-edit-submit');
@@ -227,9 +225,9 @@ async function loadSupport() {
 
 function resetCommentInput() {
   document.getElementById('comment-input').value = '';
-  document.getElementById('comment-submit').style.display = '';
-  document.getElementById('comment-edit-submit').style.display = 'none';
-  document.getElementById('comment-edit-cancel').style.display = 'none';
+  document.getElementById('comment-submit').classList.remove('hidden');
+  document.getElementById('comment-edit-submit').classList.add('hidden');
+  document.getElementById('comment-edit-cancel').classList.add('hidden');
 }
 document.getElementById('comment-edit-cancel').addEventListener('click', () => {
   resetCommentInput();

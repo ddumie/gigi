@@ -122,7 +122,6 @@
 .feed-date-separator::before { left: 0; }
 .feed-date-separator::after  { right: 0; }
 
-
 /* 댓글 작성 css */
 .comment-textarea {
   width: 100%;
@@ -177,4 +176,90 @@
   background: #dcfce7;
   color: #16a34a;
   vertical-align: middle;
+}
+
+/* feed-detail.css */
+
+.detail-header{
+  display:flex; 
+  align-items:center; 
+  gap:0.5rem; 
+  margin-bottom:0.75rem;
+}
+
+.member-row.detail-member-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  margin-bottom: 0.75rem;
+}
+.detail-body {
+  font-size:1.05rem; 
+  line-height:1.7; 
+  margin:0;
+}
+.member-row.detail-detail-member-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  margin-bottom:0.5rem;
+}
+
+.comment-content {
+  margin-top : 0.25rem;
+}
+
+.comment-edit-row {
+  display:flex;
+  align-items:center; 
+  gap:0.5rem; 
+  margin-top:0.5rem;
+}
+.hidden {
+  display: none;
+}
+
+/* data-category.js css */
+.member-row.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: none;
+}
+.detail-group-label{
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+/* group-search.js css */
+.meta-text.detail-meta-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 0.5rem;
+}
+.btn-group-detail {
+  margin-left:auto; 
+  display:flex; 
+  gap:0.5rem;
+}
+
+/* my-posts.js css */
+.edit-link {
+  margin-top : 0.75rem;
+}
+
+.feed-date-separator.detail-feed-date-separator {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #999);
+  position: relative;
+  margin: 0.5rem 0;
+  cursor: pointer;
 }
