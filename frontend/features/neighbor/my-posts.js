@@ -7,12 +7,12 @@
     apiGet('/neighbor/feed/my')
   ]);
 } catch {
-  alert('데이터를 불러오는 중 오류가 발생했습니다.');
+  showToast('데이터를 불러오는 중 오류가 발생했습니다.');
   return;
 }
 
 if (!groupPosts || !feedResult) {
-  alert('데이터를 불러올 수 없습니다.');
+  showToast('데이터를 불러올 수 없습니다.');
   return;
 }
   // 오늘 습관 완료 여부 전달
