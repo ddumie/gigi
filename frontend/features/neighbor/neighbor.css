@@ -13,7 +13,7 @@
 .feed-card,
 .group-search-card {
   padding: 1rem;
-  border: 1px solid var(--color-border-light);
+  border: 0.0625rem solid var(--color-border-light);
   border-radius: var(--radius-lg);
   background: var(--color-card);
 }
@@ -100,7 +100,7 @@
   font-weight: 600;
 }
 
-/* 날짜로 피드 분리관련 css */
+/* === 날짜로 피드 분리관련 css === */
 .feed-date-separator {
   text-align: center;
   font-size: 0.75rem;
@@ -115,14 +115,14 @@
   position: absolute;
   top: 50%;
   width: 35%;
-  height: 1px;
+  height: 0.0625rem;
   background: var(--color-border-light);
 }
 
 .feed-date-separator::before { left: 0; }
 .feed-date-separator::after  { right: 0; }
 
-/* 댓글 작성 css */
+/* === 댓글 작성 css === */
 .comment-textarea {
   width: 100%;
   margin-top: 0.5rem;
@@ -131,7 +131,7 @@
   font-family: var(--font-family);
   color: var(--color-text);
   background: var(--color-bg);
-  border: 1px solid var(--color-border-light);
+  border: 0.0625rem solid var(--color-border-light);
   border-radius: var(--radius-lg);
   outline: none;
   resize: none;
@@ -141,31 +141,33 @@
 
 .comment-textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+  box-shadow: 0 0 0 3px var(--color-primary-shadow);
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .comment-textarea::placeholder {
   color: var(--color-text-tertiary);
 }
 
-/*빈도수 체크박스 스타일 */
+/* === 빈도수 체크박스 스타일 === */
 .frequency-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 .day-checkboxes {
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 .day-check {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
   cursor: pointer;
 }
-/*오늘 습관 완료 여부 배지 스타일 추가*/
+/* === 오늘 습관 완료 여부 배지 스타일 추가 === */
 .all-done-badge {
   display: inline-block;
   margin-left: 0.5rem;
@@ -178,7 +180,7 @@
   vertical-align: middle;
 }
 
-/* feed-detail.css */
+/* === feed-detail.css === */
 
 .detail-header{
   display:flex; 
@@ -187,58 +189,40 @@
   margin-bottom:0.75rem;
 }
 
-.member-row.detail-member-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.member-row.detail-member-row,
+.member-row.comment-member-row,
+.member-row.detail-row {
   padding: 0;
-  border-radius: var(--radius-md);
   background: none;
-  margin-bottom: 0.75rem;
 }
+.member-row.detail-member-row { margin-bottom: 0.75rem; }
+.member-row.comment-member-row { margin-bottom: 0.5rem; }
+
 .detail-body {
-  font-size:1.05rem; 
-  line-height:1.7; 
+  font-size:1.05rem;
+  line-height:1.7;
   margin:0;
-}
-.member-row.detail-detail-member-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0;
-  border-radius: var(--radius-md);
-  background: none;
-  margin-bottom:0.5rem;
+  white-space: pre-wrap;
 }
 
 .comment-content {
   margin-top : 0.25rem;
+  white-space: pre-wrap;
 }
 
 .comment-edit-row {
   display:flex;
-  align-items:center; 
-  gap:0.5rem; 
+  align-items:center;
+  gap:0.5rem;
   margin-top:0.5rem;
 }
-.hidden {
-  display: none;
-}
 
-/* data-category.js css */
-.member-row.detail-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0;
-  border-radius: var(--radius-md);
-  background: none;
-}
+/* === data-category.js css === */
 .detail-group-label{
   margin: 0.25rem 0 0.5rem 0;
 }
 
-/* group-search.js css */
+/* === group-search.js css === */
 .meta-text.detail-meta-text {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
@@ -250,16 +234,47 @@
   gap:0.5rem;
 }
 
-/* my-posts.js css */
+/* === my-posts.js css === */
 .edit-link {
   margin-top : 0.75rem;
 }
 
 .feed-date-separator.detail-feed-date-separator {
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--color-text-muted, #999);
-  position: relative;
-  margin: 0.5rem 0;
   cursor: pointer;
+}
+
+/* === feed-detail.html === */
+
+.gigi {
+  margin-top:1.5rem;
+}
+.comment-title {
+  margin-top:2rem;
+}
+
+.comment-box {
+  margin-top:1.5rem;
+}
+
+#comment-list {
+  margin-top:1rem; 
+  display:grid; 
+  gap:0.75rem;
+}
+
+.page-actions {
+  margin-top:0.75rem;
+}
+
+#comment-edit-submit.btn.btn-primary.btn-sm{ 
+  display:none;
+}
+
+#comment-edit-cancel.btn.btn-outline.btn-sm {
+  display:none;
+}
+
+/* 공통 */
+a.btn.btn-outline.btn-sm {
+  margin-bottom:1rem;
 }
