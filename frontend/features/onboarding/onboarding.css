@@ -17,6 +17,10 @@
   user-select: none;
 }
 
+.recommendation-card .day-picker {
+  margin-top: 0.5rem;
+}
+
 .recommendation-card.active {
   border-color: var(--color-primary);
   background: var(--color-primary-light);

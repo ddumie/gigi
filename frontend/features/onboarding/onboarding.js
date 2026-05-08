@@ -111,13 +111,6 @@ function initStep2() {
   });
 }
 
-function obToggleAll(btn) {
-  const picker = btn.closest('.day-picker');
-  const dayBtns = [...picker.querySelectorAll('[data-day]')];
-  const allActive = dayBtns.every(b => b.classList.contains('active'));
-  dayBtns.forEach(b => allActive ? b.classList.remove('active') : b.classList.add('active'));
-  btn.classList.toggle('active', !allActive);
-}
 
 // Step3: AI 추천 습관 선택
 function initStep3() {
@@ -155,11 +148,11 @@ function initStep3() {
     <article class="recommendation-card" data-index="${i}">
       <strong>${h.title}</strong>
       <p class="meta-text">${h.description}</p>
-      <div class="day-picker" id="ob-days-${i}" style="margin-top:0.5rem;">
+      <div class="day-picker" id="ob-days-${i}">
         <button type="button" class="day-btn" data-all="true"
-          onclick="event.stopPropagation();obToggleAll(this)">매일</button>
+          onclick="event.stopPropagation();toggleAllDays(this)">매일</button>
         ${ALL_DAYS.map(d => `<button type="button" class="day-btn" data-day="${d}"
-          onclick="event.stopPropagation();this.classList.toggle('active')">${d}</button>`).join('')}
+          onclick="event.stopPropagation();toggleDayBtn(this)">${d}</button>`).join('')}
       </div>
     </article>
   `).join('');
