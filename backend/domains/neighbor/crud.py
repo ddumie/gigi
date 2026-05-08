@@ -1,10 +1,9 @@
-# TODO: DB CRUD 작성 (담당: 이영진)
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from backend.domains.neighbor.models import GroupSearchPost, Post, FeedPost, Comment, PostSupport
 from backend.domains.neighbor.schemas import GroupSearchCreate
-from backend.domains.habits.models import Habit, HabitCheck
+from backend.domains.habits.models import Habit
 from backend.domains.auth.models import User
 from backend.domains.support.models import Group, GroupMember
 from sqlalchemy.exc import IntegrityError
@@ -18,12 +17,11 @@ async def create_post(author_id: int, post_type: str, db: AsyncSession) -> Post:
         post_type=post_type
     )
     db.add(db_post)
-    await db.flush()  # ← post.id 확보
+    await db.flush()
     await db.refresh(db_post)
-    return db_post # ← 결과를 반환만 함, 판단은 안 함
+    return db_post
 
 async def create_group_search(post_id: int, post: GroupSearchCreate, db: AsyncSession) -> GroupSearchPost:
-   # 2. 자식 GroupSearchPost 생성
     db_group_search = GroupSearchPost(
         post_id=post_id,
         title=post.title,
@@ -338,21 +336,3 @@ async def get_support_info(post_id: int, user_id: int, db: AsyncSession) -> dict
             "is_supported": support_result.scalars().first() is not None,
             }
 
-# 오늘 습관 완료했는지 체크하는 함수(엔드포인트 아님)
-async def get_today_completion(user_id: int, db: AsyncSession) -> tuple[int, int]:
-    today = date.today()
-
-    total_result = await db.execute(
-        select(func.count()).select_from(Habit)
-        .filter(Habit.user_id == user_id, Habit.is_active == True)
-    )
-    total_count = total_result.scalar()
-
-    checked_result = await db.execute(
-        select(func.count()).select_from(HabitCheck)
-        .join(Habit, HabitCheck.habit_id == Habit.id)
-        .filter(Habit.user_id == user_id, HabitCheck.checked_date == today)
-    )
-    checked_count = checked_result.scalar()
-
-    return checked_count, total_count

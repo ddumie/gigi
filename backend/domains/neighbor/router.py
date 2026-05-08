@@ -32,8 +32,6 @@ from backend.domains.auth.models import User
 
 router = APIRouter()
 
-# 현재 로그인 사용자 기준이 아니라 author_id와 동일한 user.id를 1로 고정하였기 때문에,
-# 추후 수정해야 함.
 
 
 # 글쓰기 post

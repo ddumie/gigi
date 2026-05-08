@@ -1,4 +1,3 @@
-# TODO: 비즈니스 로직 작성 (담당: 이영진)
 # service.py
 from backend.domains.neighbor.crud import (
    create_post, create_group_search,
@@ -15,20 +14,18 @@ from backend.domains.neighbor.crud import (
    update_feed_comment,
    delete_feed_comment,
    get_support,
-   get_today_completion,
    get_support_info,
-   get_support_info_batch,        # ← 추가
-   get_my_comment_today_batch,    # ← 추가
+   get_support_info_batch,        
+   get_my_comment_today_batch,   
 
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.neighbor.schemas import GroupSearchCreate, PostAuthorResponse
 from fastapi import HTTPException
-from backend.domains.neighbor.models import Comment, FeedPost, PostSupport, GroupSearchPost
+from backend.domains.neighbor.models import FeedPost, PostSupport
 from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
 from backend.domains.habits.service import resolve_habit_meta
-from backend.domains.support.models import Group
 from backend.domains.today.service import _is_habit_for_today
 from backend.domains.habits import crud as habits_crud
 from datetime import date

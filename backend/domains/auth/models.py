@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, SmallInteger
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
 from backend.database import Base
@@ -23,6 +23,10 @@ class User(Base):
 
     # 이미지
     profile_image = Column(String(500), nullable=True)                                        # 프로필 이미지 URL, 선택
+
+    # 로그인 실패 잠금
+    login_fail_count = Column(SmallInteger, default=0, nullable=False)
+    locked_until     = Column(DateTime(timezone=True), nullable=True)
 
     # 타임스탬프
     created_at = Column(DateTime(timezone=True), server_default=func.now())                   # 가입 시각, DB 서버 시간 자동 기록
