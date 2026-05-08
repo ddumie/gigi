@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -21,14 +22,16 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # 비밀번호 유틸
 # ──────────────────────────────────────────
 
-def hash_password(password: str) -> str:
+async def hash_password(password: str) -> str:
     """평문 비밀번호 → bcrypt 해시"""
-    return pwd_context.hash(password)
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, pwd_context.hash, password)
 
 
-def verify_password(plain: str, hashed: str) -> bool:
+async def verify_password(plain: str, hashed: str) -> bool:
     """평문과 해시 비교"""
-    return pwd_context.verify(plain, hashed)
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, pwd_context.verify, plain, hashed)
 
 
 # ──────────────────────────────────────────
@@ -83,7 +86,7 @@ async def register(db: AsyncSession, data: RegisterRequest) -> User:
     if await crud.get_user_by_nickname(db, data.nickname):
         raise ValueError("이미 사용 중인 닉네임입니다")
 
-    password_hash = hash_password(data.password)
+    password_hash = await hash_password(data.password)
     return await crud.create_user(
         db,
         email=data.email,
@@ -109,7 +112,7 @@ async def login(db: AsyncSession, data: LoginRequest) -> tuple[str, User]:
     user = await crud.get_user_by_email(db, data.email)
     if not user or not user.is_active:
         raise ValueError("이메일 또는 비밀번호가 올바르지 않습니다")
-    if not verify_password(data.password, user.password_hash):
+    if not await verify_password(data.password, user.password_hash):
         raise ValueError("이메일 또는 비밀번호가 올바르지 않습니다")
 
     token = create_access_token(user.id)
@@ -153,8 +156,8 @@ async def change_password(db: AsyncSession, user: User, data: PasswordChangeRequ
     2. 새 비밀번호 해싱
     3. 업데이트
     """
-    if not verify_password(data.current_password, user.password_hash):
+    if not await verify_password(data.current_password, user.password_hash):
         raise ValueError("현재 비밀번호가 올바르지 않습니다")
 
-    new_hash = hash_password(data.new_password)
+    new_hash = await hash_password(data.new_password)
     await crud.update_password(db, user, new_hash)

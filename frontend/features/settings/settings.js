@@ -124,6 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
   nicknameEditBtn.addEventListener('click', openNicknameModal);
   nicknameCancelBtn.addEventListener('click', closeNicknameModal);
 
+  document.getElementById('new-nickname').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('nickname-save-btn').click();
+  });
+
   nicknameModal.addEventListener('click', (e) => {
     if (e.target === nicknameModal) closeNicknameModal();
   });

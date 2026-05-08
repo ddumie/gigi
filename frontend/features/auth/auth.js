@@ -123,8 +123,8 @@ if (step2Submit) {
     nicknameInput.value = trimmedSuggested;
   }
   if (preview) {
-    preview.textContent = suggested
-      ? `추천 닉네임: ${suggested}`
+    preview.textContent = trimmedSuggested.length >= 2
+      ? `추천 닉네임: ${trimmedSuggested}`
       : '이메일 앞부분을 추천 닉네임으로 보여줍니다.';
   }
 

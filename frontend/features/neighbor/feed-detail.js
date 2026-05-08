@@ -81,7 +81,7 @@ async function loadComments() {
       const commentFirstChar = commentNickname.charAt(0);
 
       const memberRow = document.createElement('div');
-      memberRow.className = 'member-row detail-detail-member-row';
+      memberRow.className = 'member-row comment-member-row';
 
       const avatar = document.createElement('div');
       avatar.className = 'member-avatar';

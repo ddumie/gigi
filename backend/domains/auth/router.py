@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import EmailStr
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_async_db
@@ -18,6 +19,9 @@ from backend.domains.auth.schemas import (
     PasswordChangeRequest,
     NicknameUpdateRequest,
     AgeGroupUpdateRequest,
+    MessageResponse,
+    NicknameResponse,
+    AgeGroupResponse,
 )
 
 router = APIRouter()
@@ -74,6 +78,8 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_async_d
         user = await service.register(db, data)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용 중인 이메일 또는 닉네임입니다.")
 
     token = service.create_access_token(user.id)
     return TokenResponse(access_token=token, user=UserResponse.model_validate(user))
@@ -125,6 +131,9 @@ async def check_email(email: EmailStr = Query(...), db: AsyncSession = Depends(g
 @router.get("/check/nickname", response_model=CheckResponse)
 async def check_nickname(nickname: str = Query(..., min_length=2, max_length=12), db: AsyncSession = Depends(get_async_db)):
     """닉네임 중복 확인"""
+    nickname = nickname.strip()
+    if len(nickname) < 2:
+        return CheckResponse(available=False, message="닉네임은 2자 이상이어야 합니다")
     available = await service.check_nickname(db, nickname)
     message = "사용 가능한 닉네임입니다" if available else "이미 사용 중인 닉네임입니다"
     return CheckResponse(available=available, message=message)
@@ -134,7 +143,7 @@ async def check_nickname(nickname: str = Query(..., min_length=2, max_length=12)
 # 나이대 변경
 # ──────────────────────────────────────────
 
-@router.patch("/age-group")
+@router.patch("/age-group", response_model=AgeGroupResponse)
 async def update_age_group(
     data: AgeGroupUpdateRequest,
     current_user: User = Depends(get_current_user),
@@ -158,7 +167,7 @@ async def update_age_group(
 # 닉네임 변경
 # ──────────────────────────────────────────
 
-@router.patch("/nickname")
+@router.patch("/nickname", response_model=NicknameResponse)
 async def update_nickname(
     data: NicknameUpdateRequest,
     current_user: User = Depends(get_current_user),
@@ -176,7 +185,7 @@ async def update_nickname(
 # 비밀번호 변경
 # ──────────────────────────────────────────
 
-@router.put("/password")
+@router.put("/password", response_model=MessageResponse)
 async def change_password(
     data: PasswordChangeRequest,
     current_user: User = Depends(get_current_user),
@@ -194,7 +203,7 @@ async def change_password(
 # 회원탈퇴
 # ──────────────────────────────────────────
 
-@router.delete("/me", status_code=status.HTTP_200_OK)
+@router.delete("/me", status_code=status.HTTP_200_OK, response_model=MessageResponse)
 async def delete_me(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_db),
