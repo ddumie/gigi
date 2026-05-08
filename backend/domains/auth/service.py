@@ -24,13 +24,13 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def hash_password(password: str) -> str:
     """평문 비밀번호 → bcrypt 해시"""
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, pwd_context.hash, password)
 
 
 async def verify_password(plain: str, hashed: str) -> bool:
     """평문과 해시 비교"""
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, pwd_context.verify, plain, hashed)
 
 
@@ -105,16 +105,24 @@ async def login(db: AsyncSession, data: LoginRequest) -> tuple[str, User]:
     """
     로그인
     1. 이메일로 유저 조회
-    2. 비밀번호 검증
-    3. JWT 발급
+    2. 계정 잠금 여부 확인
+    3. 비밀번호 검증
+    4. JWT 발급
     반환: (access_token, user)
     """
     user = await crud.get_user_by_email(db, data.email)
     if not user or not user.is_active:
         raise ValueError("이메일 또는 비밀번호가 올바르지 않습니다")
+
+    if user.locked_until and user.locked_until > datetime.now(timezone.utc):
+        remaining = int((user.locked_until - datetime.now(timezone.utc)).total_seconds() / 60) + 1
+        raise ValueError(f"로그인 시도 횟수를 초과했습니다. {remaining}분 후 다시 시도해주세요.")
+
     if not await verify_password(data.password, user.password_hash):
+        await crud.increment_login_fail(db, user)
         raise ValueError("이메일 또는 비밀번호가 올바르지 않습니다")
 
+    await crud.reset_login_fail(db, user)
     token = create_access_token(user.id)
     return token, user
 

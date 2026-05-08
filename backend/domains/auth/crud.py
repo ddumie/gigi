@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.domains.auth.models import User
@@ -91,11 +92,38 @@ async def update_password(db: AsyncSession, user: User, new_password_hash: str) 
         raise
 
 
+async def increment_login_fail(db: AsyncSession, user: User, lock_minutes: int = 10) -> None:
+    """로그인 실패 횟수 증가, 5회 초과 시 잠금"""
+    user.login_fail_count = (user.login_fail_count or 0) + 1
+    if user.login_fail_count >= 5:
+        user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=lock_minutes)
+        user.login_fail_count = 0
+    try:
+        await db.commit()
+        await db.refresh(user)
+    except Exception:
+        await db.rollback()
+        raise
+
+
+async def reset_login_fail(db: AsyncSession, user: User) -> None:
+    """로그인 성공 시 실패 횟수 초기화"""
+    user.login_fail_count = 0
+    user.locked_until = None
+    try:
+        await db.commit()
+        await db.refresh(user)
+    except Exception:
+        await db.rollback()
+        raise
+
+
 async def deactivate_user(db: AsyncSession, user: User) -> None:
     """회원탈퇴 (소프트 삭제 — is_active = False, 이메일/닉네임 익명화)"""
     user.is_active = False
     user.email = f"deleted_{user.id}@deleted.com"
     user.nickname = f"deleted_{user.id}"
+    user.profile_image = None
     try:
         await db.commit()
         await db.refresh(user)
