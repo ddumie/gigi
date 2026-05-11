@@ -131,7 +131,7 @@ async function loadGroups() {
         <div class="group-card-header">
           <div class="group-title"><strong>${group.name}</strong></div>
           <div class="group-actions">
-            <span class="group-type badge">${group.group_type}</span>
+            <span class="group-type-badge ${group.group_type.replace(" ","-")}">${group.group_type}</span>
             <a href="${PAGES.supportManage}?group_id=${group.id}" 
               class="btn btn-outline btn-sm">모임 관리</a>
           </div>

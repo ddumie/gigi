@@ -409,8 +409,8 @@ async def get_group_ids_by_uid(db: AsyncSession, user_id: int, limit: int = 3, o
     result = await db.execute(
         select(
             models.GroupMember.group_id,
-            models.Group.name,
-            models.Group.group_type,
+            func.coalesce(models.GroupProfile.name, models.Group.name).label("name"),
+            func.coalesce(models.GroupProfile.group_type, models.Group.group_type).label("group_type"),
             models.Group.total_support_count,
             models.Group.support_streak,
             models.Group.max_streak,
