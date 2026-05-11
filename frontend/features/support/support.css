@@ -91,7 +91,7 @@
 }
 
 /* 그룹 종류 박스 */
-.group-type.badge {
+.group-type-badge {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-md);
@@ -99,6 +99,26 @@
   font-weight: 500;
   background-color: var(--color-green-light);
   color: var(--color-text);
+}
+
+.group-type-badge.가족{
+  background-color: var(--color-primary-hover);
+  color: var(--color-primary);
+}
+
+.group-type-badge.친구-모임{
+  background-color: var(--color-amber-light);
+  color: var(--color-amber);
+}
+
+.group-type-badge.건강-챌린지{
+  background-color: var(--color-green-light);
+  color: var(--color-green);
+}
+
+.group-type-badge.동네-이웃{
+  background-color: var(--color-coral-light);
+  color: var(--color-coral);
 }
 
 /* 그룹 통계 (레벨, 스트릭) */
