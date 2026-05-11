@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     GEMINI_API_KEY: str
+    MAIL_USERNAME: str | None = None
+    MAIL_PASSWORD: str | None = None
+    MAIL_FROM: str | None = None
+    FRONTEND_URL: str = "http://3.38.123.128"
 
     @property
     def database_url(self) -> str:

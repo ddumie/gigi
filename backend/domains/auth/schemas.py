@@ -210,3 +210,34 @@ class PasswordChangeRequest(BaseModel):
         if self.new_password != self.new_password_confirm:
             raise ValueError("새 비밀번호가 일치하지 않습니다")
         return self
+
+
+# ──────────────────────────────────────────
+# 비밀번호 찾기 / 재설정
+# ──────────────────────────────────────────
+
+class ForgotPasswordRequest(BaseModel):
+    """POST /auth/forgot-password 요청 바디"""
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """POST /auth/reset-password 요청 바디"""
+    token: str
+    new_password: str
+    new_password_confirm: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v):
+        if len(v) < 6:
+            raise ValueError("비밀번호는 6자 이상이어야 합니다")
+        if len(v) > 18:
+            raise ValueError("비밀번호는 18자 이하여야 합니다")
+        return v
+
+    @model_validator(mode='after')
+    def check_passwords_match(self):
+        if self.new_password != self.new_password_confirm:
+            raise ValueError("새 비밀번호가 일치하지 않습니다")
+        return self

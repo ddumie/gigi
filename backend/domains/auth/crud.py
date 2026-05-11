@@ -118,6 +118,34 @@ async def reset_login_fail(db: AsyncSession, user: User) -> None:
         raise
 
 
+async def save_reset_token(db: AsyncSession, user: User, token: str, expires: datetime) -> None:
+    """비밀번호 재설정 토큰 저장"""
+    user.password_reset_token = token
+    user.password_reset_expires = expires
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+
+
+async def get_user_by_reset_token(db: AsyncSession, token: str) -> User | None:
+    """재설정 토큰으로 유저 조회"""
+    result = await db.execute(select(User).where(User.password_reset_token == token))
+    return result.scalar_one_or_none()
+
+
+async def clear_reset_token(db: AsyncSession, user: User) -> None:
+    """재설정 토큰 삭제 (비밀번호 변경 완료 후 호출)"""
+    user.password_reset_token = None
+    user.password_reset_expires = None
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+
+
 async def deactivate_user(db: AsyncSession, user: User) -> None:
     """회원탈퇴 (소프트 삭제 — is_active = False, 이메일/닉네임 익명화)"""
     user.is_active = False

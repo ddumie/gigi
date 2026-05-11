@@ -28,6 +28,10 @@ class User(Base):
     login_fail_count = Column(SmallInteger, default=0, nullable=False)
     locked_until     = Column(DateTime(timezone=True), nullable=True)
 
+    # 비밀번호 재설정
+    password_reset_token   = Column(String(64), nullable=True, index=True)
+    password_reset_expires = Column(DateTime(timezone=True), nullable=True)
+
     # 타임스탬프
     created_at = Column(DateTime(timezone=True), server_default=func.now())                   # 가입 시각, DB 서버 시간 자동 기록
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())  # 마지막 수정 시각

@@ -22,6 +22,8 @@ from backend.domains.auth.schemas import (
     MessageResponse,
     NicknameResponse,
     AgeGroupResponse,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
 )
 
 router = APIRouter()
@@ -194,6 +196,34 @@ async def change_password(
     """비밀번호 변경 (로그인 필요)"""
     try:
         await service.change_password(db, current_user, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return {"message": "비밀번호가 변경되었습니다."}
+
+
+# ──────────────────────────────────────────
+# 비밀번호 찾기 / 재설정
+# ──────────────────────────────────────────
+
+@router.post("/forgot-password", response_model=MessageResponse)
+async def forgot_password(data: ForgotPasswordRequest, db: AsyncSession = Depends(get_async_db)):
+    """비밀번호 재설정 이메일 발송 (이메일 존재 여부와 무관하게 동일 응답)"""
+    try:
+        await service.forgot_password(db, data.email)
+    except Exception as e:
+        logger.error(f"비밀번호 재설정 이메일 발송 오류: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        )
+    return {"message": "비밀번호 재설정 링크를 이메일로 발송했습니다."}
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(get_async_db)):
+    """비밀번호 재설정 (토큰 검증 후 변경)"""
+    try:
+        await service.reset_password(db, data.token, data.new_password)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     return {"message": "비밀번호가 변경되었습니다."}
