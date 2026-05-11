@@ -57,6 +57,7 @@ async function loadDetail() {
   }
 }
 
+// 댓글 로딩
 async function loadComments() {
   try {
     const comments = await apiGet(`/neighbor/feed/${postId}/comments`);
@@ -71,7 +72,7 @@ async function loadComments() {
       list.appendChild(empty);
       return;
     }
-
+// 닉네임, 만들어진 시간, 아바타 등등
     const currentUserId = getCurrentUser()?.id ?? null;
     comments.forEach(c => {
       const card = document.createElement('div');
@@ -112,7 +113,7 @@ async function loadComments() {
       if (c.author_id === currentUserId) {
         const editRow = document.createElement('div');
         editRow.className = 'comment-edit-row';
-
+        // 수정 버튼
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'btn btn-outline btn-sm';
@@ -169,7 +170,7 @@ async function loadComments() {
       });
     });
 
-    card.appendChild(editRow);  // editBtn 대신 editRow
+    card.appendChild(editRow);
   }
 
 
@@ -180,6 +181,8 @@ async function loadComments() {
     showToast('댓글을 불러오는 중 오류가 발생했습니다.');
   }
 }
+
+// 지지 정보 불러오기
 async function loadSupport() {
   try {
     const data = await apiGet(`/neighbor/feed/${postId}/support`);
@@ -194,7 +197,7 @@ async function loadSupport() {
   }
 }
 
-
+// 댓글 관련 리스너들, 입력, 제출, 수정, 삭제
 function resetCommentInput() {
   document.getElementById('comment-input').value = '';
   document.getElementById('comment-submit').classList.remove('hidden');

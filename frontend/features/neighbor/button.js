@@ -9,7 +9,7 @@ const body = {
     frequency: getActiveDays('freq-days').join(', '),
     category: document.getElementById('category').value || null,
 };
-// current_user.id로 교체
+
 try {
     const res = await apiPost('/neighbor/group-search', body);
     showToast('글이 등록되었습니다.')

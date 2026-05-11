@@ -19,7 +19,7 @@ async function renderFeed(posts) {
     article.className = 'feed-card';
     article.dataset.category = p.category;
 
-    //아래 블록 추가
+    //날짜 구분선
     const postDate = p.created_at
       ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
       : '';
@@ -30,12 +30,13 @@ async function renderFeed(posts) {
       list.appendChild(sep);
       lastDate = postDate;
     }
-    //여기까지 추가
+    // 1. 상단: 아바타 + 닉네임 + 시간 / 카테고리 뱃지
+    // 습관 피드 글쓴이 닉네임만 공개
     const nickname = p.author?.nickname ?? '알 수 없음';
     const firstChar = nickname.charAt(0);
     const timeAgo = formatRelativeTime(p.created_at);
 
-      // 1. 상단: 아바타 + 닉네임 + 시간 / 카테고리 뱃지
+      
     const header = document.createElement('div');
     header.className = 'feed-card-header';
 
@@ -65,15 +66,16 @@ async function renderFeed(posts) {
     categoryBadge.textContent = p.category ?? '기타';
 
     header.append(memberRow, categoryBadge);
-    // 습관 피드 글쓴이 닉네임만 공개
+
     // 2. 습관 제목 (음영 박스)
     const titleBox = document.createElement('div');
     titleBox.className = 'feed-title-box';
 
-        // titleBox 아래에 개인/모임 뱃지
+    // titleBox 아래에 개인/모임 뱃지
     const groupLabel = document.createElement('div');
     groupLabel.className = 'group-label detail-group-label';
 
+    // 개인습관, group에 포함된 습관 여부 확인 후 표시
     const groupBadge = document.createElement('span');
     if (p.group_id && p.group_name && p.is_member) {
         groupBadge.className = 'badge badge-green';
@@ -90,10 +92,12 @@ async function renderFeed(posts) {
     }
     groupLabel.appendChild(groupBadge);
 
+    // 네모 아이콘
     const titleIcon = document.createElement('span');
     titleIcon.className = 'feed-title-icon';
     titleIcon.textContent = '■';
 
+    // 습관 명 완료, 습관 타이틀 표시
     const categoryComplete = document.createElement('span');
     categoryComplete.className = 'feed-category-complete';
     categoryComplete.textContent = `[${p.category ?? '기타'} 완료]`;
@@ -103,7 +107,7 @@ async function renderFeed(posts) {
 
     titleBox.append(titleIcon, categoryComplete, titleText);
 
-    // 3. 본문
+    // 지지버튼, 댓글 수
     const body = document.createElement('p');
     body.className = 'section-copy';
     body.textContent = p.content ?? '';
@@ -149,7 +153,7 @@ async function renderFeed(posts) {
     const dateEl = document.createElement('span');
     dateEl.className = 'meta-text feed-date';
     dateEl.textContent = dateStr;
-
+    // 포스팅
     actions.append(btn, commentBtn, dateEl);
     article.append(header, titleBox, groupLabel, body, actions);
     list.appendChild(article);
