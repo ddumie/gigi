@@ -20,12 +20,6 @@ async function loadDetail() {
     const header = document.createElement('div');
     header.className = 'detail-header';
 
-    const badge = document.createElement('span');
-    badge.className = 'badge badge-blue';
-    badge.textContent = p.category;
-
-    header.append(badge);
-
     // 아바타 + 닉네임 행
     const memberRow = document.createElement('div');
     memberRow.className = 'member-row detail-member-row';
@@ -40,17 +34,26 @@ async function loadDetail() {
     const memberName = document.createElement('div');
     memberName.className = 'member-name';
     memberName.textContent = nickname;
+    
+    const badge = document.createElement('span');
+    badge.className = 'badge badge-blue-limit';
+    badge.textContent = p.category;
 
-    memberInfo.appendChild(memberName);
+
+    memberInfo.append(memberName, badge);
     memberRow.append(avatar, memberInfo);
 
 
     // 본문
+    const habits_titleText = document.createElement('div');
+    habits_titleText.className = 'feed-title-box'
+    habits_titleText.textContent = p.habit_title ?? (p.group_name + ' 습관');
+
     const body = document.createElement('p');
     body.className = 'detail-body';
     body.textContent = p.content ?? '';
 
-    el.append(header, memberRow, body);
+    el.append(header, memberRow, habits_titleText, body);
     } catch (e) {
     console.error('피드 로드 실패', e);
     showToast('피드를 불러오는 중 오류가 발생했습니다.');

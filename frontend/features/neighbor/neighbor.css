@@ -202,6 +202,13 @@
   margin:0;
   white-space: pre-wrap;
 }
+.badge-blue-limit {
+  padding: 0.2rem 0.25rem;
+  font-size: 0.7rem;
+  align-self: flex-start;
+  background: var(--color-primary-light); 
+  color: var(--color-primary); 
+}
 
 .comment-content {
   margin-top : 0.25rem;
@@ -246,6 +253,7 @@
 .gigi {
   margin-top:1.5rem;
 }
+
 .comment-title {
   margin-top:2rem;
 }
@@ -271,7 +279,9 @@
 #comment-edit-cancel.btn.btn-outline.btn-sm {
   display:none;
 }
+.body {
 
+}
 /* 공통 */
 a.btn.btn-outline.btn-sm {
   margin-bottom:1rem;
