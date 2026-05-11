@@ -1,6 +1,9 @@
 import asyncio
+import secrets
 from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 
+import aiosmtplib
 import jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -114,8 +117,9 @@ async def login(db: AsyncSession, data: LoginRequest) -> tuple[str, User]:
     if not user or not user.is_active:
         raise ValueError("이메일 또는 비밀번호가 올바르지 않습니다")
 
-    if user.locked_until and user.locked_until > datetime.now(timezone.utc):
-        remaining = int((user.locked_until - datetime.now(timezone.utc)).total_seconds() / 60) + 1
+    now = datetime.now(timezone.utc)
+    if user.locked_until and user.locked_until > now:
+        remaining = int((user.locked_until - now).total_seconds() / 60) + 1
         raise ValueError(f"로그인 시도 횟수를 초과했습니다. {remaining}분 후 다시 시도해주세요.")
 
     if not await verify_password(data.password, user.password_hash):
@@ -169,3 +173,73 @@ async def change_password(db: AsyncSession, user: User, data: PasswordChangeRequ
 
     new_hash = await hash_password(data.new_password)
     await crud.update_password(db, user, new_hash)
+
+
+# ──────────────────────────────────────────
+# 비밀번호 찾기 / 재설정
+# ──────────────────────────────────────────
+
+async def send_reset_email(to_email: str, reset_url: str) -> None:
+    """비밀번호 재설정 이메일 발송 (Gmail SMTP)"""
+    if not settings.MAIL_USERNAME or not settings.MAIL_PASSWORD or not settings.MAIL_FROM:
+        raise RuntimeError("이메일 설정이 구성되지 않았습니다. .env를 확인해주세요.")
+
+    msg = EmailMessage()
+    msg["From"] = settings.MAIL_FROM
+    msg["To"] = to_email
+    msg["Subject"] = "[지지 GIGI] 비밀번호 재설정 안내"
+    msg.set_content(
+        f"안녕하세요, 지지 GIGI입니다.\n\n"
+        f"비밀번호 재설정을 요청하셨습니다.\n"
+        f"아래 링크를 클릭하여 비밀번호를 재설정해주세요.\n\n"
+        f"{reset_url}\n\n"
+        f"이 링크는 30분간 유효합니다.\n"
+        f"본인이 요청하지 않으셨다면 이 이메일을 무시해주세요.\n\n"
+        f"감사합니다.\n지지 GIGI 팀"
+    )
+    await aiosmtplib.send(
+        msg,
+        hostname="smtp.gmail.com",
+        port=587,
+        start_tls=True,
+        username=settings.MAIL_USERNAME,
+        password=settings.MAIL_PASSWORD,
+    )
+
+
+async def forgot_password(db: AsyncSession, email: str) -> None:
+    """
+    비밀번호 재설정 요청
+    - 이메일이 없으면 조용히 종료 (이메일 존재 여부 외부 노출 방지)
+    - 토큰 생성 → DB 저장 → 이메일 발송
+    """
+    user = await crud.get_user_by_email(db, email)
+    if not user or not user.is_active:
+        return
+
+    token = secrets.token_urlsafe(32)
+    expires = datetime.now(timezone.utc) + timedelta(minutes=30)
+    await crud.save_reset_token(db, user, token, expires)
+
+    reset_url = f"{settings.FRONTEND_URL}/pages/auth/reset-password.html?token={token}"
+    await send_reset_email(user.email, reset_url)
+
+
+async def reset_password(db: AsyncSession, token: str, new_password: str) -> None:
+    """
+    비밀번호 재설정
+    1. 토큰으로 유저 조회
+    2. 만료 시간 확인
+    3. 비밀번호 변경 후 토큰 삭제
+    """
+    user = await crud.get_user_by_reset_token(db, token)
+    if not user or not user.is_active:
+        raise ValueError("유효하지 않은 링크입니다")
+
+    now = datetime.now(timezone.utc)
+    if not user.password_reset_expires or user.password_reset_expires < now:
+        raise ValueError("링크가 만료되었습니다. 다시 요청해주세요.")
+
+    new_hash = await hash_password(new_password)
+    await crud.update_password(db, user, new_hash)
+    await crud.clear_reset_token(db, user)

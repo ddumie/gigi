@@ -254,6 +254,107 @@ if (loginBtn) {
 }
 
 
+// ── 비밀번호 찾기 ──
+const forgotSubmit = document.getElementById('forgot-submit');
+if (forgotSubmit) {
+  document.getElementById('forgot-email').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') forgotSubmit.click();
+  });
+
+  forgotSubmit.addEventListener('click', async () => {
+    const email = document.getElementById('forgot-email').value.trim();
+    clearError('forgot-email-error');
+
+    if (!email) {
+      showError('forgot-email-error', '이메일을 입력해주세요');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('forgot-email-error', '올바른 이메일 형식이 아닙니다');
+      return;
+    }
+
+    forgotSubmit.disabled = true;
+    forgotSubmit.textContent = '발송 중...';
+
+    try {
+      await apiPost('/auth/forgot-password', { email });
+      document.getElementById('forgot-form').classList.add('hidden');
+      document.getElementById('forgot-success').classList.remove('hidden');
+    } catch (e) {
+      showError('forgot-email-error', e.message || '요청에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      forgotSubmit.disabled = false;
+      forgotSubmit.textContent = '재설정 링크 받기';
+    }
+  });
+}
+
+
+// ── 비밀번호 재설정 ──
+const resetSubmit = document.getElementById('reset-submit');
+if (resetSubmit) {
+  const params = new URLSearchParams(window.location.search);
+  const resetToken = params.get('token');
+
+  if (!resetToken) {
+    document.getElementById('reset-form').classList.add('hidden');
+    document.getElementById('reset-invalid').classList.remove('hidden');
+  }
+
+  resetSubmit.addEventListener('click', async () => {
+    const newPassword        = document.getElementById('reset-new-password').value;
+    const newPasswordConfirm = document.getElementById('reset-new-password-confirm').value;
+    clearAllErrors('reset-new-password-error', 'reset-new-password-confirm-error');
+
+    let hasError = false;
+
+    if (!newPassword) {
+      showError('reset-new-password-error', '새 비밀번호를 입력해주세요');
+      hasError = true;
+    } else if (newPassword.length < 6) {
+      showError('reset-new-password-error', '비밀번호는 6자 이상이어야 합니다');
+      hasError = true;
+    } else if (newPassword.length > 18) {
+      showError('reset-new-password-error', '비밀번호는 18자 이하여야 합니다');
+      hasError = true;
+    }
+
+    if (!newPasswordConfirm) {
+      showError('reset-new-password-confirm-error', '비밀번호 확인을 입력해주세요');
+      hasError = true;
+    } else if (newPassword !== newPasswordConfirm) {
+      showError('reset-new-password-confirm-error', '비밀번호가 일치하지 않습니다');
+      document.getElementById('reset-new-password').value = '';
+      document.getElementById('reset-new-password-confirm').value = '';
+      document.querySelectorAll('#reset-form .pw-toggle-btn').forEach(btn => btn.textContent = '보기');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    resetSubmit.disabled = true;
+    resetSubmit.textContent = '변경 중...';
+
+    try {
+      await apiPost('/auth/reset-password', {
+        token: resetToken,
+        new_password: newPassword,
+        new_password_confirm: newPasswordConfirm,
+      });
+      showToast('비밀번호가 변경되었습니다. 로그인해주세요.');
+      setTimeout(() => { window.location.href = '/pages/auth/login.html'; }, 1500);
+    } catch (e) {
+      document.getElementById('reset-form').classList.add('hidden');
+      document.getElementById('reset-invalid').classList.remove('hidden');
+    } finally {
+      resetSubmit.disabled = false;
+      resetSubmit.textContent = '비밀번호 변경';
+    }
+  });
+}
+
+
 // ── 초대코드로 시작하기 ──
 const inviteCodeInput = document.getElementById('invite-code');
 const inviteSignupBtn = document.getElementById('invite-signup-btn');
