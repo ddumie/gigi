@@ -12,7 +12,7 @@
     return;
   }
   if (!post) { showToast('글을 찾을 수 없습니다.'); location.href = PAGES.groupSearch; return; }
-
+  // 입력 목록(이전 값 채워진 것에서 수정)
   document.getElementById('group_type').value = post.group_type;
   document.getElementById('title').value = post.title;
   document.getElementById('description').value = post.description;

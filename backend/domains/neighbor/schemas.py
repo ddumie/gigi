@@ -54,6 +54,8 @@ class FeedPostResponse(BaseModel):
     has_my_comment_today: bool = False  # ← 추가
     class Config:
         from_attributes = True
+
+
 # 습관 피드 생성
 class HabitFeedCreate(BaseModel):
     habit_id: int

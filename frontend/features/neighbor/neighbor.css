@@ -3,7 +3,7 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
-
+/* === feed css === */
 .feed-list,
 .group-search-list {
   display: grid;
@@ -65,7 +65,7 @@
 .feed-date {
   margin-left: auto;
 }
-
+/* === 회원 별 css === */
 .member-row {
   display: flex;
   align-items: center;
@@ -275,4 +275,36 @@
 /* 공통 */
 a.btn.btn-outline.btn-sm {
   margin-bottom:1rem;
+}
+
+/* === group-search-write 빈도 css === */
+
+.day-picker {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.day-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-s);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.day-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
 }

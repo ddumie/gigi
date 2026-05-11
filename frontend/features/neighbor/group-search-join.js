@@ -1,4 +1,5 @@
 // 수정: 버튼 클릭 시에만 API 호출
+// 함께하기로 참가할 때의 로직
 document.addEventListener('DOMContentLoaded', () => {
     const post_id = new URLSearchParams(location.search).get('post_id');
     const joinBtn = document.getElementById('join-confirm-btn');

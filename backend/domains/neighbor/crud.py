@@ -11,7 +11,7 @@ from datetime import date
 
 # 글쓰기 post
 async def create_post(author_id: int, post_type: str, db: AsyncSession) -> Post:
-    # 1. 부모 Post 먼저 생성
+    # 부모 Post 먼저 생성
     db_post = Post(
         author_id=author_id,
         post_type=post_type
@@ -20,7 +20,7 @@ async def create_post(author_id: int, post_type: str, db: AsyncSession) -> Post:
     await db.flush()
     await db.refresh(db_post)
     return db_post
-
+# 글 만들기
 async def create_group_search(post_id: int, post: GroupSearchCreate, db: AsyncSession) -> GroupSearchPost:
     db_group_search = GroupSearchPost(
         post_id=post_id,
@@ -49,7 +49,7 @@ async def get_group_search(db: AsyncSession) -> list[tuple[GroupSearchPost, User
         .order_by(Post.created_at.desc())
     )
     return result.all()
-
+# 모임글 단건 조회
 async def get_group_search_detail(post_id: int, db: AsyncSession):
     result = await db.execute(
         select(GroupSearchPost, Post, User, func.count(GroupMember.id).label('member_count'))
@@ -98,7 +98,7 @@ async def delete_group_search(post_id: int, user_id: int, db: AsyncSession) -> P
     await db.commit()
     return True
 
-# 내 글보기 페이지에서 내가 쓴 글 보여주기(일단 group-search 부터)
+# 내 글보기 페이지에서 내가 쓴 모임글 보여주기
 async def get_my_group_search(user_id: int, db: AsyncSession) -> list[tuple[GroupSearchPost, User]]: 
     result = await db.execute(
         select(GroupSearchPost, Post, User, func.count(GroupMember.id).label('member_count'))
@@ -227,7 +227,7 @@ async def get_feed_comments(post_id: int, db: AsyncSession) -> list[tuple[Commen
 async def get_post(post_id: int, db: AsyncSession) -> Post | None:
     result = await db.execute(select(Post).filter(Post.id == post_id, Post.is_active == True))
     return result.scalars().first()
-
+# 댓글 등록
 async def create_feed_comment(post_id: int, content: str, user_id: int, db: AsyncSession) -> dict[str, int | str]:
     comment = Comment(post_id=post_id, author_id=user_id, content=content)
     db.add(comment)
@@ -333,6 +333,5 @@ async def get_support_info(post_id: int, user_id: int, db: AsyncSession) -> dict
                                    PostSupport.user_id == user_id)
     )
     return {"support_count": count_result.scalar(),
-            "is_supported": support_result.scalars().first() is not None,
-            }
+            "is_supported": support_result.scalars().first() is not None,}
 

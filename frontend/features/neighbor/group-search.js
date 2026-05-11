@@ -21,7 +21,7 @@ const list = document.getElementById('group-search-list');
   posts.forEach(p => {
     const article = document.createElement('article');
     article.className = 'group-search-card';
-    // 아래에 날짜 블록 추가
+    // 날짜 구분선
     const postDate = p.created_at
       ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
       : '';
@@ -32,7 +32,7 @@ const list = document.getElementById('group-search-list');
       list.appendChild(sep);
       lastDate = postDate;
     }
-    // 여기까지 추가
+    // 닉네임, 아바타, 등록 날짜 변수
     const nickname = p.author?.nickname ?? '알 수 없음';
     const firstChar = nickname.charAt(0);
     const dateStr = p.created_at
@@ -89,7 +89,7 @@ const list = document.getElementById('group-search-list');
     desc.className = 'section-copy';
     desc.textContent = p.description ?? '';
 
-    // 하단: 참여자 수 + 버튼
+    // 하단: 참여자 수 + 함께하기 버튼
     const footer = document.createElement('div');
     footer.className = 'feed-card-footer';
 
