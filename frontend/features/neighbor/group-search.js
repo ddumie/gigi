@@ -7,7 +7,7 @@
     showToast('목록을 불러오는 중 오류가 발생했습니다.');
     return;
   }
-const list = document.getElementById('group-search-list');
+  const list = document.getElementById('group-search-list');
 
   if (!posts || posts.length === 0) {
     const p = document.createElement('p');

@@ -250,7 +250,7 @@
 
 /* === feed-detail.html === */
 
-.gigi {
+.gigi-btn {
   margin-top:1.5rem;
 }
 
@@ -273,9 +273,10 @@
 }
 
 
-/* 공통 */
+/* === 공통 === */
 a.btn.btn-outline.btn-sm {
   margin-bottom:1rem;
+  width: fit-content;  
 }
 
 /* === group-search-write 빈도 css === */

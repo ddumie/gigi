@@ -1,7 +1,13 @@
 // 수정: 버튼 클릭 시에만 API 호출
 // 함께하기로 참가할 때의 로직
 document.addEventListener('DOMContentLoaded', () => {
-    const post_id = new URLSearchParams(location.search).get('post_id');
+    const params = new URLSearchParams(location.search);
+    const habitTitle = params.get('habit_title') ?? '-';
+    const frequency  = params.get('frequency')  ?? '-';
+    const summary = document.getElementById('join-summary');
+    if (summary) summary.textContent = `함께할 습관: ${habitTitle} · 빈도: ${frequency}`;
+    
+    const post_id = params.get('post_id');
     const joinBtn = document.getElementById('join-confirm-btn');
     if (!joinBtn || !post_id) return;
 
