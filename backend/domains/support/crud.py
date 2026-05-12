@@ -419,6 +419,7 @@ async def get_group_ids_by_uid(db: AsyncSession, user_id: int, limit: int = 3, o
             GroupSearchPost.frequency
         )
         .join(models.Group, models.Group.id == models.GroupMember.group_id)
+        .outerjoin(models.GroupProfile, models.GroupProfile.group_id == models.Group.id)
         .outerjoin(GroupSearchPost, GroupSearchPost.post_id == models.Group.post_id)
         .where(models.GroupMember.user_id == user_id)
         .offset(offset)

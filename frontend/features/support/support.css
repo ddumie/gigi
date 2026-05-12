@@ -102,7 +102,7 @@
 }
 
 .group-type-badge.가족{
-  background-color: var(--color-primary-hover);
+  background-color: var(--color-primary-light);
   color: var(--color-primary);
 }
 
