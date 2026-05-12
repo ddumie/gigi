@@ -151,7 +151,7 @@ async function loadComments() {
     editBtn.addEventListener('click', () => {
       document.getElementById('comment-input').value = c.content;
       document.getElementById('comment-input').focus();
-
+      // 등록 버튼 숨기고 수정완료, 취소버튼 보이게 함.
       document.getElementById('comment-submit').classList.add('hidden');
       document.getElementById('comment-edit-submit').classList.remove('hidden');
       document.getElementById('comment-edit-cancel').classList.remove('hidden');
@@ -202,6 +202,7 @@ async function loadSupport() {
 }
 
 // 댓글 관련 리스너들, 입력, 제출, 수정, 삭제
+// 등록 버튼 보이게 하고 수정완료, 취소 버튼 안 보이게 함.
 function resetCommentInput() {
   document.getElementById('comment-input').value = '';
   document.getElementById('comment-submit').classList.remove('hidden');
