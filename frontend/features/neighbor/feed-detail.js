@@ -5,7 +5,7 @@
 const params = new URLSearchParams(location.search);
 const postId = params.get('post_id');
 if (!postId) { location.href = '/pages/neighbor/feed.html'; }
-
+// 피드의 상세 내역을 보여줌.
 async function loadDetail() {
   try {
     const p = await apiGet(`/neighbor/feed/${postId}`);
@@ -20,14 +20,14 @@ async function loadDetail() {
     const header = document.createElement('div');
     header.className = 'detail-header';
 
-    // 아바타 + 닉네임 행
+    // 아바타 + 닉네임, 뱃지 행
     const memberRow = document.createElement('div');
     memberRow.className = 'member-row detail-member-row';
 
     const avatar = document.createElement('div');
     avatar.className = 'member-avatar';
     avatar.textContent = firstChar;
-
+    // 닉네임 + 뱃지
     const memberInfo = document.createElement('div');
     memberInfo.className = 'member-info';
 
@@ -39,16 +39,17 @@ async function loadDetail() {
     badge.className = 'badge badge-blue-limit';
     badge.textContent = p.category;
 
-
+    // 피드상세 카드
     memberInfo.append(memberName, badge);
     memberRow.append(avatar, memberInfo);
 
 
     // 본문
+    // 제목
     const habits_titleText = document.createElement('div');
     habits_titleText.className = 'feed-title-box'
     habits_titleText.textContent = p.habit_title ?? (p.group_name + ' 습관');
-
+    // 내용
     const body = document.createElement('p');
     body.className = 'detail-body';
     body.textContent = p.content ?? '';
@@ -86,11 +87,11 @@ async function loadComments() {
 
       const memberRow = document.createElement('div');
       memberRow.className = 'member-row comment-member-row';
-
+      // 아바타
       const avatar = document.createElement('div');
       avatar.className = 'member-avatar';
       avatar.textContent = commentFirstChar;
-
+      // 댓글 글쓴이 닉네임 + 뎃글 생성 날짜
       const memberInfo = document.createElement('div');
       memberInfo.className = 'member-info';
 
@@ -106,7 +107,7 @@ async function loadComments() {
 
       memberInfo.append(memberName, createdAt);
       memberRow.append(avatar, memberInfo);
-
+      // 댓글 본문
       const content = document.createElement('p');
       content.className = 'comment-content';
       content.textContent = c.content;
@@ -137,7 +138,7 @@ async function loadComments() {
     }
     });
 
-    // 수정 날짜 표시
+    // 수정하면 수정 날짜 표시
     if (c.updated_at) {
       const editedAt = document.createElement('span');
       editedAt.className = 'meta-text';

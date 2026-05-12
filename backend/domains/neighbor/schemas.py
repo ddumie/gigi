@@ -15,7 +15,7 @@ class GroupSearchCreate(BaseModel):
     group_type: str
     habit_title: str
     frequency: str
-    category: Optional[str] = None
+    category: str
 
 # 게시글 반응 필드
 class GroupSearchResponse(BaseModel):
