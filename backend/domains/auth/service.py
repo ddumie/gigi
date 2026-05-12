@@ -222,7 +222,11 @@ async def forgot_password(db: AsyncSession, email: str) -> None:
     await crud.save_reset_token(db, user, token, expires)
 
     reset_url = f"{settings.FRONTEND_URL}/pages/auth/reset-password.html?token={token}"
-    await send_reset_email(user.email, reset_url)
+    try:
+        await send_reset_email(user.email, reset_url)
+    except Exception:
+        await crud.clear_reset_token(db, user)
+        raise
 
 
 async def reset_password(db: AsyncSession, token: str, new_password: str) -> None:

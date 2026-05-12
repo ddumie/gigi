@@ -45,3 +45,8 @@
   cursor: pointer;
   padding: 0.25rem;
 }
+
+.auth-notice {
+  text-align: center;
+  line-height: 1.7;
+}
