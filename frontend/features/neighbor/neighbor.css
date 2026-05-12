@@ -272,13 +272,6 @@
   margin-top:0.75rem;
 }
 
-#comment-edit-submit.btn.btn-primary.btn-sm{ 
-  display:none;
-}
-
-#comment-edit-cancel.btn.btn-outline.btn-sm {
-  display:none;
-}
 
 /* 공통 */
 a.btn.btn-outline.btn-sm {

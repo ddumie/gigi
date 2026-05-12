@@ -7,7 +7,7 @@ const body = {
     description: document.getElementById('description').value,
     habit_title: document.getElementById('habit_title').value,
     frequency: getActiveDays('freq-days').join(', '),
-    category: document.getElementById('category').value || null,
+    category: document.getElementById('category').value,
 };
 
 try {

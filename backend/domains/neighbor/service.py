@@ -236,7 +236,6 @@ async def update_feed_comment_logic(comment_id: int, post_id: int, user_id: int,
 
 # 각 피드별 댓글 삭제
 async def delete_feed_comment_logic(comment_id: int, post_id: int, user_id: int, db: AsyncSession):
-    deleted = await neighbor_crud.delete_feed_comment(comment_id=comment_id, post_id=post_id, user_id=user_id, db=db)
     try:
         deleted = await neighbor_crud.delete_feed_comment(comment_id=comment_id, post_id=post_id, user_id=user_id, db=db)
     except IntegrityError:
