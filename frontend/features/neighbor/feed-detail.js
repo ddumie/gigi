@@ -2,6 +2,7 @@
 // getCurrentUserId() 함수
 
 (() => {
+  let currentEditCommentId = null;
   const params = new URLSearchParams(location.search);
   const postId = params.get('post_id');
   if (!postId) { location.href = '/pages/neighbor/feed.html'; return; }
@@ -149,29 +150,13 @@
           }
 
           editBtn.addEventListener('click', () => {
+            currentEditCommentId = c.id
             document.getElementById('comment-input').value = c.content;
             document.getElementById('comment-input').focus();
             // 등록 버튼 숨기고 수정완료, 취소버튼 보이게 함.
             document.getElementById('comment-submit').classList.add('hidden');
             document.getElementById('comment-edit-submit').classList.remove('hidden');
             document.getElementById('comment-edit-cancel').classList.remove('hidden');
-
-            // 이전에 등록된 이벤트 리스너를 교체하기 위해 복제
-            const oldSave = document.getElementById('comment-edit-submit');
-            const newSave = oldSave.cloneNode(true);
-            oldSave.replaceWith(newSave);
-
-            newSave.addEventListener('click', async () => {
-              const newContent = document.getElementById('comment-input').value.trim();
-              if (!newContent) return;
-              try {
-                await apiPut(`/neighbor/feed/${postId}/comments/${c.id}`,{ content: newContent });
-                resetCommentInput();
-                await loadComments();
-              } catch {
-                showToast('네트워크 오류가 발생했습니다.');
-              }
-            });
           });
 
           card.appendChild(editRow);
@@ -211,6 +196,20 @@
   document.getElementById('comment-edit-cancel').addEventListener('click', () => {
     resetCommentInput();
   });
+  document.getElementById('comment-edit-submit').addEventListener('click', async () => {
+    if (!currentEditCommentId) return;
+    const newContent = document.getElementById('comment-input').value.trim();
+    if (!newContent) return;
+    try {
+      await apiPut(`/neighbor/feed/${postId}/comments/${currentEditCommentId}`, { content: newContent });
+      currentEditCommentId = null;
+      resetCommentInput();
+      await loadComments();
+    } catch {
+      showToast('네트워크 오류가 발생했습니다.');
+    }
+  });
+
 
   document.getElementById('comment-submit').addEventListener('click', async () => {
     const content = document.getElementById('comment-input').value.trim();
