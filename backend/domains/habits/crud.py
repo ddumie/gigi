@@ -15,7 +15,11 @@ logger = logging.getLogger(__name__)
 async def get_active_habit_titles(db: AsyncSession, user_id: int) -> list[str]:
     """활성 습관 제목 목록 반환 (AI 추천 중복 제외용)"""
     result = await db.execute(
-        select(Habit.title).where(Habit.user_id == user_id, Habit.is_active == True)
+        select(Habit.title).where(
+            Habit.user_id == user_id,
+            Habit.is_active == True,
+            Habit.title != None,  # noqa: E711 — 모임 연동 습관은 title NULL, AI 비교 대상 제외
+        )
     )
     return list(result.scalars().all())
 
