@@ -144,7 +144,7 @@ function renderChecklist(habits, stats) {
     const isShareOpen = openShareComposer?.habitId === h.id && checked;
     const habitTitle = escapeHtml(h.title);
     const category = escapeHtml(h.category);
-    const repeatType = escapeHtml(h.repeat_type);
+    const repeatType = escapeHtml(formatRepeatForDisplay(h.repeat_type));
 
     return `
       <div class="today-habit-block" data-habit-id="${h.id}">
