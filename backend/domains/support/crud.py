@@ -572,14 +572,16 @@ async def get_personal_habits(db: AsyncSession, user_id: int):
     result = await db.execute(
         select(
             Habit.id,
-            Habit.title,
-            Habit.category,
+            func.coalesce(Habit.title, GroupSearchPost.habit_title).label("title"),
+            func.coalesce(Habit.category, GroupSearchPost.category).label("category"),
             (HabitCheck.id.isnot(None).label("is_checked"))
         )
         .outerjoin(
             HabitCheck,
             (Habit.id == HabitCheck.habit_id) & (HabitCheck.checked_date == today)
         )
+        .outerjoin(models.Group, models.Group.id == Habit.group_id)
+        .outerjoin(GroupSearchPost, GroupSearchPost.post_id == models.Group.post_id)
         .where(
             Habit.user_id == user_id,
             Habit.is_active == True,
