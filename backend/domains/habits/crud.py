@@ -1,3 +1,4 @@
+import calendar
 import logging
 from datetime import date, timedelta
 from sqlalchemy import select, func, and_
@@ -270,11 +271,7 @@ async def get_monthly_check_counts(
 ) -> dict[date, int]:
     """이번 달 각 날짜에 체크된 습관 수를 {date: count}로 반환 (미니 달력 진행률용)."""
     start = date(year, month, 1)
-    # 다음 달 1일 - 1일 = 이번 달 마지막 날
-    if month == 12:
-        end = date(year + 1, 1, 1) - timedelta(days=1)
-    else:
-        end = date(year, month + 1, 1) - timedelta(days=1)
+    end   = date(year, month, calendar.monthrange(year, month)[1])
 
     result = await db.execute(
         select(HabitCheck.checked_date, func.count(HabitCheck.id))

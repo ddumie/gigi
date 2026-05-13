@@ -1,3 +1,4 @@
+import calendar
 from datetime import date, timedelta
 
 DAY_MAP = {0: '월', 1: '화', 2: '수', 3: '목', 4: '금', 5: '토', 6: '일'}
@@ -109,8 +110,7 @@ async def get_today_dashboard(
     # 이번 달 일별 진행률 (미니 달력 셀 채움 + 클릭 툴팁용)
     # total은 "그 날 시점에 이미 존재했던 활성 습관 수"로 계산 (등록 전 날짜는 0)
     monthly_counts = await habits_crud.get_monthly_check_counts(db, user_id, today.year, today.month)
-    last_day       = (date(today.year + (1 if today.month == 12 else 0),
-                            1 if today.month == 12 else today.month + 1, 1) - timedelta(days=1)).day
+    last_day       = calendar.monthrange(today.year, today.month)[1]
     habit_created_dates = [h.created_at.date() for h in habits if h.created_at]
 
     monthly_progress = []
