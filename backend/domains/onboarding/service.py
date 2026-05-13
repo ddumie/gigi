@@ -88,7 +88,7 @@ async def get_ai_recommendations(age_group: str | None, health_interests: list[s
 
 async def save_selected_habits(db: AsyncSession, user_id: int, selected: list[AIHabitItem]) -> None:
     """AI 추천 습관 저장과 온보딩 완료처리"""
-    if not selected:  # 라우터에서도 확인으로 이중체크 중
+    if not selected:  
         raise ValueError("습관을 하나 이상 선택해주세요.")
     from backend.domains.habits.crud import get_active_habit_titles
     existing = {t.lower() for t in await get_active_habit_titles(db, user_id)}
