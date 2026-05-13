@@ -29,13 +29,16 @@ def _is_valid_repeat_type(v: str) -> bool:
 
 
 class HabitCreate(BaseModel):
-    title:            str        = Field(..., min_length=1, max_length=100)
-    category:         str        = Field(..., description=" | ".join(HABIT_CATEGORIES))
-    time:             str | None = Field(None, description="예: 07:00")
-    repeat_type:      str        = Field("매일", description=" | ".join(HABIT_REPEAT_TYPES))
-    description:      str        = ""
-    is_ai_recommended: bool      = False
-    group_id:         int | None = None
+    """일반 사용자용 개인 습관 생성 요청.
+
+    모임 습관은 support 도메인의 가입 흐름에서 ``create_group_habit``으로 생성하므로
+    이 스키마에는 ``group_id``를 노출하지 않는다 (임의 그룹 끼워넣기 방지).
+    """
+    title:       str        = Field(..., min_length=1, max_length=100)
+    category:    str        = Field(..., description=" | ".join(HABIT_CATEGORIES))
+    time:        str | None = Field(None, description="예: 07:00")
+    repeat_type: str        = Field("매일", description=" | ".join(HABIT_REPEAT_TYPES))
+    description: str        = ""
 
     @field_validator("category")
     @classmethod
