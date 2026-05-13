@@ -191,7 +191,8 @@ function render() {
     const isHidden = h.is_hidden_from_group;
     const badges  = [];
 
-    badges.push(`<span class="badge badge-blue">${h.repeat_type}</span>`);
+    const repeatDisplay = formatRepeatForDisplay(h.repeat_type);
+    badges.push(`<span class="badge badge-blue">${repeatDisplay}</span>`);
     if (h.is_ai_recommended) badges.push('<span class="badge badge-amber">AI</span>');
     if (isGroup)             badges.push('<span class="badge badge-green">모임</span>');
     if (isHidden)            badges.push('<span class="badge badge-gray">숨김</span>');
@@ -207,7 +208,7 @@ function render() {
           <div class="habit-info">
             <div class="habit-title">${h.title}</div>
             ${h.description ? `<div class="habit-desc">${h.description}</div>` : ''}
-            <div class="habit-sub">${h.repeat_type} · ${h.category}${isGroup ? ' · 모임 연동' : ''}</div>
+            <div class="habit-sub">${repeatDisplay} · ${h.category}${isGroup ? ' · 모임 연동' : ''}</div>
           </div>
           <div class="habit-actions">
             ${badges.join('')}

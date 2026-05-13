@@ -180,6 +180,16 @@ function getRepeatFromDays(containerId) {
   return daysToPreset(getActiveDays(containerId));
 }
 
+// 표시 전용 — 어떤 포맷이든 입력받아 '매일'/'평일'/'주말' 또는 '월, 수, 금'으로 정규화
+// (개인 습관 '월수금', 모임 frequency '월, 수, 금' 등 양쪽 입력 통일 표시용)
+function formatRepeatForDisplay(repeat) {
+  const days = parseRepeatToDays(repeat);
+  if (!days || days.length === 0 || days.length === 7) return '매일';
+  if (days.length === 5 && WEEKDAY_DAYS.every(d => days.includes(d))) return '평일';
+  if (days.length === 2 && WEEKEND_DAYS.every(d => days.includes(d))) return '주말';
+  return KOREAN_DAYS.filter(d => days.includes(d)).join(', ');
+}
+
 // 요일 피커 — 매일 버튼 클릭 시 전체 토글
 function toggleAllDays(btn) {
   const picker = btn.closest('.day-picker');
