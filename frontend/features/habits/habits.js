@@ -223,9 +223,11 @@ function render() {
         <div class="habit-card-edit">
           <input type="text" class="input edit-input" id="edit-title-${h.id}"
                  value="${safeTitle}" placeholder="습관 이름">
-          <input type="text" class="input edit-input" id="edit-desc-${h.id}"
-                 value="${(h.description || '').replaceAll('"', '&quot;')}" placeholder="설명 (예: 매일 아침 7시, 10분 스트레칭)"
-                 ${h.is_ai_recommended ? 'readonly' : ''}>
+          ${h.is_ai_recommended
+            ? `<input type="hidden" id="edit-desc-${h.id}" value="${(h.description || '').replaceAll('"', '&quot;')}">`
+            : `<input type="text" class="input edit-input" id="edit-desc-${h.id}"
+                 value="${(h.description || '').replaceAll('"', '&quot;')}" placeholder="설명 (예: 매일 아침 7시, 10분 스트레칭)">`
+          }
           <select class="input" id="edit-cat-${h.id}">
             <option value="운동"  ${h.category==='운동'  ? 'selected':''}>운동</option>
             <option value="복약"  ${h.category==='복약'  ? 'selected':''}>복약</option>

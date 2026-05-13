@@ -55,7 +55,10 @@
       body.className = 'detail-body';
       body.textContent = p.content ?? '';
 
-      el.append(header, memberRow, titleBox, body);
+      const postCard = document.createElement('div');
+      postCard.className = 'feed-card';
+      postCard.append(header, memberRow, titleBox, body);
+      el.append(postCard);
     } catch (e) {
       console.error('피드 로드 실패', e);
       showToast('피드를 불러오는 중 오류가 발생했습니다.');
