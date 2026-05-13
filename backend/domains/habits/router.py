@@ -42,7 +42,11 @@ async def create_habit(
     current_user: User    = Depends(get_current_user),
 ):
     is_first = not await has_any_habit(db, current_user.id)
-    habit = await service.create_habit(db, current_user.id, data)
+    try:
+        habit = await service.create_habit(db, current_user.id, data)
+    except ValueError as e:
+        # DB 예외 등으로 crud에서 던진 경우 — 본문 비어있는 500이 아니라 detail 포함한 500을 반환
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     payload = await service.build_habit_response(db, habit)
     return {**payload, "is_first_habit": is_first}
 
