@@ -5,7 +5,7 @@
   // 전체 목록에서 해당 글 찾아 폼에 채우기
   let post;
   try {
-  post = await apiGet(`/neighbor/group-search/${postId}`);
+    post = await apiGet(`/neighbor/group-search/${postId}`);
   } catch {
     showToast('글을 불러오는 중 오류가 발생했습니다.');
     location.href = PAGES.groupSearch;

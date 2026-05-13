@@ -36,7 +36,6 @@ async function renderFeed(posts) {
     const firstChar = nickname.charAt(0);
     const timeAgo = formatRelativeTime(p.created_at);
 
-      
     const header = document.createElement('div');
     header.className = 'feed-card-header';
 
@@ -78,17 +77,17 @@ async function renderFeed(posts) {
     // 개인습관, group에 포함된 습관 여부 확인 후 표시
     const groupBadge = document.createElement('span');
     if (p.group_id && p.group_name && p.is_member) {
-        groupBadge.className = 'badge badge-green';
-        groupBadge.textContent = p.group_name;
+      groupBadge.className = 'badge badge-green';
+      groupBadge.textContent = p.group_name;
     } else if (p.group_id && !p.group_name) {
-        groupBadge.className = 'badge badge-gray';
-        groupBadge.textContent = '없어진 모임입니다.';
+      groupBadge.className = 'badge badge-gray';
+      groupBadge.textContent = '없어진 모임입니다.';
     } else if (p.group_id && p.group_name && !p.is_member) {
-        groupBadge.className = 'badge badge-gray';
-        groupBadge.textContent = `탈퇴한 모임 · ${p.group_name}`;
+      groupBadge.className = 'badge badge-gray';
+      groupBadge.textContent = `탈퇴한 모임 · ${p.group_name}`;
     } else {
-        groupBadge.className = 'badge badge-gray';
-        groupBadge.textContent = '개인 습관';
+      groupBadge.className = 'badge badge-gray';
+      groupBadge.textContent = '개인 습관';
     }
     groupLabel.appendChild(groupBadge);
 
@@ -124,30 +123,30 @@ async function renderFeed(posts) {
     let is_supported = p.is_supported ?? false;
     btn.textContent = `🔥 지지 ${p.support_count ?? 0}`;
     if (p.is_supported) btn.classList.replace('btn-outline', 'btn-primary');
-   
-  btn.addEventListener('click', async () => {
-    try {
-      const data = await apiPost(`/neighbor/feed/${p.post_id}/support`);
-      is_supported = data.is_supported;
-      btn.textContent = `🔥 지지 ${data.support_count}`;
-      is_supported ? btn.classList.replace('btn-outline', 'btn-primary') : btn.classList.replace('btn-primary', 'btn-outline');
-    } catch {
-      showToast('네트워크 오류가 발생했습니다.');
-    }
-  });
 
-  // 댓글수와 오늘 단 댓글 있는 경우 여부 표시  
+    btn.addEventListener('click', async () => {
+      try {
+        const data = await apiPost(`/neighbor/feed/${p.post_id}/support`);
+        is_supported = data.is_supported;
+        btn.textContent = `🔥 지지 ${data.support_count}`;
+        is_supported ? btn.classList.replace('btn-outline', 'btn-primary') : btn.classList.replace('btn-primary', 'btn-outline');
+      } catch {
+        showToast('네트워크 오류가 발생했습니다.');
+      }
+    });
+
+    // 댓글수와 오늘 단 댓글 있는 경우 여부 표시
     const commentBtn = document.createElement('button');
     commentBtn.type = 'button';
     commentBtn.className = 'btn btn-outline btn-sm';
     commentBtn.textContent = `💬 댓글 ${p.comment_count ?? 0}`;
-    
+
     if (p.has_my_comment_today) {
       commentBtn.classList.replace('btn-outline', 'btn-primary');
     }
 
     commentBtn.addEventListener('click', () => {
-    location.href = `/pages/neighbor/feed-detail.html?post_id=${p.post_id}`;
+      location.href = `/pages/neighbor/feed-detail.html?post_id=${p.post_id}`;
     });
 
     const dateEl = document.createElement('span');
@@ -158,7 +157,7 @@ async function renderFeed(posts) {
     article.append(header, titleBox, groupLabel, body, actions);
     list.appendChild(article);
   }
-}    
+}
 
 // 카테고리 필터 칩 연결
 function initCategoryFilter() {

@@ -2,19 +2,19 @@
 (async () => {
   let groupPosts, feedResult;
   try {
-  [groupPosts, feedResult] = await Promise.all([
-    apiGet('/neighbor/group-search/my'),
-    apiGet('/neighbor/feed/my')
-  ]);
-} catch {
-  showToast('데이터를 불러오는 중 오류가 발생했습니다.');
-  return;
-}
-// 모임, 습관피드 긱긱 병렬적으로 포스팅
-if (!groupPosts || !feedResult) {
-  showToast('데이터를 불러올 수 없습니다.');
-  return;
-}
+    [groupPosts, feedResult] = await Promise.all([
+      apiGet('/neighbor/group-search/my'),
+      apiGet('/neighbor/feed/my')
+    ]);
+  } catch {
+    showToast('데이터를 불러오는 중 오류가 발생했습니다.');
+    return;
+  }
+  // 모임, 습관피드 긱긱 병렬적으로 포스팅
+  if (!groupPosts || !feedResult) {
+    showToast('데이터를 불러올 수 없습니다.');
+    return;
+  }
   // 오늘 습관 완료 여부 전달
   const feedPosts = feedResult.posts ?? [];
   const allHabitsDone = feedResult.today_all_done;
@@ -28,7 +28,7 @@ if (!groupPosts || !feedResult) {
     article.className = 'group-search-card';
     article.hidden = true;
 
-    // 날짜 버튼에 오늘 모임 목록 조회. 
+    // 날짜 버튼에 오늘 모임 목록 조회.
     // arrow로 보였다 숨기기 할 수 있음.
     const postDate = p.created_at
       ? new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -93,7 +93,7 @@ if (!groupPosts || !feedResult) {
       // 기본적으로 오늘 한 습관피드는 디폴트로 보여지게 함.
       const arrow = document.createElement('span');
       arrow.className = 'date-arrow';
-      arrow.textContent = postDate === todayStr ? ' ▼' : ' ▶'; 
+      arrow.textContent = postDate === todayStr ? ' ▼' : ' ▶';
       sep.appendChild(arrow);
 
       // 오늘 습관 모두 완료했으면 '모두 완료' 뜨도록 함
@@ -119,7 +119,7 @@ if (!groupPosts || !feedResult) {
       lastDateFd = postDate;
     }
     // 본문
-    
+
     const title = document.createElement('strong');
     title.textContent = `${p.category} 완료 · ${p.habit_title ?? (p.group_name ? p.group_name + ' 습관' : '')}`;
 
@@ -130,5 +130,3 @@ if (!groupPosts || !feedResult) {
     list_f.appendChild(article);
   });
 })();
-
-
