@@ -215,7 +215,7 @@ async def forgot_password(db: AsyncSession, email: str) -> None:
     """
     user = await crud.get_user_by_email(db, email)
     if not user or not user.is_active:
-        return
+        raise ValueError("가입되지 않은 이메일입니다")
 
     token = secrets.token_urlsafe(32)
     expires = datetime.now(timezone.utc) + timedelta(minutes=30)
