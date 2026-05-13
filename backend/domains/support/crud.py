@@ -100,7 +100,18 @@ async def get_members_achievement(db: AsyncSession, members: list[models.GroupMe
         .where(
             Habit.user_id.in_(user_ids),
             Habit.is_active == True,
-            Habit.repeat_type.contains(weekday_str)
+            (
+                Habit.repeat_type.contains(weekday_str) |
+                (Habit.repeat_type == "매일") |
+                (
+                    (Habit.repeat_type == "평일") &
+                    (weekday_str in ["월", "화", "수", "목", "금"])
+                ) |
+                (
+                    (Habit.repeat_type == "주말") &
+                    (weekday_str in ["토", "일"])
+                )
+            )
         )
         .group_by(Habit.user_id)
     )
@@ -110,7 +121,18 @@ async def get_members_achievement(db: AsyncSession, members: list[models.GroupMe
         .where(
             Habit.user_id.in_(user_ids),
             Habit.is_active == True,
-            Habit.repeat_type.contains(weekday_str),
+            (
+                Habit.repeat_type.contains(weekday_str) |
+                (Habit.repeat_type == "매일") |
+                (
+                    (Habit.repeat_type == "평일") &
+                    (weekday_str in ["월", "화", "수", "목", "금"])
+                ) |
+                (
+                    (Habit.repeat_type == "주말") &
+                    (weekday_str in ["토", "일"])
+                )
+            ),
             HabitCheck.checked_date == target_date
         )
         .group_by(Habit.user_id)
@@ -554,12 +576,26 @@ async def get_personal_habits(db: AsyncSession, user_id: int):
             Habit.category,
             (HabitCheck.id.isnot(None).label("is_checked"))
         )
-        .outerjoin(HabitCheck, (Habit.id == HabitCheck.habit_id) & (HabitCheck.checked_date == today))
+        .outerjoin(
+            HabitCheck,
+            (Habit.id == HabitCheck.habit_id) & (HabitCheck.checked_date == today)
+        )
         .where(
             Habit.user_id == user_id,
             Habit.is_active == True,
             Habit.is_hidden_from_group == False,
-            Habit.repeat_type.contains(weekday_str)
+            (
+                Habit.repeat_type.contains(weekday_str) |
+                (Habit.repeat_type == "매일") |
+                (
+                    (Habit.repeat_type == "평일") &
+                    (weekday_str in ["월", "화", "수", "목", "금"])
+                ) |
+                (
+                    (Habit.repeat_type == "주말") &
+                    (weekday_str in ["토", "일"])
+                )
+            )
         )
     )
     return result.mappings().all()
