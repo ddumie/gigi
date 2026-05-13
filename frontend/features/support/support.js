@@ -12,13 +12,6 @@ let loading = false;
 let hasMore = true;
 
 // 빈도 변환
-function formatFrequency(freqStr) {
-  if (!freqStr) return "";
-
-  const days = parseRepeatToDays(freqStr);
-  return daysToPreset(days);
-}
-
 // 경험치 단계 계산 함수
 function getLevelInfo(exp) {
   if (exp < 50) {
@@ -142,7 +135,7 @@ async function loadGroups() {
       if (group.habit && group.frequency) {
         const habitBox = document.createElement("div");
         habitBox.className = "habit-box";
-        habitBox.textContent = `📌 함께하는 습관: ${group.habit} · ${formatFrequency(group.frequency)}`;
+        habitBox.textContent = `📌 함께하는 습관: ${group.habit} · ${formatRepeatForDisplay(group.frequency)}`;
         card.appendChild(habitBox);
       }
 

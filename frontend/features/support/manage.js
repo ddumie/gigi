@@ -37,7 +37,7 @@ async function loadGroupSettings() {
       habitBox.style.marginTop = "0.75rem";
       habitBox.innerHTML = `
         <div style="font-size:0.75rem;font-weight:500;margin-bottom:0.4rem;">함께하는 습관</div>
-        <input id="group-habit" class="inp habit-field" value="${group.habit} · ${group.frequency}" disabled>
+        <input id="group-habit" class="inp habit-field" value="${group.habit} · ${formatRepeatForDisplay(group.frequency)}" disabled>
       `;
       const groupInfoBox = document.querySelector(".group-info-box");
       const saveBtnBox = groupInfoBox.querySelector(".page-actions");

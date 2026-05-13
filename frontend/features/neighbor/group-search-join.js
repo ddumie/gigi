@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const habitTitle = params.get('habit_title') ?? '-';
     const frequency  = params.get('frequency')  ?? '-';
     const summary = document.getElementById('join-summary');
-    if (summary) summary.textContent = `함께할 습관: ${habitTitle} · 빈도: ${frequency}`;
+    if (summary) summary.textContent = `함께할 습관: ${habitTitle} · 빈도: ${formatRepeatForDisplay(frequency)}`;
     
     const post_id = params.get('post_id');
     const joinBtn = document.getElementById('join-confirm-btn');

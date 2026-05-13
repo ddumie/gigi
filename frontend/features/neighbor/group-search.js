@@ -82,7 +82,7 @@
     const meta = document.createElement('p');
     meta.className = 'meta-text detail-meta-text';
     const categoryLabel = p.category ? ` · #${p.category}` : '';
-    meta.textContent = `${p.group_type}${categoryLabel} · 함께할 습관: ${p.habit_title} · ${p.frequency}`;
+    meta.textContent = `${p.group_type}${categoryLabel} · 함께할 습관: ${p.habit_title} · ${formatRepeatForDisplay(p.frequency)}`;
 
     // 글 세부내용 (description)
     const desc = document.createElement('p');
