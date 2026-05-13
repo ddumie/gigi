@@ -25,27 +25,61 @@ from backend.domains.today.schemas import (
 )
 
 
+# ── 습관 메타 수집 (날짜별 예정 습관 판정에 필요) ──
+
+async def _collect_habit_metas(db: AsyncSession, habits: list) -> list[dict]:
+    """각 습관의 repeat_type/생성일을 모아둔다. 모임 습관은 Post 값으로 해석."""
+    from backend.domains.habits import service as habits_service
+    metas = []
+    for h in habits:
+        meta = await habits_service.resolve_habit_meta(db, h)
+        metas.append({
+            "id":           h.id,
+            "repeat_type":  meta["repeat_type"],
+            "created_date": h.created_at.date() if h.created_at else date.min,
+        })
+    return metas
+
+
+def _scheduled_on(metas: list[dict], check_date: date) -> list[dict]:
+    """그 날짜에 예정된 습관만 필터 (생성일 이후 + repeat_type 매치)."""
+    return [
+        m for m in metas
+        if m["created_date"] <= check_date
+        and _is_habit_for_today(m["repeat_type"], check_date)
+    ]
+
+
 # ── 연속 달성일 계산 ──
 
 async def _calc_streak(db: AsyncSession, user_id: int, today: date) -> int:
-    """오늘부터 역순으로 모든 활성 습관을 완료한 연속 일수를 계산한다."""
+    """오늘부터 역순으로 그 날 예정된 습관을 모두 완료한 연속 일수를 계산한다.
+
+    예정된 습관이 0개인 날(예: 주말 전용만 있는 화요일)은 streak를 깨지 않고 건너뛴다.
+    """
     habits = await habits_crud.get_habits(db, user_id)
     if not habits:
         return 0
 
-    habit_ids = {h.id for h in habits}
-    total     = len(habit_ids)
+    metas     = await _collect_habit_metas(db, habits)
+    habit_ids = {m["id"] for m in metas}
     start     = today - timedelta(days=29)
     checks    = await habits_crud.get_checks_bulk(db, habit_ids, start, today)
 
     streak = 0
     for days_ago in range(30):
-        check_date  = today - timedelta(days=days_ago)
-        day_checked = sum(1 for h_id in habit_ids if (h_id, check_date) in checks)
+        check_date = today - timedelta(days=days_ago)
+        scheduled  = _scheduled_on(metas, check_date)
+        if not scheduled:
+            # 그 날 예정된 습관 없음 → streak 유지하고 건너뛰기
+            continue
+        total       = len(scheduled)
+        day_checked = sum(1 for m in scheduled if (m["id"], check_date) in checks)
         if day_checked == total:
             streak += 1
         else:
             if days_ago == 0:
+                # 오늘은 아직 미완료여도 streak 깨지 않음
                 continue
             break
 
@@ -55,20 +89,24 @@ async def _calc_streak(db: AsyncSession, user_id: int, today: date) -> int:
 # ── 이번 주 평균 달성률 ──
 
 async def _calc_weekly_average(db: AsyncSession, user_id: int, today: date) -> int:
-    """최근 7일간의 일별 달성률 평균을 계산한다."""
+    """최근 7일간 일별 달성률 평균. 예정 습관 없는 날은 평균에서 제외."""
     habits = await habits_crud.get_habits(db, user_id)
     if not habits:
         return 0
 
-    habit_ids   = {h.id for h in habits}
-    total       = len(habit_ids)
+    metas       = await _collect_habit_metas(db, habits)
+    habit_ids   = {m["id"] for m in metas}
     start       = today - timedelta(days=6)
     checks      = await habits_crud.get_checks_bulk(db, habit_ids, start, today)
     daily_rates = []
 
     for days_ago in range(7):
-        check_date  = today - timedelta(days=days_ago)
-        day_checked = sum(1 for h_id in habit_ids if (h_id, check_date) in checks)
+        check_date = today - timedelta(days=days_ago)
+        scheduled  = _scheduled_on(metas, check_date)
+        if not scheduled:
+            continue  # 예정 습관 없는 날은 평균 계산에서 제외
+        total       = len(scheduled)
+        day_checked = sum(1 for m in scheduled if (m["id"], check_date) in checks)
         daily_rates.append(round(day_checked / total * 100))
 
     return round(sum(daily_rates) / len(daily_rates)) if daily_rates else 0
