@@ -210,6 +210,7 @@ async function loadGroups() {
             button.textContent = m.supported_today ? "오늘 지지 완료" : "지지하기";
             button.disabled = m.supported_today;
             button.addEventListener("click", () => {
+              event.stopPropagation();
               sendSupport(group.id, m.user_id, button, card);
             });
           }
