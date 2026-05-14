@@ -106,7 +106,7 @@
   color: var(--color-primary);
 }
 
-.group-type-badge.친구-모임{
+.group-type-badge.친구{
   background-color: var(--color-amber-light);
   color: var(--color-amber);
 }
