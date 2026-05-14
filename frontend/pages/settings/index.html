@@ -26,10 +26,10 @@
   <main>
     <div class="container page-shell">
       <header class="page-header">
-        <div class="section-eyebrow">Settings</div>
-        <h1 class="page-title">내 설정</h1>
-        <p class="page-subtitle">글씨 크기, 닉네임, 비밀번호를 여기서 바꿀 수 있어요.
-</p>
+        <div class="title-stack">
+          <h1 class="page-title">나의 설정</h1>
+          <p class="page-subtitle">글씨 크기, 프로필, 비밀번호를 여기서 바꿀 수 있어요.</p>
+        </div>
       </header>
       <div class="settings-grid">
         <section class="card">
@@ -72,17 +72,26 @@
           <div id="password-change-form" class="hidden">
             <div class="pw-input-wrap">
               <input id="current-password" class="input-field" type="password" placeholder="현재 비밀번호">
-              <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('current-password', this)">보기</button>
+              <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('current-password', this)" aria-label="비밀번호 보기">
+                <svg class="pw-eye-icon pw-eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-eye-icon pw-eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-7-10-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
             </div>
             <div id="current-password-error" class="input-error hidden"></div>
             <div class="pw-input-wrap">
               <input id="new-password" class="input-field" type="password" placeholder="새 비밀번호 (6자 이상 18자 이하)">
-              <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('new-password', this)">보기</button>
+              <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('new-password', this)" aria-label="비밀번호 보기">
+                <svg class="pw-eye-icon pw-eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-eye-icon pw-eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-7-10-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
             </div>
             <div id="new-password-error" class="input-error hidden"></div>
             <div class="pw-input-wrap">
               <input id="new-password-confirm" class="input-field" type="password" placeholder="새 비밀번호 확인">
-              <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('new-password-confirm', this)">보기</button>
+              <button type="button" class="pw-toggle-btn" onclick="togglePwVisibility('new-password-confirm', this)" aria-label="비밀번호 보기">
+                <svg class="pw-eye-icon pw-eye-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-eye-icon pw-eye-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-7-10-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
             </div>
             <div id="new-password-confirm-error" class="input-error hidden"></div>
             <div class="page-actions">

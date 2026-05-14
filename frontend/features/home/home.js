@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initGreeting() {
   const user = getCurrentUser();
   if (user) {
-    $greeting.textContent = `안녕하세요, ${user.nickname}님`;
+    $greeting.textContent = `안녕하세요, ${user.nickname}님!`;
   }
 
   const now  = new Date();

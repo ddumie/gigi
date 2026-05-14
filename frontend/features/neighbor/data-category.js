@@ -141,9 +141,6 @@ async function renderFeed(posts) {
     commentBtn.className = 'btn btn-outline btn-sm';
     commentBtn.textContent = `💬 댓글 ${p.comment_count ?? 0}`;
 
-    if (p.has_my_comment_today) {
-      commentBtn.classList.replace('btn-outline', 'btn-primary');
-    }
 
     commentBtn.addEventListener('click', () => {
       location.href = `/pages/neighbor/feed-detail.html?post_id=${p.post_id}`;
@@ -165,21 +162,24 @@ function initCategoryFilter() {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-
+      
       const category = chip.dataset.category;
-      if (category === 'group-search') {
-        location.href = '/pages/neighbor/group-search.html';
-        return;
-      }
       let filtered;
+      
       if (category === 'all') {
         filtered = allPosts;
-      } else if (category === 'my') {
-        const me = getCurrentUser();
-        filtered = me ? allPosts.filter(p => p.author?.id === me.id) : [];
+      } else if (category === 'group-search') {
+        location.href = '/pages/neighbor/group-search.html';
+        return;
+      } else if (category === 'my-posts') {
+        location.href = '/pages/neighbor/my-posts.html';
+        return;
       } else {
         filtered = allPosts.filter(p => p.category === category);
       }
+
+      const writeBtn = document.getElementById('group-search-write-btn');
+      if (writeBtn) writeBtn.classList.toggle('hidden', category !== 'group-search');
 
       renderFeed(filtered);
     });

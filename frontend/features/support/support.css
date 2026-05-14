@@ -3,8 +3,13 @@
   display: flex;
   flex-direction: row;              /* 기본은 가로 배치 */
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;            /* 버튼을 제목 아래 급으로 정렬 */
   gap: 1rem;
+}
+
+/* 페이지 액션 영역 — 제목보다 아래 급으로 시각적 강조 */
+.page-header .page-actions {
+  margin-top: 0.75rem;
 }
 
 /* 모바일 화면 대응 */

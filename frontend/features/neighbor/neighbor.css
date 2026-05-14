@@ -3,38 +3,6 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
-
-/* 특수 칩 — 전체 / 모임 구해요 / 내 글 */
-.chip.chip-all {
-  background: #ede9fe;
-  color: #5b21b6;
-  border-color: #c4b5fd;
-}
-.chip.chip-all.active, .chip.chip-all:hover {
-  background: #7c3aed;
-  color: #fff;
-  border-color: #7c3aed;
-}
-.chip.chip-group-search {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #6ee7b7;
-}
-.chip.chip-group-search.active, .chip.chip-group-search:hover {
-  background: #059669;
-  color: #fff;
-  border-color: #059669;
-}
-.chip.chip-my {
-  background: #fce7f3;
-  color: #9d174d;
-  border-color: #f9a8d4;
-}
-.chip.chip-my.active, .chip.chip-my:hover {
-  background: #db2777;
-  color: #fff;
-  border-color: #db2777;
-}
 /* === feed css === */
 .feed-list,
 .group-search-list {
@@ -70,6 +38,13 @@
   background: var(--color-border-light);
   color: var(--color-text);
 }
+
+/* 카테고리별 뱃지 색상 (오늘 탭과 동일) */
+.feed-card[data-category="운동"] .feed-category-badge { background: var(--color-green-light);   color: var(--color-green); }
+.feed-card[data-category="복약"] .feed-category-badge { background: var(--color-primary-light); color: var(--color-primary); }
+.feed-card[data-category="식단"] .feed-category-badge { background: var(--color-coral-light);   color: var(--color-coral); }
+.feed-card[data-category="수면"] .feed-category-badge { background: var(--color-ai-light);      color: var(--color-ai); }
+.feed-card[data-category="기타"] .feed-category-badge { background: var(--color-border-light);  color: var(--color-text-s); }
 
 .feed-title-box {
   display: flex;
@@ -254,6 +229,38 @@
   margin-top:0.5rem;
 }
 
+/* 카테고리 칩 — 기본 색상 (항상 표시) */
+.chip[data-category="all"]  { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+.chip[data-category="운동"] { background: var(--color-green-light);   color: var(--color-green);   border-color: var(--color-green); }
+.chip[data-category="복약"] { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
+.chip[data-category="식단"] { background: var(--color-coral-light);   color: var(--color-coral);   border-color: var(--color-coral); }
+.chip[data-category="수면"] { background: var(--color-ai-light);      color: var(--color-ai);      border-color: var(--color-ai); }
+.chip[data-category="기타"] { background: var(--color-border-light);  color: var(--color-text-s);  border-color: var(--color-text-s); }
+.chip[data-category="my"]   { background: #d1fae5;                    color: #065f46;              border-color: #6ee7b7; }
+.chip[data-category="group-search"] { background: #fce7f3;            color: #9d174d;              border-color: #f9a8d4; }
+
+/* 카테고리 칩 — 활성 상태 (배경 진하게, 글자 흰색) */
+.chip[data-category="all"].active  { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.chip[data-category="운동"].active { background: var(--color-green);   color: #fff; border-color: var(--color-green); }
+.chip[data-category="복약"].active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.chip[data-category="식단"].active { background: var(--color-coral);   color: #fff; border-color: var(--color-coral); }
+.chip[data-category="수면"].active { background: var(--color-ai);      color: #fff; border-color: var(--color-ai); }
+.chip[data-category="기타"].active { background: var(--color-text-s);  color: #fff; border-color: var(--color-text-s); }
+.chip[data-category="my"].active   { background: #059669;              color: #fff; border-color: #059669; }
+.chip[data-category="group-search"].active { background: #db2777;      color: #fff; border-color: #db2777; }
+
+/* "모임 구해요 보기" 버튼 — 분홍 톤 (구 '내 글' 칩 색상) */
+.page-actions .btn[href*="group-search"] {
+  background: #fce7f3;
+  color: #9d174d;
+  border-color: #f9a8d4;
+}
+.page-actions .btn[href*="group-search"]:hover {
+  background: #db2777;
+  color: #fff;
+  border-color: #db2777;
+}
+
 /* === data-category.js css === */
 .detail-group-label{
   margin: 0.25rem 0 0.5rem 0;
@@ -280,46 +287,106 @@
   cursor: pointer;
 }
 
-/* === feed-detail 레이아웃 === */
+/* === feed-detail.html === */
 
-.detail-post-section {
-  margin-top: 0.75rem;
-}
-
-.detail-support-bar {
+.detail-page-header {
   display: flex;
-  align-items: center;
-  margin-top: 0.75rem;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
 }
 
-.detail-comment-card {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+.detail-page-header .detail-back-btn {
+  flex-shrink: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  transform: scale(0.9);
+  transform-origin: right bottom;
 }
 
-#comment-list {
-  margin-top: 0.75rem;
+/* 본문과 이어지는 댓글 목록 */
+.detail-comment-list {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  padding-left: 1.25rem;
+  border-top: 1px solid var(--color-border-light);
 }
 
-.detail-comment-form {
+/* 개별 댓글 — 카드 없이 본문 카드에 이어지는 항목 */
+.comment-item {
+  padding: 0.5rem 0;
+}
+.comment-item + .comment-item {
+  border-top: 1px dashed var(--color-border-light);
+}
+
+/* 댓글 본문 텍스트 — 본문보다 90% 크기 */
+.comment-item .comment-content {
+  font-size: 0.9em;
+}
+
+/* 댓글 수정·삭제 버튼 — 70%로 축소 + 진한 회색 톤 */
+.comment-action-btn {
+  min-height: 1.4rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.65rem;
+  color: var(--color-text-s);
+}
+
+/* 댓글 아바타 — 본문 작성자보다 한 단계 작게 */
+.member-avatar.comment-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.75rem;
+}
+
+/* 댓글 닉네임 — 본문 작성자보다 한 단계 작게 */
+.comment-member-row .member-name {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-s);
+}
+.comment-member-row .meta-text {
+  font-size: 0.7rem;
+}
+
+/* 댓글 입력창 — 본문 카드 내부에 위치 */
+.detail-comment-input-box {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--color-border-light);
 }
 
-.page-actions {
-  margin-top: 0.75rem;
+.gigi-btn {
+  margin-top:1.5rem;
 }
+
+.comment-title {
+  margin-top:2rem;
+}
+
+.comment-box {
+  margin-top:1.5rem;
+}
+
+#comment-list {
+  margin-top:1rem; 
+  display:grid; 
+  gap:0.75rem;
+}
+
+.page-actions {
+  margin-top:0.75rem;
+}
+
 
 /* === 공통 === */
 a.btn.btn-outline.btn-sm {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  width: fit-content;
+  margin-bottom:1rem;
+  width: fit-content;  
 }
 
 /* === group-search-write 빈도 css === */
@@ -352,4 +419,15 @@ a.btn.btn-outline.btn-sm {
   background: var(--color-primary);
   color: #fff;
   border-color: var(--color-primary);
+}
+
+/* 모임 구해요 글쓰기 버튼 — 좌측 정렬, 폭 auto */
+#group-search-write-btn {
+  align-self: flex-start;
+}
+
+/* 모임 구해요 글쓰기 폼 — 항목 사이 간격 */
+#group-search-form {
+  display: grid;
+  gap: 0.6rem;
 }

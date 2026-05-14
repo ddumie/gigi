@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initGreeting() {
   const user = getCurrentUser();
   if (user) {
-    $greeting.textContent = `안녕하세요, ${user.nickname}님`;
+    $greeting.textContent = `안녕하세요, ${user.nickname}님!`;
   }
 
   const now   = new Date();
@@ -152,7 +152,7 @@ function renderChecklist(habits, stats) {
           <div class="check-box">${checked ? '✓' : ''}</div>
           <div class="checklist-content">
             <strong>${habitTitle}${groupTag}</strong>
-            <p class="meta-text">${category} · ${repeatType}</p>
+            <p class="meta-text"><span class="today-category" data-category="${category}">${category}</span> · ${repeatType}</p>
           </div>
           <span class="badge ${badgeCls}">${badgeText}</span>
         </div>

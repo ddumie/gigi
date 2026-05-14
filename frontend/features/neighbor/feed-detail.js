@@ -1,34 +1,33 @@
 // feed-detail.js
-// getCurrentUserId() 함수
-
 (() => {
   let currentEditCommentId = null;
   const params = new URLSearchParams(location.search);
   const postId = params.get('post_id');
   if (!postId) { location.href = '/pages/neighbor/feed.html'; return; }
-  // 피드의 상세 내역을 보여줌.
+
   async function loadDetail() {
     try {
       const p = await apiGet(`/neighbor/feed/${postId}`);
-
       const el = document.getElementById('feed-detail-content');
       el.innerHTML = '';
+      const card = document.getElementById('feed-detail-card');
+      if (card) card.dataset.category = p.category ?? '기타';
 
       const nickname = p.author?.nickname ?? '알 수 없음';
       const firstChar = nickname.charAt(0);
+      const timeAgo = formatRelativeTime(p.created_at);
 
-      // 상단 행: 카테고리 뱃지
+      // ── 헤더: 아바타 + 닉네임 + 시간 / 카테고리 뱃지 ──
       const header = document.createElement('div');
-      header.className = 'detail-header';
+      header.className = 'feed-card-header';
 
-      // 아바타 + 닉네임, 뱃지 행
       const memberRow = document.createElement('div');
-      memberRow.className = 'member-row detail-member-row';
+      memberRow.className = 'member-row detail-row';
 
       const avatar = document.createElement('div');
       avatar.className = 'member-avatar';
       avatar.textContent = firstChar;
-      // 닉네임 + 뱃지
+
       const memberInfo = document.createElement('div');
       memberInfo.className = 'member-info';
 
@@ -36,42 +35,137 @@
       memberName.className = 'member-name';
       memberName.textContent = nickname;
 
-      const badge = document.createElement('span');
-      badge.className = 'badge badge-blue-limit';
-      badge.textContent = p.category;
+      const memberTime = document.createElement('div');
+      memberTime.className = 'meta-text';
+      memberTime.textContent = timeAgo;
 
-      // 피드상세 카드
-      memberInfo.append(memberName, badge);
+      memberInfo.append(memberName, memberTime);
       memberRow.append(avatar, memberInfo);
 
+      const categoryBadge = document.createElement('span');
+      categoryBadge.className = 'feed-category-badge';
+      categoryBadge.textContent = p.category ?? '기타';
 
-      // 본문
-      // 제목
+      header.append(memberRow, categoryBadge);
+
+      // ── 습관 제목 박스 ──
       const titleBox = document.createElement('div');
-      titleBox.className = 'feed-title-box'
-      titleBox.textContent = p.habit_title ?? (p.group_name + ' 습관');
-      // 내용
+      titleBox.className = 'feed-title-box';
+
+      const titleIcon = document.createElement('span');
+      titleIcon.className = 'feed-title-icon';
+      titleIcon.textContent = '■';
+
+      const categoryComplete = document.createElement('span');
+      categoryComplete.className = 'feed-category-complete';
+      categoryComplete.textContent = `[${p.category ?? '기타'} 완료]`;
+
+      const titleText = document.createElement('span');
+      titleText.textContent = p.habit_title ?? (p.group_name + ' 습관');
+
+      titleBox.append(titleIcon, categoryComplete, titleText);
+
+      // ── 모임/개인 뱃지 ──
+      const groupLabel = document.createElement('div');
+      groupLabel.className = 'group-label detail-group-label';
+      const groupBadge = document.createElement('span');
+      if (p.group_id && p.group_name && p.is_member) {
+        groupBadge.className = 'badge badge-green';
+        groupBadge.textContent = p.group_name;
+      } else if (p.group_id && !p.group_name) {
+        groupBadge.className = 'badge badge-gray';
+        groupBadge.textContent = '없어진 모임입니다.';
+      } else if (p.group_id && p.group_name && !p.is_member) {
+        groupBadge.className = 'badge badge-gray';
+        groupBadge.textContent = `탈퇴한 모임 · ${p.group_name}`;
+      } else {
+        groupBadge.className = 'badge badge-gray';
+        groupBadge.textContent = '개인 습관';
+      }
+      groupLabel.appendChild(groupBadge);
+
+      // ── 본문 ──
       const body = document.createElement('p');
-      body.className = 'detail-body';
+      body.className = 'section-copy';
       body.textContent = p.content ?? '';
 
-      const postCard = document.createElement('div');
-      postCard.className = 'feed-card';
-      postCard.append(header, memberRow, titleBox, body);
-      el.append(postCard);
+      // ── 푸터: 지지 버튼 + 댓글 수 + 날짜 ──
+      const actions = document.createElement('div');
+      actions.className = 'feed-card-footer';
+
+      const supportBtn = document.createElement('button');
+      supportBtn.id = 'support-btn';
+      supportBtn.type = 'button';
+      supportBtn.className = 'btn btn-outline btn-sm feed-support-toggle';
+
+      const commentCountBtn = document.createElement('button');
+      commentCountBtn.type = 'button';
+      commentCountBtn.className = 'btn btn-outline btn-sm';
+
+      const dateStr = p.created_at
+        ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\.$/, '')
+        : '';
+      const dateEl = document.createElement('span');
+      dateEl.className = 'meta-text feed-date';
+      dateEl.textContent = dateStr;
+
+      actions.append(supportBtn, commentCountBtn, dateEl);
+
+      el.append(header, titleBox, groupLabel, body, actions);
+
+      // 지지·댓글 수 초기 로드
+      await loadSupport(supportBtn, p.support_count ?? 0, p.is_supported ?? false);
+      updateCommentCountBtn(commentCountBtn, p.comment_count ?? 0);
     } catch (e) {
       console.error('피드 로드 실패', e);
       showToast('피드를 불러오는 중 오류가 발생했습니다.');
     }
   }
 
-  // 댓글 로딩
+  async function loadSupport(btn, initialCount, initialSupported) {
+    if (!btn) return;
+    try {
+      const data = await apiGet(`/neighbor/feed/${postId}/support`);
+      renderSupportBtn(btn, data.support_count, data.is_supported);
+    } catch {
+      renderSupportBtn(btn, initialCount, initialSupported);
+    }
+
+    btn.addEventListener('click', async () => {
+      try {
+        const data = await apiPost(`/neighbor/feed/${postId}/support`);
+        renderSupportBtn(btn, data.support_count, data.is_supported);
+      } catch {
+        showToast('네트워크 오류가 발생했습니다.');
+      }
+    });
+  }
+
+  function renderSupportBtn(btn, count, isSupported) {
+    btn.textContent = `🔥 지지 ${count}`;
+    isSupported
+      ? btn.classList.replace('btn-outline', 'btn-primary')
+      : btn.classList.replace('btn-primary', 'btn-outline');
+  }
+
+  function updateCommentCountBtn(btn, count) {
+    if (!btn) return;
+    btn.textContent = `💬 댓글 ${count}`;
+    btn.style.cursor = 'default';
+    btn.style.pointerEvents = 'none';
+  }
+
   async function loadComments() {
     try {
       const comments = await apiGet(`/neighbor/feed/${postId}/comments`);
-
       const list = document.getElementById('comment-list');
       list.innerHTML = '';
+
+      // 댓글 수 버튼 동기화
+      const countBtn = document.querySelector('.feed-card-footer .btn-outline:last-of-type');
+      if (countBtn && countBtn.textContent.startsWith('💬')) {
+        updateCommentCountBtn(countBtn, comments.length);
+      }
 
       if (comments.length === 0) {
         const empty = document.createElement('p');
@@ -80,22 +174,20 @@
         list.appendChild(empty);
         return;
       }
-      // 닉네임, 만들어진 시간, 아바타 등등
+
       const currentUserId = getCurrentUser()?.id ?? null;
       comments.forEach(c => {
         const card = document.createElement('div');
-        card.className = 'feed-card';
+        card.className = 'comment-item';
 
         const commentNickname = c.author_nickname ?? '알 수 없음';
-        const commentFirstChar = commentNickname.charAt(0);
-
         const memberRow = document.createElement('div');
         memberRow.className = 'member-row comment-member-row';
-        // 아바타
+
         const avatar = document.createElement('div');
-        avatar.className = 'member-avatar';
-        avatar.textContent = commentFirstChar;
-        // 댓글 글쓴이 닉네임 + 뎃글 생성 날짜
+        avatar.className = 'member-avatar comment-avatar';
+        avatar.textContent = commentNickname.charAt(0);
+
         const memberInfo = document.createElement('div');
         memberInfo.className = 'member-info';
 
@@ -106,43 +198,47 @@
         const createdAt = document.createElement('span');
         createdAt.className = 'meta-text';
         createdAt.textContent = c.created_at
-          ? new Date(c.created_at).toLocaleDateString('ko-KR').replace(/\.$/, '')
+          ? (() => {
+              const d = new Date(c.created_at);
+              const date = d.toLocaleDateString('ko-KR').replace(/\.$/, '');
+              const time = d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+              return `${date} ${time}`;
+            })()
           : '';
 
         memberInfo.append(memberName, createdAt);
         memberRow.append(avatar, memberInfo);
-        // 댓글 본문
+
         const content = document.createElement('p');
         content.className = 'comment-content';
         content.textContent = c.content;
 
         card.append(memberRow, content);
-        // 내 댓글일 때만 수정 버튼 표시
+
         if (c.author_id === currentUserId) {
           const editRow = document.createElement('div');
           editRow.className = 'comment-edit-row';
-          // 수정 버튼
+
           const editBtn = document.createElement('button');
           editBtn.type = 'button';
-          editBtn.className = 'btn btn-outline btn-sm';
+          editBtn.className = 'btn btn-outline btn-sm comment-action-btn';
           editBtn.textContent = '수정';
-          // 삭제 버튼
+
           const deleteBtn = document.createElement('button');
           deleteBtn.type = 'button';
-          deleteBtn.className = 'btn btn-outline btn-sm';
+          deleteBtn.className = 'btn btn-outline btn-sm comment-action-btn';
           deleteBtn.textContent = '삭제';
-          // 댓글 삭제 버튼 구현
+
           deleteBtn.addEventListener('click', async () => {
             if (!confirm('댓글을 삭제하시겠습니까?')) return;
             try {
               await apiDelete(`/neighbor/feed/${postId}/comments/${c.id}`);
               await loadComments();
-            } catch (e) {
+            } catch {
               showToast('네트워크 오류가 발생했습니다.');
             }
           });
 
-          // 수정하면 수정 날짜 표시
           if (c.updated_at) {
             const editedAt = document.createElement('span');
             editedAt.className = 'meta-text';
@@ -153,10 +249,9 @@
           }
 
           editBtn.addEventListener('click', () => {
-            currentEditCommentId = c.id
+            currentEditCommentId = c.id;
             document.getElementById('comment-input').value = c.content;
             document.getElementById('comment-input').focus();
-            // 등록 버튼 숨기고 수정완료, 취소버튼 보이게 함.
             document.getElementById('comment-submit').classList.add('hidden');
             document.getElementById('comment-edit-submit').classList.remove('hidden');
             document.getElementById('comment-edit-cancel').classList.remove('hidden');
@@ -167,38 +262,21 @@
 
         list.appendChild(card);
       });
-    } catch(e) {
+    } catch (e) {
       console.error('댓글 로드 실패', e);
       showToast('댓글을 불러오는 중 오류가 발생했습니다.');
     }
   }
 
-  // 지지 정보 불러오기
-  async function loadSupport() {
-    try {
-      const data = await apiGet(`/neighbor/feed/${postId}/support`);
-
-      document.getElementById('support-count').textContent = data.support_count;
-      const btn = document.getElementById('support-btn');
-      btn.classList.toggle('btn-primary', data.is_supported);
-      btn.classList.toggle('btn-outline', !data.is_supported);
-    } catch (e) {
-      console.error('지지 정보 로드 실패', e);
-      showToast('지지 정보를 불러오는 중 오류가 발생했습니다.');
-    }
-  }
-
-  // 댓글 관련 리스너들, 입력, 제출, 수정, 삭제
-  // 등록 버튼 보이게 하고 수정완료, 취소 버튼 안 보이게 함.
   function resetCommentInput() {
     document.getElementById('comment-input').value = '';
     document.getElementById('comment-submit').classList.remove('hidden');
     document.getElementById('comment-edit-submit').classList.add('hidden');
     document.getElementById('comment-edit-cancel').classList.add('hidden');
   }
-  document.getElementById('comment-edit-cancel').addEventListener('click', () => {
-    resetCommentInput();
-  });
+
+  document.getElementById('comment-edit-cancel').addEventListener('click', resetCommentInput);
+
   document.getElementById('comment-edit-submit').addEventListener('click', async () => {
     if (!currentEditCommentId) return;
     const newContent = document.getElementById('comment-input').value.trim();
@@ -213,7 +291,6 @@
     }
   });
 
-
   document.getElementById('comment-submit').addEventListener('click', async () => {
     const content = document.getElementById('comment-input').value.trim();
     if (!content) return;
@@ -221,25 +298,10 @@
       await apiPost(`/neighbor/feed/${postId}/comments`, { content });
       document.getElementById('comment-input').value = '';
       await loadComments();
-    } catch (e) {
+    } catch {
       showToast('네트워크 오류가 발생했습니다.');
     }
   });
 
-  // 이벤트 리스너들
-
-  document.getElementById('support-btn').addEventListener('click', async () => {
-    try {
-      await apiPost(`/neighbor/feed/${postId}/support`);
-      await loadSupport();
-
-    } catch (e) {
-      showToast('네트워크 오류가 발생했습니다.');
-    }
-  });
-
-
-  loadDetail();
-  loadComments();
-  loadSupport();
+  loadDetail().then(() => loadComments());
 })();
