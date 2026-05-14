@@ -283,7 +283,7 @@
 .today-subtitle   { font-size: 0.8rem; color: var(--color-text-s); }
 
 /* 카드 사이 간격 — 0.75rem */
-.today-section + .today-section { margin-top: 0.75rem; }
+.today-section:not(.hidden) + .today-section { margin-top: 0.75rem; }
 
 /* '내 칭호' stat 카드의 폰트 축소 */
 .stat-badge-text { font-size: 1rem; }
@@ -327,6 +327,14 @@
 /* 체크리스트 항목 본문 */
 .checklist-content   { flex: 1; }
 .checklist-group-tag { margin-left: 4px; }
+
+/* 카테고리 텍스트 색상 (이웃 탭과 동일) */
+.today-category { font-weight: 600; }
+.today-category[data-category="운동"] { color: var(--color-green); }
+.today-category[data-category="복약"] { color: var(--color-primary); }
+.today-category[data-category="식단"] { color: var(--color-coral); }
+.today-category[data-category="수면"] { color: var(--color-ai); }
+.today-category[data-category="기타"] { color: var(--color-text-s); }
 
 /* 공유 컴포저 행 */
 .share-composer-hint  { margin-top: -0.2rem; }

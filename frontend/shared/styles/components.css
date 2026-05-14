@@ -98,6 +98,14 @@
 
 .btn-full { width: 100%; }
 
+/* 축소 버튼 (기본 대비 77% 크기) */
+.btn.btn-shrink {
+  min-height: 1.76rem;
+  padding: 0.33rem 0.77rem;
+  font-size: 0.86rem;
+}
+.btn.btn-unbold { font-weight: 400; }
+
 .btn:disabled, .btn.disabled {
   opacity: 0.45;
   cursor: not-allowed;

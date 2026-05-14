@@ -1,12 +1,9 @@
 function togglePwVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = '숨기기';
-  } else {
-    input.type = 'password';
-    btn.textContent = '보기';
-  }
+  const reveal = input.type === 'password';
+  input.type = reveal ? 'text' : 'password';
+  btn.classList.toggle('is-revealed', reveal);
+  btn.setAttribute('aria-label', reveal ? '비밀번호 숨기기' : '비밀번호 보기');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,7 +29,21 @@ document.addEventListener('DOMContentLoaded', () => {
       cachedAgeGroup = data.age_group || null;
     }
     const healthEl = document.getElementById('settings-health-interests');
-    cachedHealthInterests = data.health_interests || [];
+    function extractString(it) {
+      if (typeof it === 'string') return it;
+      if (it && typeof it === 'object') {
+        for (const key of ['name', 'label', 'text', 'value', 'title', 'category']) {
+          if (typeof it[key] === 'string' && it[key].trim()) return it[key];
+        }
+        for (const v of Object.values(it)) {
+          if (typeof v === 'string' && v.trim()) return v;
+        }
+      }
+      return null;
+    }
+    cachedHealthInterests = (data.health_interests || [])
+      .map(extractString)
+      .filter(Boolean);
     if (healthEl) healthEl.textContent = cachedHealthInterests.length ? cachedHealthInterests.join(', ') : '-';
   }).catch(() => { showToast('프로필 정보를 불러오지 못했습니다.'); });
 
@@ -98,11 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.textContent = '저장 중...';
 
     try {
-      const fontStep = parseInt(localStorage.getItem('gigi_font_scale') ?? '2');
       await apiPost('/onboarding/preferences', {
         age_group: cachedAgeGroup,
         health_interests: selectedInterests,
-        font_size: fontStep,
       });
       cachedHealthInterests = [...selectedInterests];
       const healthEl = document.getElementById('settings-health-interests');

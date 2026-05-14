@@ -196,6 +196,14 @@
   margin-bottom: 1.5rem;
 }
 
+/* 제목 + 부제 묶음 — page-header(flex column gap)와 동일한 간격 */
+.title-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.title-stack .page-subtitle { margin-bottom: 0; }
+
 .page-shell {
   display: flex;
   flex-direction: column;

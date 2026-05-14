@@ -12,47 +12,35 @@
   <link rel="stylesheet" href="/features/neighbor/neighbor.css">
 </head>
 <body data-section="neighbor">
-  <header class="gnb">
-    <div class="gnb-logo">지지</div>
-    <nav class="gnb-nav">
-      <a href="/pages/today/index.html" data-nav="today">오늘</a>
-      <a href="/pages/habits/index.html" data-nav="habits">습관</a>
-      <a href="/pages/support/index.html" data-nav="support">지지</a>
-      <a href="/pages/neighbor/feed.html" data-nav="neighbor">이웃</a>
-      <a href="/pages/settings/index.html" data-nav="settings">설정</a>
-    </nav>
-    <div class="gnb-right"><span id="gnb-username" class="gnb-user">사용자님</span></div>
-  </header>
   <main>
     <div class="container page-shell">
-      <header class="page-header">
-        <div class="section-eyebrow">Neighbor Feed-Detail</div>
-        <h1 class="page-title">피드 상세</h1>
+      <!-- 상단: 제목 + 돌아가기 버튼 -->
+      <header class="page-header detail-page-header">
+        <div>
+          <h1 class="page-title">이웃과 나누는 습관</h1>
+        </div>
+        <a href="/pages/neighbor/feed.html" class="btn btn-outline btn-sm detail-back-btn">← 피드로 돌아가기</a>
       </header>
 
-      <!-- 게시글 카드 -->
-      <div id="feed-detail-content" class="detail-post-section">로딩 중...</div>
+      <!-- 피드 카드 + 댓글 통합 (피드 목록과 동일한 구조) -->
+      <article class="feed-card" id="feed-detail-card">
+        <div id="feed-detail-content">
+          <p class="meta-text">로딩 중...</p>
+        </div>
 
-      <!-- 지지 버튼 -->
-      <div class="detail-support-bar">
-        <button id="support-btn" class="btn btn-outline btn-sm">지지하기 🔥 <span id="support-count">0</span></button>
-      </div>
+        <!-- 댓글 목록 (본문 카드에 이어짐) -->
+        <div id="comment-list" class="detail-comment-list"></div>
 
-      <!-- 댓글 카드 -->
-      <section class="card detail-comment-card">
-        <h2 class="section-label">댓글</h2>
-        <div id="comment-list"></div>
-        <div class="detail-comment-form">
+        <!-- 댓글 입력창 -->
+        <section class="detail-comment-input-box">
           <textarea id="comment-input" class="comment-textarea" rows="3" placeholder="댓글을 입력하세요"></textarea>
           <div class="page-actions">
             <button id="comment-submit" class="btn btn-primary btn-sm">등록</button>
             <button id="comment-edit-submit" class="btn btn-primary btn-sm hidden">수정 완료</button>
             <button id="comment-edit-cancel" class="btn btn-outline btn-sm hidden">취소</button>
           </div>
-        </div>
-      </section>
-
-      <a href="/pages/neighbor/feed.html" class="btn btn-outline btn-sm">← 피드로 돌아가기</a>
+        </section>
+      </article>
     </div>
   </main>
   <script src="/shared/lib/api.js"></script>

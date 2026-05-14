@@ -14,6 +14,24 @@
   }
 }
 
+/* 카테고리 칩 + 액션 버튼을 한 줄에 */
+.habits-filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.habits-filter-row .filter-tabs {
+  flex: 1;
+  min-width: 0;
+}
+.habits-page-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
 
 .habit-list {
   display: grid;
@@ -179,6 +197,47 @@
 
 /* 카드 우측 액션 영역 (배지 + 버튼들) */
 .habit-actions { display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
+
+/* 카테고리 뱃지 (이웃 탭과 동일 색상) */
+.habit-category-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-border-light);
+  color: var(--color-text);
+}
+.habit-category-badge[data-category="운동"] { background: var(--color-green-light);   color: var(--color-green); }
+.habit-category-badge[data-category="복약"] { background: var(--color-primary-light); color: var(--color-primary); }
+.habit-category-badge[data-category="식단"] { background: var(--color-coral-light);   color: var(--color-coral); }
+.habit-category-badge[data-category="수면"] { background: var(--color-ai-light);      color: var(--color-ai); }
+.habit-category-badge[data-category="기타"] { background: var(--color-border-light);  color: var(--color-text-s); }
+
+/* 습관 카드 제목 볼드 */
+.habit-title { font-weight: 700; }
+
+/* 숨기기·수정·삭제 버튼 — badge 크기에 맞춰 80% 축소 */
+.habit-actions .btn-outline.btn-sm {
+  min-height: 1.6rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+}
+
+/* 카테고리 칩 — 기본 색상 (이웃 탭과 동일) */
+.chip[data-habit-filter=""]    { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+.chip[data-habit-filter="운동"] { background: var(--color-green-light);   color: var(--color-green);   border-color: var(--color-green); }
+.chip[data-habit-filter="복약"] { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
+.chip[data-habit-filter="식단"] { background: var(--color-coral-light);   color: var(--color-coral);   border-color: var(--color-coral); }
+.chip[data-habit-filter="수면"] { background: var(--color-ai-light);      color: var(--color-ai);      border-color: var(--color-ai); }
+.chip[data-habit-filter="기타"] { background: var(--color-border-light);  color: var(--color-text-s);  border-color: var(--color-text-s); }
+
+/* 카테고리 칩 — 활성 상태 */
+.chip[data-habit-filter=""].active    { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.chip[data-habit-filter="운동"].active { background: var(--color-green);   color: #fff; border-color: var(--color-green); }
+.chip[data-habit-filter="복약"].active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.chip[data-habit-filter="식단"].active { background: var(--color-coral);   color: #fff; border-color: var(--color-coral); }
+.chip[data-habit-filter="수면"].active { background: var(--color-ai);      color: #fff; border-color: var(--color-ai); }
+.chip[data-habit-filter="기타"].active { background: var(--color-text-s);  color: #fff; border-color: var(--color-text-s); }
 
 /* AI 추천 페이지 — 사용자가 추가한 관심사 칩 + 제거 버튼 */
 .tag-chip        { display: inline-flex; align-items: center; gap: 0.25rem; }
