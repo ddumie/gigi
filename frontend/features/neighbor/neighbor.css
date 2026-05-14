@@ -3,6 +3,38 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+/* 특수 칩 — 전체 / 모임 구해요 / 내 글 */
+.chip.chip-all {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-color: #c4b5fd;
+}
+.chip.chip-all.active, .chip.chip-all:hover {
+  background: #7c3aed;
+  color: #fff;
+  border-color: #7c3aed;
+}
+.chip.chip-group-search {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+.chip.chip-group-search.active, .chip.chip-group-search:hover {
+  background: #059669;
+  color: #fff;
+  border-color: #059669;
+}
+.chip.chip-my {
+  background: #fce7f3;
+  color: #9d174d;
+  border-color: #f9a8d4;
+}
+.chip.chip-my.active, .chip.chip-my:hover {
+  background: #db2777;
+  color: #fff;
+  border-color: #db2777;
+}
 /* === feed css === */
 .feed-list,
 .group-search-list {
@@ -248,35 +280,46 @@
   cursor: pointer;
 }
 
-/* === feed-detail.html === */
+/* === feed-detail 레이아웃 === */
 
-.gigi-btn {
-  margin-top:1.5rem;
+.detail-post-section {
+  margin-top: 0.75rem;
 }
 
-.comment-title {
-  margin-top:2rem;
+.detail-support-bar {
+  display: flex;
+  align-items: center;
+  margin-top: 0.75rem;
 }
 
-.comment-box {
-  margin-top:1.5rem;
+.detail-comment-card {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 #comment-list {
-  margin-top:1rem; 
-  display:grid; 
-  gap:0.75rem;
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.detail-comment-form {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-light);
 }
 
 .page-actions {
-  margin-top:0.75rem;
+  margin-top: 0.75rem;
 }
-
 
 /* === 공통 === */
 a.btn.btn-outline.btn-sm {
-  margin-bottom:1rem;
-  width: fit-content;  
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  width: fit-content;
 }
 
 /* === group-search-write 빈도 css === */

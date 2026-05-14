@@ -58,7 +58,13 @@
               <button type="button" id="age-group-edit-btn" class="btn btn-outline btn-sm">변경</button>
             </div>
           </div>
-          <div class="settings-row"><span>건강 관심사</span><span id="settings-health-interests" class="meta-text">-</span></div>
+          <div class="settings-row">
+            <span>건강 관심사</span>
+            <div class="settings-value-row">
+              <span id="settings-health-interests" class="meta-text">-</span>
+              <button type="button" id="health-interests-edit-btn" class="btn btn-outline btn-sm">변경</button>
+            </div>
+          </div>
         </section>
         <section class="card">
           <strong>계정 설정</strong>
@@ -118,6 +124,28 @@
       <div class="settings-modal-actions">
         <button type="button" id="age-group-cancel-btn" class="btn btn-outline">취소</button>
         <button type="button" id="age-group-save-btn" class="btn btn-primary">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 건강 관심사 변경 모달 -->
+  <div id="health-interests-modal" class="settings-modal-overlay">
+    <div class="settings-modal-box">
+      <h3 class="settings-modal-title">건강 관심사 수정</h3>
+      <p class="meta-text" style="margin-bottom:0.75rem;">관심 있는 항목을 모두 선택해주세요.</p>
+      <div class="age-chip-grid">
+        <button type="button" class="btn btn-outline js-health-chip" data-value="운동·체력">운동·체력</button>
+        <button type="button" class="btn btn-outline js-health-chip" data-value="복약 관리">복약 관리</button>
+        <button type="button" class="btn btn-outline js-health-chip" data-value="식단·영양">식단·영양</button>
+        <button type="button" class="btn btn-outline js-health-chip" data-value="수면 개선">수면 개선</button>
+        <button type="button" class="btn btn-outline js-health-chip" data-value="혈압·혈당">혈압·혈당</button>
+        <button type="button" class="btn btn-outline js-health-chip" data-value="관절·근력">관절·근력</button>
+        <button type="button" class="btn btn-outline js-health-chip" data-value="치매 예방">치매 예방</button>
+      </div>
+      <div id="health-interests-error" class="input-error hidden"></div>
+      <div class="settings-modal-actions">
+        <button type="button" id="health-interests-cancel-btn" class="btn btn-outline">취소</button>
+        <button type="button" id="health-interests-save-btn" class="btn btn-primary">확인</button>
       </div>
     </div>
   </div>

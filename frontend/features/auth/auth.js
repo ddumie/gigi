@@ -1,13 +1,10 @@
 // ── 비밀번호 보기/숨기기 ──
 function togglePwVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = '숨기기';
-  } else {
-    input.type = 'password';
-    btn.textContent = '보기';
-  }
+  const reveal = input.type === 'password';
+  input.type = reveal ? 'text' : 'password';
+  btn.classList.toggle('is-revealed', reveal);
+  btn.setAttribute('aria-label', reveal ? '비밀번호 숨기기' : '비밀번호 보기');
 }
 
 // ── 로그인 상태에서 auth 페이지 접근 차단 ──
@@ -77,7 +74,7 @@ if (step1Next) {
       pwConfirmInput.value = '';
       pwInput.type = 'password';
       pwConfirmInput.type = 'password';
-      document.querySelectorAll('.pw-toggle-btn').forEach(btn => btn.textContent = '보기');
+      document.querySelectorAll('.pw-toggle-btn').forEach(btn => btn.classList.remove('is-revealed'));
       hasError = true;
     }
 
@@ -327,7 +324,7 @@ if (resetSubmit) {
       showError('reset-new-password-confirm-error', '비밀번호가 일치하지 않습니다');
       document.getElementById('reset-new-password').value = '';
       document.getElementById('reset-new-password-confirm').value = '';
-      document.querySelectorAll('#reset-form .pw-toggle-btn').forEach(btn => btn.textContent = '보기');
+      document.querySelectorAll('#reset-form .pw-toggle-btn').forEach(btn => btn.classList.remove('is-revealed'));
       hasError = true;
     }
 

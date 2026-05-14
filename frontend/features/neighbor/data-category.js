@@ -167,6 +167,10 @@ function initCategoryFilter() {
       chip.classList.add('active');
 
       const category = chip.dataset.category;
+      if (category === 'group-search') {
+        location.href = '/pages/neighbor/group-search.html';
+        return;
+      }
       let filtered;
       if (category === 'all') {
         filtered = allPosts;

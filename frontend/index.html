@@ -9,6 +9,37 @@
   <link rel="stylesheet" href="/shared/styles/common.css">
   <link rel="stylesheet" href="/shared/styles/layout.css">
   <link rel="stylesheet" href="/shared/styles/components.css">
+  <style>
+    /* 랜딩 — 핵심 기능 3가지 원형 배치 (외곽 원 + 라벨 위치) */
+    .features-circle {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin: 2rem auto 0;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-border);
+    }
+    .features-circle-item {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.7rem;
+      /* 카드 배경색과 동일해서 외곽 원이 라벨 부분에서 끊어진 것처럼 보이게 */
+      background: var(--color-card);
+      font-size: 0.85rem;
+      white-space: nowrap;
+      color: var(--color-text-s);
+    }
+    .features-circle-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .features-circle-top         { top: 0;   left: 50%; transform: translate(-50%, -50%); }
+    .features-circle-bottom-left { top: 75%; left: 7%;  transform: translate(-50%, -50%); }
+    .features-circle-bottom-right{ top: 75%; left: 93%; transform: translate(-50%, -50%); }
+  </style>
 </head>
 <body>
   <header class="gnb">
@@ -37,15 +68,15 @@
         <div style="text-align:center;margin-bottom:1rem;">
           <a id="invite-btn" href="/pages/auth/invite-signup.html" class="btn btn-outline btn-sm">초대코드로 시작하기</a>
         </div>
-        <div style="display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
-          <span class="meta-text" style="display:flex;align-items:center;gap:0.4rem;">
-            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-success);"></span>습관 체크
+        <div class="features-circle">
+          <span class="features-circle-item features-circle-top">
+            <span class="features-circle-dot" style="background:var(--color-success);"></span>습관 체크
           </span>
-          <span class="meta-text" style="display:flex;align-items:center;gap:0.4rem;">
-            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-primary);"></span>모임 지지
+          <span class="features-circle-item features-circle-bottom-left">
+            <span class="features-circle-dot" style="background:var(--color-primary);"></span>모임 지지
           </span>
-          <span class="meta-text" style="display:flex;align-items:center;gap:0.4rem;">
-            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-ai);"></span>AI 추천
+          <span class="features-circle-item features-circle-bottom-right">
+            <span class="features-circle-dot" style="background:var(--color-ai);"></span>AI 추천
           </span>
         </div>
       </div>
