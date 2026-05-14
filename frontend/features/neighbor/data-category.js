@@ -174,9 +174,9 @@ function initCategoryFilter() {
       let filtered;
       if (category === 'all') {
         filtered = allPosts;
-      } else if (category === 'my') {
-        const me = getCurrentUser();
-        filtered = me ? allPosts.filter(p => p.author?.id === me.id) : [];
+      } else if (category === 'my-posts') {
+        location.href = '/pages/neighbor/my-posts.html';
+        return;
       } else {
         filtered = allPosts.filter(p => p.category === category);
       }
