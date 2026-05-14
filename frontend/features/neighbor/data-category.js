@@ -162,14 +162,18 @@ function initCategoryFilter() {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-
+      
       const category = chip.dataset.category;
       let filtered;
+      
       if (category === 'all') {
         filtered = allPosts;
-      } else if (category === 'my') {
-        const me = getCurrentUser();
-        filtered = me ? allPosts.filter(p => p.author?.id === me.id) : [];
+      } else if (category === 'group-search') {
+        location.href = '/pages/neighbor/group-search.html';
+        return;
+      } else if (category === 'my-posts') {
+        location.href = '/pages/neighbor/my-posts.html';
+        return;
       } else {
         filtered = allPosts.filter(p => p.category === category);
       }
