@@ -210,6 +210,8 @@ async def forgot_password(data: ForgotPasswordRequest, db: AsyncSession = Depend
     """비밀번호 재설정 이메일 발송 (이메일 존재 여부와 무관하게 동일 응답)"""
     try:
         await service.forgot_password(db, data.email)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"비밀번호 재설정 이메일 발송 오류: {e}", exc_info=True)
         raise HTTPException(

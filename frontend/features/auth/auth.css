@@ -40,11 +40,22 @@
   right: 0.75rem;
   background: none;
   border: none;
-  font-size: 0.75rem;
   color: var(--color-text-s);
   cursor: pointer;
   padding: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+
+/* 눈 모양 아이콘 — 두 SVG를 묶고 .is-revealed 클래스로 토글 */
+.pw-eye-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.pw-toggle-btn .pw-eye-hide       { display: none; }
+.pw-toggle-btn.is-revealed .pw-eye-show { display: none; }
+.pw-toggle-btn.is-revealed .pw-eye-hide { display: block; }
 
 .auth-notice {
   text-align: center;

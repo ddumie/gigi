@@ -28,26 +28,30 @@
       <header class="page-header">
         <div class="section-eyebrow">Neighbor Feed-Detail</div>
         <h1 class="page-title">피드 상세</h1>
-        <p class="page-subtitle">이웃이 공유한 습관 피드의 상세 내용과 댓글입니다.</p>      
-        <div id="feed-detail-content">로딩 중...</div>
       </header>
-      <section class="gigi-btn">
+
+      <!-- 게시글 카드 -->
+      <div id="feed-detail-content" class="detail-post-section">로딩 중...</div>
+
+      <!-- 지지 버튼 -->
+      <div class="detail-support-bar">
         <button id="support-btn" class="btn btn-outline btn-sm">지지하기 🔥 <span id="support-count">0</span></button>
-      </section>
-      <section class="comment-title">
+      </div>
+
+      <!-- 댓글 카드 -->
+      <section class="card detail-comment-card">
         <h2 class="section-label">댓글</h2>
         <div id="comment-list"></div>
-      </section>
-
-      <section class="comment-box">
-        <h3 class="section-label">댓글 작성</h3>
-        <textarea id="comment-input" class="comment-textarea" rows="3" placeholder="댓글을 입력하세요"></textarea>
-        <div class="page-actions">
-          <button id="comment-submit" class="btn btn-primary btn-sm">등록</button>
-          <button id="comment-edit-submit" class="btn btn-primary btn-sm hidden">수정 완료</button>
-          <button id="comment-edit-cancel" class="btn btn-outline btn-sm hidden">취소</button>
+        <div class="detail-comment-form">
+          <textarea id="comment-input" class="comment-textarea" rows="3" placeholder="댓글을 입력하세요"></textarea>
+          <div class="page-actions">
+            <button id="comment-submit" class="btn btn-primary btn-sm">등록</button>
+            <button id="comment-edit-submit" class="btn btn-primary btn-sm hidden">수정 완료</button>
+            <button id="comment-edit-cancel" class="btn btn-outline btn-sm hidden">취소</button>
+          </div>
         </div>
       </section>
+
       <a href="/pages/neighbor/feed.html" class="btn btn-outline btn-sm">← 피드로 돌아가기</a>
     </div>
   </main>

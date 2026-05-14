@@ -21,15 +21,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 나이대 + 건강관심사 API에서 가져오기
   const ageEl = document.getElementById('settings-age-group');
+  let cachedAgeGroup = null;
+  let cachedHealthInterests = [];
+
   apiGet('/auth/me').then((data) => {
     if (!data) return;
     if (ageEl) {
       ageEl.textContent = data.age_group || '-';
       if (data.age_group) localStorage.setItem('gigi_age_group', data.age_group);
+      cachedAgeGroup = data.age_group || null;
     }
     const healthEl = document.getElementById('settings-health-interests');
-    if (healthEl) healthEl.textContent = data.health_interests?.length ? data.health_interests.join(', ') : '-';
+    cachedHealthInterests = data.health_interests || [];
+    if (healthEl) healthEl.textContent = cachedHealthInterests.length ? cachedHealthInterests.join(', ') : '-';
   }).catch(() => { showToast('프로필 정보를 불러오지 못했습니다.'); });
+
+  // 건강 관심사 변경 모달
+  const healthEditBtn   = document.getElementById('health-interests-edit-btn');
+  const healthCancelBtn = document.getElementById('health-interests-cancel-btn');
+  const healthModal     = document.getElementById('health-interests-modal');
+  let selectedInterests = [];
+
+  function openHealthModal() {
+    // 현재 저장된 관심사 미리 선택
+    selectedInterests = [...cachedHealthInterests];
+    document.querySelectorAll('.js-health-chip').forEach(c => {
+      const isSelected = selectedInterests.includes(c.dataset.value);
+      c.classList.toggle('btn-primary', isSelected);
+      c.classList.toggle('btn-outline', !isSelected);
+    });
+    const errEl = document.getElementById('health-interests-error');
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+    healthModal.style.display = 'flex';
+  }
+
+  function closeHealthModal() {
+    healthModal.style.display = 'none';
+    selectedInterests = [];
+  }
+
+  healthEditBtn.addEventListener('click', openHealthModal);
+  healthCancelBtn.addEventListener('click', closeHealthModal);
+  healthModal.addEventListener('click', (e) => {
+    if (e.target === healthModal) closeHealthModal();
+  });
+
+  document.querySelectorAll('.js-health-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const val = chip.dataset.value;
+      if (selectedInterests.includes(val)) {
+        selectedInterests = selectedInterests.filter(v => v !== val);
+        chip.classList.remove('btn-primary');
+        chip.classList.add('btn-outline');
+      } else {
+        selectedInterests.push(val);
+        chip.classList.remove('btn-outline');
+        chip.classList.add('btn-primary');
+      }
+    });
+  });
+
+  document.getElementById('health-interests-save-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('health-interests-error');
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+
+    if (selectedInterests.length === 0) {
+      errEl.textContent = '관심사를 하나 이상 선택해주세요';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    const saveBtn = document.getElementById('health-interests-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '저장 중...';
+
+    try {
+      const fontStep = parseInt(localStorage.getItem('gigi_font_scale') ?? '2');
+      await apiPost('/onboarding/preferences', {
+        age_group: cachedAgeGroup,
+        health_interests: selectedInterests,
+        font_size: fontStep,
+      });
+      cachedHealthInterests = [...selectedInterests];
+      const healthEl = document.getElementById('settings-health-interests');
+      if (healthEl) healthEl.textContent = cachedHealthInterests.join(', ');
+      showToast('건강 관심사가 변경되었습니다.');
+      closeHealthModal();
+    } catch (e) {
+      errEl.textContent = e.message || '저장에 실패했습니다.';
+      errEl.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '확인';
+    }
+  });
 
   // 나이대 변경 모달
   const ageEditBtn   = document.getElementById('age-group-edit-btn');
