@@ -164,10 +164,6 @@ function initCategoryFilter() {
       chip.classList.add('active');
 
       const category = chip.dataset.category;
-      if (category === 'group-search') {
-        location.href = '/pages/neighbor/group-search.html';
-        return;
-      }
       let filtered;
       if (category === 'all') {
         filtered = allPosts;
@@ -177,6 +173,9 @@ function initCategoryFilter() {
       } else {
         filtered = allPosts.filter(p => p.category === category);
       }
+
+      const writeBtn = document.getElementById('group-search-write-btn');
+      if (writeBtn) writeBtn.classList.toggle('hidden', category !== 'group-search');
 
       renderFeed(filtered);
     });
