@@ -13,8 +13,6 @@ const $statWeekly = document.getElementById('stat-weekly');
 const $statStreak = document.getElementById('stat-streak');
 const $statBadge  = document.getElementById('stat-badge');
 const $calendar   = document.getElementById('mini-calendar');
-const $notifSection = document.getElementById('notification-section');
-const $notifList    = document.getElementById('notification-list');
 
 let currentHabits = [];
 let currentStats = null;
@@ -81,41 +79,6 @@ async function loadDashboard() {
     $checklist.innerHTML = '<p class="meta-text">데이터를 불러오지 못했습니다.</p>';
   }
 
-  await loadNotifications();
-}
-
-
-// ── 받은 지지 알림 ──
-// 시간 포맷은 common.js의 formatRelativeTime() 사용
-
-async function loadNotifications() {
-  if (!$notifSection || !$notifList) return;
-
-  try {
-    const data = await apiGet('/support/notifications/recent?limit=3');
-    const items = data.notifications || [];
-
-    if (items.length === 0) {
-      $notifSection.classList.add('hidden');
-      return;
-    }
-
-    $notifSection.classList.remove('hidden');
-    $notifList.innerHTML = items.map(n => `
-      <div class="notification-item notification-row">
-        <span class="notification-content">${escapeHtml(n.content)}</span>
-        <span class="meta-text notification-time">${formatRelativeTime(n.created_at)}</span>
-      </div>
-    `).join('');
-
-    if (items.some(n => !n.is_read)) {
-      try {
-        await apiPost('/support/notifications/read');
-      } catch (_) {}
-    }
-  } catch (e) {
-    $notifSection.classList.add('hidden');
-  }
 }
 
 

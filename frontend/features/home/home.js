@@ -175,8 +175,10 @@ function renderWeeklySummary() {
     return `
       <div class="home-summary-row">
         <strong>${escapeHtml(group.name)}</strong>
-        <span class="home-item-meta">멤버 ${memberCount}명 · 🔥 ${group.streak}일</span>
-        <span class="home-summary-value">${avgRate}%</span>
+        <span class="home-summary-right">
+          <span class="home-item-meta">멤버 ${memberCount}명 · 🔥 ${group.streak}일</span>
+          <span class="home-summary-value">${avgRate}%</span>
+        </span>
       </div>
     `;
   }).join('');
