@@ -1,3 +1,10 @@
+.page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .filter-tabs {
   display: flex;
   gap: 0.5rem;

@@ -67,6 +67,12 @@
   font-weight: 500;
 }
 
+.home-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .home-summary-row .home-summary-value {
   font-weight: 700;
   color: var(--color-primary, #2563eb);
